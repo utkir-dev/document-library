@@ -1,0 +1,76 @@
+<resources>
+    <!-- Default screen margins, per the Android Design guidelines. -->
+    <dimen name="activity_horizontal_margin">16dp</dimen>
+    <dimen name="activity_vertical_margin">16dp</dimen>
+    <dimen name="nav_header_vertical_spacing">8dp</dimen>
+    <dimen name="nav_header_height">176dp</dimen>
+    <dimen name="fab_margin">16dp</dimen>
+
+    <!-- font sizes -->
+    <dimen name="font_big">24sp</dimen>
+    <dimen name="font_larger">20sp</dimen>
+    <dimen name="font_large">18sp</dimen>
+    <dimen name="font_normal">16sp</dimen>
+    <dimen name="font_small">12sp</dimen>
+    <dimen name="font_smallest">10sp</dimen>
+
+    <!-- typical spacing between two views -->
+    <dimen name="spacing_more_huge">36dp</dimen>
+    <dimen name="spacing_huge">32dp</dimen>
+    <dimen name="spacing_large">24dp</dimen>
+    <dimen name="spacing_normal">16dp</dimen>
+    <dimen name="spacing_pre_normal">12dp</dimen>
+    <dimen name="spacing_small">8dp</dimen>
+    <dimen name="spacing_smallest">6dp</dimen>
+    <dimen name="spacing_tiny">4dp</dimen>
+    <dimen name="spacing_dot">1dp</dimen>
+
+    <!--size elements-->
+    <dimen name="btn_round_size40">40dp</dimen>
+    <dimen name="round_size50">50dp</dimen>
+    <dimen name="avatar_round_size">112dp</dimen>
+    <dimen name="space_maximum">72dp</dimen>
+
+    <dimen name="ic_normal">24dp</dimen>
+    <dimen name="font32">32sp</dimen>
+    <dimen name="font30">30sp</dimen>
+    <dimen name="font24">24sp</dimen>
+    <dimen name="font22">22sp</dimen>
+    <dimen name="font20">20sp</dimen>
+    <dimen name="font18">18sp</dimen>
+    <dimen name="font12">12sp</dimen>
+    <dimen name="font10">10sp</dimen>
+
+
+    <dimen name="dp70">70dp</dimen>
+    <dimen name="dp60">60dp</dimen>
+    <dimen name="dp40">40dp</dimen>
+    <dimen name="dp30">30dp</dimen>
+    <dimen name="dp25">25dp</dimen>
+    <dimen name="dp24">24dp</dimen>
+    <dimen name="dp20">20dp</dimen>
+    <dimen name="dp15">15dp</dimen>
+    <dimen name="dp10">10dp</dimen>
+    <dimen name="dp7">7dp</dimen>
+    <dimen name="dp5">5dp</dimen>
+    <dimen name="dp4">4dp</dimen>
+    <dimen name="dp3">3dp</dimen>
+    <dimen name="dp2">2dp</dimen>
+    <dimen name="dp1">1dp</dimen>
+    <dimen name="radius_image">96dp</dimen>
+    <dimen name="image_width">180dp</dimen>
+    <dimen name="dp8">8dp</dimen>
+    <dimen name="dp6">6dp</dimen>
+    <dimen name="font16">16sp</dimen>
+    <dimen name="font14">14sp</dimen>
+
+    <!-- font sizes -->
+
+    <dimen name="dp50">50dp</dimen>
+    <dimen name="font17">17sp</dimen>
+    <dimen name="dp80">80dp</dimen>
+    <dimen name="dp100">100dp</dimen>
+    <dimen name="dp35">35dp</dimen>
+    <dimen name="box_inset_layout_padding">0dp</dimen>
+
+</resources>

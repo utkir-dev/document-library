@@ -1,0 +1,69 @@
+<resources xmlns:tools="http://schemas.android.com/tools">
+    <!-- Base application theme. -->
+    <style name="Base.Theme.LibraryPdf" parent="Theme.Material3.DayNight.NoActionBar">
+        <!-- Customize your light theme here. -->
+        <item name="colorPrimary">@color/colorPrimary</item>
+    </style>
+
+    <style name="Theme.LibraryPdf" parent="Base.Theme.LibraryPdf" />
+
+    <style name="Theme.LibraryPdf.NoActionBar">
+        <item name="windowActionBar">false</item>
+        <item name="windowNoTitle">true</item>
+    </style>
+
+    <style name="Theme.NavigationDrawer.AppBarOverlay" parent="ThemeOverlay.AppCompat.Dark.ActionBar" />
+
+    <style name="Theme.NavigationDrawer.PopupOverlay" parent="ThemeOverlay.AppCompat.Light" />
+
+
+    <style name="MyForm">
+        <item name="boxCornerRadiusBottomStart">@dimen/dp10</item>
+        <item name="boxCornerRadiusTopStart">@dimen/dp10</item>
+        <item name="boxCornerRadiusBottomEnd">@dimen/dp10</item>
+        <item name="boxCornerRadiusTopEnd">@dimen/dp10</item>
+        <item name="boxBackgroundColor">@color/white</item>
+        <item name="boxStrokeWidth">0dp</item>
+        <item name="errorEnabled">true</item>
+        <!-- <item name="android:imeOptions">actionNext</item>-->
+        <!-- <item name="singleLine">true</item>-->
+    </style>
+
+    <style name="MyEditText">
+        <item name="android:layout_width">match_parent</item>
+        <item name="android:layout_height">wrap_content</item>
+        <item name="android:imeOptions">actionNext</item>
+        <item name="android:singleLine">true</item>
+    </style>
+
+    <style name="DialogTheme" parent="Theme.LibraryPdf">
+        <item name="android:windowNoTitle">true</item>
+        <item name="android:windowIsFloating">false</item>
+    </style>
+
+    <style name="MyDialogStyle" parent="Theme.AppCompat.Dialog.Alert">
+        <item name="android:windowBackground">@android:color/transparent</item>
+        <item name="android:windowMinWidthMinor">75%</item>
+        <item name="android:gravity">center</item>
+    </style>
+
+    <style name="CardNumberStyle" parent="Base.CardView">
+        <item name="android:layout_width">@dimen/dp70</item>
+        <item name="android:layout_height">@dimen/dp70</item>
+        <item name="android:layout_margin">@dimen/dp10</item>
+        <item name="android:clickable">true</item>
+        <item name="android:focusable">true</item>
+        <item name="android:foreground">?android:attr/selectableItemBackground</item>
+        <item name="cardCornerRadius">@dimen/dp10</item>
+        <item name="cardElevation">@dimen/dp5</item>
+    </style>
+
+    <style name="TextPincodeStyle" parent="Widget.AppCompat.TextView">
+        <item name="android:layout_width">match_parent</item>
+        <item name="android:layout_height">match_parent</item>
+        <item name="android:background">@color/white</item>
+        <item name="android:gravity">center</item>
+        <item name="android:textColor">@color/blue</item>
+        <item name="android:textSize">@dimen/font32</item>
+    </style>
+</resources>

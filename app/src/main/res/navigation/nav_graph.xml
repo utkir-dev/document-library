@@ -1,0 +1,59 @@
+<?xml version="1.0" encoding="utf-8"?>
+<navigation xmlns:android="http://schemas.android.com/apk/res/android"
+    xmlns:app="http://schemas.android.com/apk/res-auto"
+    xmlns:tools="http://schemas.android.com/tools"
+    android:id="@+id/nav_graph"
+    app:startDestination="@id/screenSplash">
+
+    <fragment
+        android:id="@+id/screenSplash"
+        app:route="splash"
+        android:name="com.tiptop.presentation.screens.splash.ScreenSplash"
+        android:label="Splash"
+        >
+        <action
+            android:id="@+id/action_screenSplash_to_screenSignIn"
+            app:destination="@id/screenSignIn" />
+        <action
+            android:id="@+id/action_screenSplash_to_screenHome"
+            app:destination="@id/screenHome" />
+    </fragment>
+    <fragment
+        android:id="@+id/screenSignIn"
+        app:route="signIn"
+        android:name="com.tiptop.presentation.screens.sign_in.ScreenSignIn"
+        android:label="Sign In" >
+        <action
+            android:id="@+id/action_screenSignIn_to_screenSignUp"
+            app:destination="@id/screenSignUp" />
+        <action
+            android:id="@+id/action_screenSignIn_to_screenHome"
+            app:destination="@id/screenHome" />
+    </fragment>
+    <fragment
+        android:id="@+id/screenSignUp"
+        app:route="signUp"
+        android:name="com.tiptop.presentation.screens.sign_up.ScreenSignUp"
+        android:label="ScreenSignUp" />
+    <fragment
+        android:id="@+id/screenHome"
+        app:route="home"
+        android:name="com.tiptop.presentation.screens.home.ScreenHome"
+        android:label="ScreenHome" />
+    <fragment
+        android:id="@+id/screenAddEditDocuments"
+        app:route="addEditDocuments"
+        android:name="com.tiptop.presentation.screens.add_edit_documents.ScreenAddEditDocuments"
+        android:label="ScreenAddEditDocuments" />
+    <fragment
+        android:id="@+id/screenUsers"
+        app:route="users"
+        android:name="com.tiptop.presentation.screens.users.UsersPager"
+        android:label="ScreenUsers" />
+    <fragment
+        android:id="@+id/screenSettings"
+        app:route="settings"
+        android:name="com.tiptop.presentation.screens.settings.ScreenSettings"
+        android:label="ScreenSettings" />
+
+</navigation>

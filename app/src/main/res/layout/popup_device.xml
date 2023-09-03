@@ -1,0 +1,50 @@
+<?xml version="1.0" encoding="utf-8"?>
+<androidx.cardview.widget.CardView xmlns:android="http://schemas.android.com/apk/res/android"
+    xmlns:app="http://schemas.android.com/apk/res-auto"
+    android:layout_width="wrap_content"
+    android:layout_height="wrap_content"
+    app:cardCornerRadius="@dimen/dp10">
+
+    <LinearLayout
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:orientation="vertical">
+
+        <TextView
+            android:id="@+id/tv_edit_device"
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:drawablePadding="@dimen/dp10"
+            android:paddingHorizontal="@dimen/dp15"
+            android:paddingVertical="@dimen/dp7"
+            android:text="O'zgartirish"
+            android:textColor="@color/black"
+            android:textSize="@dimen/font18"
+            app:drawableStartCompat="@drawable/ic_edit" />
+
+        <TextView
+            android:id="@+id/tv_info_device"
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:drawablePadding="@dimen/dp10"
+            android:paddingHorizontal="@dimen/dp15"
+            android:paddingVertical="@dimen/dp7"
+            android:text="Ma'lumot"
+            android:textColor="@color/black"
+            android:textSize="@dimen/font18"
+            app:drawableStartCompat="@drawable/ic_info" />
+        <TextView
+            android:id="@+id/tv_delete_device"
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:drawablePadding="@dimen/dp10"
+            android:visibility="gone"
+            android:paddingHorizontal="@dimen/dp15"
+            android:paddingVertical="@dimen/dp7"
+            android:text="O'chirish"
+            android:textColor="@color/black"
+            android:textSize="@dimen/font18"
+            app:drawableStartCompat="@drawable/ic_delete" />
+    </LinearLayout>
+
+</androidx.cardview.widget.CardView>

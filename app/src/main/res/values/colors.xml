@@ -1,0 +1,55 @@
+<?xml version="1.0" encoding="utf-8"?>
+<resources>
+
+    <color name="purple_200">#336DFF</color>
+    <color name="purple_500">#336DFF</color>
+    <color name="purple_700">#336DFF</color>
+    <color name="teal_200">#0DA315</color>
+    <color name="teal_700">#FF018786</color>
+
+
+    <color name="colorPrimary">#336DFF</color>
+    <color name="colorPrimaryDark">#3700B3</color>
+    <color name="colorAccent">#029508</color>
+    <color name="black">#FF000000</color>
+    <color name="black_clear">#99000000</color>
+    <color name="white">#FFFFFFFF</color><!--custom-->
+
+    <color name="color_red">#CC022E</color>
+    <color name="color_yellow">#FF9800</color>
+    <color name="color_green_online">#06E30F</color>
+    <color name="color_green">#029508</color>
+    <color name="color_blue">#007AEB</color>
+    <color name="blue1">#045CDF</color>
+    <color name="blue2">#3F8CFF</color>
+    <color name="color_blue_light">#78B7F3</color>
+    <color name="color_gray_light">#ECECEC</color>
+
+    <color name="color1">#005073</color>
+    <color name="color2">#107DAC</color>
+    <color name="color3">#189AD3</color>
+
+    <color name="white_alfa">#7AFFFFFF</color>
+    <color name="white_back">#F7F7F7</color>
+    <color name="grey_dark1">#4E4C4C</color>
+    <color name="grey_dark">#716D6D</color>
+    <color name="grey">#8C8C8C</color>
+    <color name="grey_light">#BDBDBD</color>
+    <color name="clear">#00FFFEFE</color>
+    <color name="grey_clear">#80777777</color>
+    <color name="grey_light_night">#25303F</color>
+    <color name="background">#F6F6F6</color>
+    <color name="blue_light">#71A5FC</color>
+    <color name="blue">#166BFA</color>
+    <color name="blue_dark2">#0C5BBA</color>
+    <color name="blue_center">#0F65CD</color>
+    <color name="green">#39CE40</color>
+    <color name="green_dark">#12B31A</color>
+    <color name="red">#FF0000</color>
+    <color name="yellow">#F4FF81</color>
+    <color name="orange">#FF7700</color>
+    <color name="red_sms">#DD2371</color>
+    <color name="white_night">#25303F</color>
+    <color name="background_night">#1A222C</color>
+    <color name="color_paused">#F3FBF2D7</color>
+</resources>
