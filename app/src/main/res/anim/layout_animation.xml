@@ -3,5 +3,5 @@
     xmlns:tools="http://schemas.android.com/tools"
     android:animation="@anim/item_animation_fall_down"
     android:animationOrder="normal"
-    android:delay="15%"
+    android:delay="10%"
     tools:ignore="MissingDefaultResource" />

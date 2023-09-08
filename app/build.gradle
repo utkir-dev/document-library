@@ -106,6 +106,8 @@ dependencies {
 
     // animation
     implementation "com.airbnb.android:lottie:6.1.0"
+    //permission
+    implementation 'com.karumi:dexter:6.2.2'
 
 }
 kapt {

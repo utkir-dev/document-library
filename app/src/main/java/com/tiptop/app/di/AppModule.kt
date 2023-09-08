@@ -5,9 +5,10 @@ import android.content.Context
 import android.content.SharedPreferences
 import androidx.security.crypto.EncryptedSharedPreferences
 import androidx.security.crypto.MasterKey
-import com.example.data.db.dao.MyRoom
+import com.tiptop.data.repository.local.MyRoom
 import com.google.firebase.auth.ktx.auth
 import com.google.firebase.ktx.Firebase
+import com.google.firebase.storage.FirebaseStorage
 import com.google.gson.Gson
 import dagger.Module
 import dagger.Provides
@@ -17,6 +18,7 @@ import dagger.hilt.components.SingletonComponent
 import com.tiptop.app.common.Utils
 import com.tiptop.data.repository.local.DaoDeletedId
 import com.tiptop.data.repository.local.DaoDevice
+import com.tiptop.data.repository.local.DaoDocument
 import com.tiptop.data.repository.local.DaoUser
 import com.tiptop.domain.AddEditDocumentRepository
 import com.tiptop.domain.AuthRepository
@@ -24,7 +26,10 @@ import com.tiptop.domain.UserRepository
 import com.tiptop.domain.impl.AddEditDocumentRepositoryImpl
 import com.tiptop.domain.impl.AuthRepositoryImpl
 import com.tiptop.domain.impl.UsersRepositoryImpl
+import dagger.Binds
+import kotlinx.coroutines.CoroutineDispatcher
 import kotlinx.coroutines.CoroutineScope
+import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.SupervisorJob
 import javax.inject.Qualifier
 import javax.inject.Singleton
@@ -61,13 +66,16 @@ class AppModule {
     @Singleton
     fun provideAddEditDocumentRepository(
         auth: AuthRepository,
-        daoUser: DaoUser,
-        daoDevice: DaoDevice,
-        daoDeletedId: DaoDeletedId,
-        ctx: Context
+        daoDocument: DaoDocument,
+        ctx: Context,
+        coroutineScope: CoroutineScope
     ): AddEditDocumentRepository = AddEditDocumentRepositoryImpl(
+        auth = auth,
         remoteDatabase = Firebase,
-        context = ctx
+        remoteStorage = FirebaseStorage.getInstance(),
+        documentsLocalDb = daoDocument,
+        context = ctx,
+        coroutine=coroutineScope
     )
 
     @Provides
@@ -87,6 +95,10 @@ class AppModule {
     @Provides
     @Singleton
     fun provideDaoUser(db: MyRoom): DaoUser = db.UserDao()
+
+    @Provides
+    @Singleton
+    fun provideDaoDocument(db: MyRoom): DaoDocument = db.DocumentDao()
 
     @Provides
     @Singleton
@@ -117,12 +129,13 @@ class AppModule {
         )
     }
 
-    @AppScope
-    @Provides
     @Singleton
-    fun provideAppScope() = CoroutineScope(SupervisorJob())
-}
+    @Provides
+    fun providesCoroutineScope(
+        @DefaultDispatcher defaultDispatcher: CoroutineDispatcher
+    ): CoroutineScope = CoroutineScope(SupervisorJob() + defaultDispatcher)
 
+}
 @Retention(AnnotationRetention.RUNTIME)
 @Qualifier
 annotation class AppScope

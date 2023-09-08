@@ -1,4 +1,4 @@
-package com.tiptop.presentation.screens.sign_in
+package com.tiptop.presentation.screens.settings.sign_in
 
 import android.os.Bundle
 import android.view.LayoutInflater

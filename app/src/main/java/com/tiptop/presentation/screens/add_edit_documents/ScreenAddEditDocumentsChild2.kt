@@ -1,36 +1,39 @@
 package com.tiptop.presentation.screens.add_edit_documents
 
+import android.graphics.Color
 import android.os.Bundle
 import android.view.View
-import androidx.core.os.bundleOf
 import androidx.fragment.app.viewModels
-import androidx.navigation.fragment.findNavController
 import androidx.recyclerview.widget.DividerItemDecoration
 import androidx.recyclerview.widget.LinearLayoutManager
 import com.tiptop.R
 import com.tiptop.app.common.Constants
-import com.tiptop.app.common.Constants.MOTHER_ID
-import com.tiptop.app.common.Constants.TYPE_FOLDER
-import com.tiptop.app.common.hideKeyBoard
 import com.tiptop.app.common.isInternetAvailable
 import com.tiptop.data.models.local.DocumentForRv
 import com.tiptop.data.models.local.DocumentLocal
-import com.tiptop.data.models.remote.DocumentRemote
 import dagger.hilt.android.AndroidEntryPoint
 import java.io.File
-import java.util.UUID
 
 
 @AndroidEntryPoint
-class ScreenAddEditDocuments : BaseFragmentAddEditDocuments() {
+class ScreenAddEditDocumentsChild2 : BaseFragmentAddEditDocuments() {
     private val vm by viewModels<AddEditDocumentViewModelImpl>()
     private var adapter: AdapterDocument? = null
     private var searchText = ""
     private var folders = ArrayList<String>()
+    private var parentId: String = ""
+    override fun onCreate(savedInstanceState: Bundle?) {
+        super.onCreate(savedInstanceState)
+        arguments?.let {
+            parentId = it.getString(ARG_PARAM_CHILD2) ?: ""
+            if (parentId.isNotEmpty()) {
+                vm.getDocumentsByParentId(parentId)
+            }
+        }
+    }
 
     override fun onViewCreated(view: View, savedInstanceState: Bundle?) {
         super.onViewCreated(view, savedInstanceState)
-        vm.getDocumentsByParentId(MOTHER_ID)
         initClickListeners()
         adapter = AdapterDocument(object : AdapterDocument.ClickListener {
             override fun onClick(document: DocumentForRv, position: Int, v: View) {
@@ -40,17 +43,11 @@ class ScreenAddEditDocuments : BaseFragmentAddEditDocuments() {
                     }
 
                     R.id.l_item_top -> {
-                        if (document.type == TYPE_FOLDER) {
-                            findNavController().navigate(
-                                R.id.action_screenAddEditDocuments_to_screenAddEditDocumentsChild1,
-                                bundleOf(ScreenAddEditDocumentsChild1.ARG_PARAM_CHILD1 to MOTHER_ID + document.id)
-                            )
-                        } else if (document.loaded) {
+                        if (document.loaded) {
                             showFile(document.toDocumentLocal())
                         }
                     }
                 }
-
             }
 
             override fun onLongClick(document: DocumentForRv, position: Int, v: View) {
@@ -90,40 +87,41 @@ class ScreenAddEditDocuments : BaseFragmentAddEditDocuments() {
 //            }
         }
     }
-
     override fun onResume() {
         super.onResume()
         initVisibilities()
     }
 
     private fun initVisibilities() {
-        binding.lTopRecycler.visibility = View.GONE
+        binding.lTopRecycler.visibility=View.VISIBLE
+        binding.tvChild1.visibility=View.VISIBLE
+        binding.tvChild2.visibility = View.VISIBLE
+        binding.tvChildMain.text="Asosiy / "
+        binding.tvChildMain.setTextColor(Color.BLACK)
+        binding.tvChild1.text= "Child1 / "
+        binding.tvChild1.setTextColor(Color.BLACK)
+        binding.tvChild2.text = "Child2"
     }
-
     private fun initClickListeners() {
         binding.fabAdd.setOnClickListener {
-            CURRENT_FOLDER_ID = MOTHER_ID
-            showAddFolderOrFile { v ->
+            CURRENT_FOLDER_ID = parentId
+            showAddFolderOrFile(true) { v ->
                 when (v.id) {
-                    R.id.l_create_folder -> createFolder()
                     R.id.l_upload_pdf -> createPdfFile()
-
                 }
             }
         }
-
         binding.btnReplace.setOnClickListener {
             binding.fabAdd.visibility = View.VISIBLE
             binding.lBottom.visibility = View.GONE
             REPLACING_DOCUMENT?.let {
-                it.parentId = MOTHER_ID
+                it.parentId = parentId
                 it.date = System.currentTimeMillis()
                 if (isInternetAvailable(requireContext())) {
                     vm.saveDocument(it.toRemote())
                 } else {
                     showSnackBarNoConnection()
                 }
-
             }
             REPLACING_DOCUMENT = null
         }
@@ -134,32 +132,7 @@ class ScreenAddEditDocuments : BaseFragmentAddEditDocuments() {
         }
     }
 
-
-    private fun createFolder() {
-        showEditNameDialog("Papka yaratish") { text ->
-            if (folders.contains(text)) {
-                showSnackBar("Bu papka allaqachon kiritilgan !")
-                return@showEditNameDialog
-            }
-            if (text.isNotEmpty()) {
-                val date = System.currentTimeMillis()
-                val document = DocumentRemote(
-                    id = UUID.randomUUID().toString(),
-                    parentId = MOTHER_ID,
-                    name = text,
-                    headBytes = "",
-                    type = TYPE_FOLDER,
-                    size = 0,
-                    date = date,
-                    dateAdded = date
-                )
-                if (isInternetAvailable(requireContext())) {
-                    requireActivity().hideKeyBoard()
-                    vm.saveDocument(document)
-                } else {
-                    showSnackBarNoConnection()
-                }
-            }
-        }
+    companion object {
+        var ARG_PARAM_CHILD2 = "arg_params_child2"
     }
 }

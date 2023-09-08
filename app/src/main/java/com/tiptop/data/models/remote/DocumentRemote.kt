@@ -5,10 +5,9 @@ import com.tiptop.data.models.local.DocumentLocal
 
 data class DocumentRemote(
     var id: String = "",
-    var folderIds: String = "",
+    var parentId: String = "",
     var name: String = "",
     var headBytes: String = "",
-    var url: String = "",
     var type: Int = 0,
     var size: Long = 0,
     var date: Long = 0,
@@ -16,7 +15,7 @@ data class DocumentRemote(
 ) {
     fun toLocal() = DocumentLocal(
         id = this.id,
-        folderIds = this.folderIds,
+        parentId = this.parentId,
         name = this.name,
         headBytes = this.headBytes,
         type = this.type,

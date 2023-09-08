@@ -1,6 +1,5 @@
 package com.tiptop.data.models.local
 
-import androidx.room.ColumnInfo
 import androidx.room.Entity
 import androidx.room.PrimaryKey
 import com.tiptop.data.models.remote.UserRemote

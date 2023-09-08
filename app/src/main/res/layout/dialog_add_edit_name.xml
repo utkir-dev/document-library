@@ -1,0 +1,90 @@
+<?xml version="1.0" encoding="utf-8"?>
+<androidx.cardview.widget.CardView
+    xmlns:android="http://schemas.android.com/apk/res/android"
+    xmlns:app="http://schemas.android.com/apk/res-auto"
+    android:layout_width="wrap_content"
+    android:layout_height="wrap_content"
+    android:background="@android:color/transparent"
+    android:backgroundTintMode="@android:color/transparent"
+    app:cardCornerRadius="@dimen/dp20"
+    app:cardElevation="@dimen/dp20">
+
+    <LinearLayout
+        android:layout_width="match_parent"
+        android:layout_height="match_parent"
+        android:layout_gravity="center"
+        android:background="@color/white_back"
+        android:gravity="center_horizontal"
+        android:minWidth="250dp"
+        android:orientation="vertical">
+
+        <TextView
+            android:id="@+id/title"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:layout_marginVertical="@dimen/dp10"
+            android:gravity="center_horizontal"
+            android:maxWidth="320dp"
+            android:paddingHorizontal="@dimen/dp5"
+            android:text="Title"
+            android:textColor="@color/black"
+            android:textSize="@dimen/font18" />
+
+
+        <androidx.cardview.widget.CardView
+            android:layout_width="300dp"
+            android:layout_height="wrap_content"
+            android:layout_margin="@dimen/dp10"
+            android:elevation="@dimen/dp10"
+            android:padding="@dimen/dp10"
+            android:visibility="visible"
+            app:cardCornerRadius="@dimen/dp10">
+
+            <com.google.android.material.textfield.TextInputEditText
+                android:id="@+id/et_document_name"
+                android:layout_width="match_parent"
+                android:layout_height="wrap_content"
+                android:layout_marginHorizontal="@dimen/dp10"
+                android:background="@android:color/transparent"
+                android:hint="Document name"
+                android:imeOptions="actionDone"
+                android:inputType="text"
+                android:paddingVertical="@dimen/dp10" />
+
+        </androidx.cardview.widget.CardView>
+
+        <LinearLayout
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:orientation="horizontal">
+            <Button
+                android:id="@+id/btn_cancel"
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:layout_marginVertical="@dimen/activity_vertical_margin"
+                android:backgroundTint="@color/grey"
+                android:paddingHorizontal="@dimen/dp24"
+                android:paddingVertical="@dimen/dp10"
+                android:text="Bekor"
+                android:textAllCaps="false"
+                android:layout_marginEnd="@dimen/dp20"
+                android:textSize="@dimen/font18" />
+            <Button
+                android:id="@+id/btn_confirm"
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:layout_marginVertical="@dimen/activity_vertical_margin"
+                android:backgroundTint="@color/green"
+                android:paddingHorizontal="@dimen/dp24"
+                android:paddingVertical="@dimen/dp10"
+                android:text="Tasdiq"
+                android:textAllCaps="false"
+                android:textSize="@dimen/font18" />
+        </LinearLayout>
+
+
+
+    </LinearLayout>
+
+</androidx.cardview.widget.CardView>
+

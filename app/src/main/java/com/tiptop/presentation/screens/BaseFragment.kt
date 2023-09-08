@@ -3,22 +3,18 @@ package com.tiptop.presentation.screens
 
 import android.annotation.SuppressLint
 import android.app.AlertDialog
-import android.content.Context
-import android.os.Bundle
 import android.transition.Slide
 import android.transition.TransitionManager
-import android.util.Log
 import android.view.Gravity
-import android.view.LayoutInflater
 import android.view.View
 import android.view.ViewGroup
 import android.widget.LinearLayout
 import android.widget.PopupWindow
 import androidx.fragment.app.Fragment
-import androidx.fragment.app.viewModels
-import androidx.lifecycle.asLiveData
 import com.google.android.material.snackbar.Snackbar
 import com.tiptop.R
+import com.tiptop.app.common.Constants.MOTHER_ID
+import com.tiptop.data.models.local.DocumentLocal
 import com.tiptop.databinding.DialogAllertBinding
 import com.tiptop.databinding.DialogConfirmBinding
 import com.tiptop.databinding.PopupDeviceBinding
@@ -28,11 +24,16 @@ abstract class BaseFragment(layoutId: Int) : Fragment(layoutId) {
 
     override fun onResume() {
         super.onResume()
-        if (System.currentTimeMillis() - timeOut > 3000 && !isBlocked) {
+        val timeLimit = if (isLoading) 60_000 else 3000
+        if (System.currentTimeMillis() - timeOut > timeLimit && !isBlocked) {
             isBlocked = true
-            BlockScreenDialogFragment().show(parentFragmentManager, BlockScreenDialogFragment.TAG)
+            BlockScreenDialogFragment().show(
+                parentFragmentManager,
+                BlockScreenDialogFragment.TAG
+            )
         } else {
             isBlocked = false
+            isLoading = false
         }
     }
 
@@ -46,6 +47,10 @@ abstract class BaseFragment(layoutId: Int) : Fragment(layoutId) {
         Snackbar.make(rootView, text, Snackbar.LENGTH_LONG).show()
     }
 
+    fun showSnackBarNoConnection() {
+        val rootView: View = requireActivity().window.decorView.rootView
+        Snackbar.make(rootView, "Interntet yo'q", Snackbar.LENGTH_LONG).show()
+    }
 
     @SuppressLint("InflateParams")
     fun showPopup(v: View, root: ViewGroup, function: (Int) -> Unit) {
@@ -57,13 +62,16 @@ abstract class BaseFragment(layoutId: Int) : Fragment(layoutId) {
         )
         view.tvDeleteDevice.setOnClickListener {
             popupRight.dismiss()
-            function(view.tvDeleteDevice.id) }
+            function(view.tvDeleteDevice.id)
+        }
         view.tvEditDevice.setOnClickListener {
             popupRight.dismiss()
-            function(view.tvEditDevice.id) }
+            function(view.tvEditDevice.id)
+        }
         view.tvInfoDevice.setOnClickListener {
             popupRight.dismiss()
-            function(view.tvInfoDevice.id) }
+            function(view.tvInfoDevice.id)
+        }
 
         popupRight.isOutsideTouchable = true
         popupRight.elevation = 20.0F
@@ -118,8 +126,10 @@ abstract class BaseFragment(layoutId: Int) : Fragment(layoutId) {
         }
     }
 
+
     companion object {
         private var timeOut: Long = 0
         private var isBlocked: Boolean = false
+        var isLoading: Boolean = false
     }
 }

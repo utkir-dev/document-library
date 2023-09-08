@@ -1,0 +1,78 @@
+<?xml version="1.0" encoding="utf-8"?>
+<androidx.cardview.widget.CardView xmlns:android="http://schemas.android.com/apk/res/android"
+    xmlns:app="http://schemas.android.com/apk/res-auto"
+    android:layout_width="wrap_content"
+    android:layout_height="wrap_content"
+    android:layout_gravity="center"
+    android:background="@android:color/transparent"
+    android:backgroundTintMode="@android:color/transparent"
+    android:layout_margin="@dimen/dp20"
+    app:cardCornerRadius="@dimen/dp20"
+    app:cardElevation="@dimen/dp10">
+
+    <LinearLayout
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        android:minWidth="200dp"
+        android:orientation="vertical"
+        android:padding="@dimen/dp10">
+
+        <TextView
+            android:id="@+id/tv_document_name"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:layout_gravity="center_horizontal"
+            android:text="Document name"
+            android:layout_marginBottom="@dimen/dp5"
+            android:textSize="@dimen/font16"
+            android:textStyle="bold" />
+
+        <View
+            android:layout_width="match_parent"
+            android:layout_height="@dimen/spacing_dot"
+            android:background="@android:color/darker_gray" />
+
+        <TextView
+            android:id="@+id/tv_edit_document"
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:drawablePadding="@dimen/dp10"
+            android:paddingVertical="@dimen/dp8"
+            android:text="O'zgartirish"
+            android:textColor="@android:color/black"
+            android:textSize="@dimen/font18"
+            app:drawableStartCompat="@drawable/ic_edit" />
+
+        <TextView
+            android:id="@+id/tv_replace_document"
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:drawablePadding="@dimen/dp10"
+            android:paddingVertical="@dimen/dp8"
+            android:text="Qayta joylash"
+            android:textColor="@android:color/black"
+            android:textSize="@dimen/font18"
+            app:drawableStartCompat="@drawable/ic_replace" />
+
+
+        <TextView
+            android:id="@+id/tv_delete_document"
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:drawablePadding="@dimen/dp10"
+            android:paddingVertical="@dimen/dp8"
+            android:text="O'chirish"
+            android:textColor="@android:color/black"
+            android:textSize="@dimen/font18"
+            app:drawableStartCompat="@drawable/ic_delete" />
+
+        <TextView
+            android:id="@+id/tv_cancel"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:layout_gravity="end"
+            android:text="Yopish"
+            android:textColor="@color/blue"
+            android:textSize="@dimen/font17" />
+    </LinearLayout>
+</androidx.cardview.widget.CardView>

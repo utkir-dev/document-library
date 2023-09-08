@@ -5,7 +5,9 @@ class Utils {
     external fun getDatabaseName(): String
     external fun getUsersPasswordFolder(): String
     external fun getUsersFolder(): String
+    external fun getDocumentsFolder(): String
     external fun getDevicesFolder(): String
+    external fun getFildesFolder(): String
     external fun getHeadBytesCount(): String
     external fun getImageHeadBytesCount(): String
     external fun getDeletedIdsFolder(): String

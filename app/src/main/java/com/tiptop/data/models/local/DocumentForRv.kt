@@ -1,12 +1,7 @@
 package com.tiptop.data.models.local
 
-import androidx.room.Entity
-import androidx.room.PrimaryKey
-import com.tiptop.data.models.remote.DocumentRemote
 
-@Entity(tableName = "documents")
-data class DocumentLocal(
-    @PrimaryKey
+data class DocumentForRv(
     var id: String = "",
     var parentId: String = "",
     var name: String = "",
@@ -21,19 +16,9 @@ data class DocumentLocal(
     var lastSeenDate: Long = 0,
     var date: Long = 0,
     var dateAdded: Long = 0,
+    var count: Int? = null
 ) {
-    fun toRemote() = DocumentRemote(
-        id = this.id,
-        parentId = this.parentId,
-        name = this.name,
-        headBytes = this.headBytes,
-        type = this.type,
-        size = this.size,
-        date = this.date,
-        dateAdded = this.dateAdded,
-    )
-
-    fun toRvModel() = DocumentForRv(
+    fun toDocumentLocal() = DocumentLocal(
         id = this.id,
         parentId = this.parentId,
         name = this.name,

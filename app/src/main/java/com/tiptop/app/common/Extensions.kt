@@ -37,7 +37,16 @@ fun ByteArray.huminize(): String {
     else "${(this.size.toDouble() / gbyte).roundTen()} Gb"
     return value
 }
-
+fun Long.validateFileSize():String{
+    val kbyte = 1024
+    val mbyte = 1024 * 1024
+    val gbyte = 1024 * 1024 * 1024
+    val value = if (this < kbyte) "${this} byte"
+    else if (this < 700 * kbyte) "${(this.toDouble() / kbyte).roundTen()} Kb"
+    else if (this < 700 * mbyte) "${(this.toDouble() / mbyte).roundTen()} Mb"
+    else "${(this.toDouble() / gbyte).roundTen()} Gb"
+    return value
+}
 fun Double.roundTen(): String {
     val dec =
         DecimalFormat("###,###,###,###,###.0", DecimalFormatSymbols(Locale.ENGLISH))

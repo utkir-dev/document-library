@@ -4,9 +4,269 @@
     xmlns:tools="http://schemas.android.com/tools"
     android:layout_width="match_parent"
     android:layout_height="match_parent"
-    android:gravity="center"
-    android:orientation="vertical">
+    android:keepScreenOn="true">
+
+    <com.github.barteksc.pdfviewer.PDFView
+        android:id="@+id/pdf_view_fargment"
+        android:layout_width="match_parent"
+        android:layout_height="match_parent" />
+
+    <LinearLayout
+        android:id="@+id/l_top"
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        android:background="@color/black_clear"
+        android:gravity="center_vertical"
+        android:orientation="horizontal"
+        android:paddingTop="12dp"
+        android:paddingBottom="4dp"
+        android:visibility="gone"
+        app:layout_constraintTop_toTopOf="parent">
+
+        <ImageView
+            android:id="@+id/iv_back"
+            android:layout_width="wrap_content"
+            android:layout_height="match_parent"
+            android:clickable="true"
+            android:focusable="true"
+            android:foreground="?android:attr/selectableItemBackground"
+            android:paddingStart="@dimen/dp6"
+            android:paddingEnd="@dimen/dp10"
+
+            android:src="@drawable/ic_arrow_back"
+            app:tint="@color/white_back" />
+
+        <LinearLayout
+            android:layout_width="0dp"
+            android:layout_height="wrap_content"
+            android:layout_weight="1"
+            android:orientation="vertical">
+
+            <TextView
+                android:id="@+id/tv_book_name"
+                android:layout_width="match_parent"
+                android:layout_height="wrap_content"
+                android:gravity="center_horizontal"
+                android:maxLines="1"
+                android:text="book name"
+                android:textColor="@color/white" />
+
+            <TextView
+                android:id="@+id/tv_page_count"
+                android:layout_width="match_parent"
+                android:layout_height="wrap_content"
+                android:maxLines="1"
+                android:text="123"
+                android:textColor="@color/white"
+                android:textSize="12sp" />
+        </LinearLayout>
 
 
+        <ImageView
+            android:id="@+id/iv_last_books"
+            android:layout_width="@dimen/dp40"
+            android:layout_height="@dimen/dp40"
+            android:layout_marginStart="@dimen/dp5"
+            android:layout_marginEnd="@dimen/dp10"
+            android:clickable="true"
+            android:focusable="true"
+            android:foreground="?android:attr/selectableItemBackground"
+            android:src="@drawable/open_book" />
+
+        <androidx.cardview.widget.CardView
+            android:id="@+id/card_javohir"
+            android:layout_width="@dimen/dp35"
+            android:layout_height="@dimen/dp35"
+            android:layout_marginHorizontal="@dimen/dp10"
+            android:clickable="true"
+            android:focusable="true"
+            android:foreground="?android:attr/selectableItemBackground"
+            app:cardCornerRadius="@dimen/dp10">
+
+            <ImageView
+                android:layout_width="match_parent"
+                android:layout_height="match_parent"
+                android:src="@drawable/javohir" />
+        </androidx.cardview.widget.CardView>
+
+        <androidx.cardview.widget.CardView
+            android:id="@+id/card_bushro"
+            android:layout_width="@dimen/dp35"
+            android:layout_height="@dimen/dp35"
+            android:layout_marginHorizontal="@dimen/dp8"
+            android:clickable="true"
+            android:focusable="true"
+            android:foreground="?android:attr/selectableItemBackground"
+            app:cardCornerRadius="@dimen/dp10">
+
+            <ImageView
+                android:layout_width="match_parent"
+                android:layout_height="match_parent"
+
+                android:src="@drawable/ic_bushro" />
+        </androidx.cardview.widget.CardView>
+
+
+        <ImageView
+            android:id="@+id/iv_screen_orientation"
+            android:layout_width="wrap_content"
+            android:layout_height="match_parent"
+            android:clickable="true"
+            android:focusable="true"
+            android:foreground="?android:attr/selectableItemBackground"
+            android:paddingHorizontal="@dimen/dp15"
+
+            android:src="@drawable/ic_full_screen" />
+
+    </LinearLayout>
+
+    <LinearLayout
+        android:id="@+id/l_last_books"
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        android:orientation="vertical"
+        android:visibility="gone"
+        app:layout_constraintEnd_toEndOf="parent"
+        app:layout_constraintTop_toTopOf="parent"
+        tools:listitem="@layout/item_document">
+
+        <TextView
+            android:id="@+id/tv_cancel"
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:layout_gravity="center_horizontal"
+            android:background="@color/white_back"
+            android:gravity="center"
+            android:padding="@dimen/dp8"
+            android:text="Bekor"
+            android:textColor="@color/blue" />
+
+        <androidx.recyclerview.widget.RecyclerView
+            android:id="@+id/rv_last_books"
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:background="@color/grey_light"
+            android:paddingStart="@dimen/dp40"
+            android:paddingEnd="@dimen/dp6"
+            app:layoutManager="androidx.recyclerview.widget.LinearLayoutManager"
+            tools:ignore="RtlSymmetry"
+
+            tools:itemCount="10" />
+
+    </LinearLayout>
+
+    <LinearLayout
+        android:id="@+id/l_bottom"
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        android:background="@color/black_clear"
+        android:gravity="center_vertical"
+        android:orientation="horizontal"
+        android:paddingHorizontal="@dimen/dp6"
+        android:paddingVertical="@dimen/dp5"
+        android:visibility="gone"
+        app:layout_constraintBottom_toBottomOf="parent">
+
+        <androidx.cardview.widget.CardView
+            android:id="@+id/card_goto_page"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:layout_marginEnd="@dimen/dp3"
+            android:clickable="true"
+            android:focusable="true"
+            android:foreground="?android:attr/selectableItemBackground"
+            app:cardCornerRadius="@dimen/dp5">
+
+            <TextView
+                android:id="@+id/et_goto_page"
+                android:layout_width="match_parent"
+                android:layout_height="match_parent"
+                android:background="@color/blue"
+                android:gravity="center"
+                android:minWidth="@dimen/dp50"
+                android:paddingHorizontal="@dimen/dp3"
+                android:text="1000"
+                android:textColor="@color/white_back"
+                android:textSize="@dimen/font17" />
+        </androidx.cardview.widget.CardView>
+
+
+        <TextView
+            android:id="@+id/tv_up_10"
+            android:layout_width="wrap_content"
+            android:layout_height="match_parent"
+            android:clickable="true"
+            android:focusable="true"
+            android:foreground="?android:attr/selectableItemBackground"
+            android:gravity="center"
+            android:paddingHorizontal="@dimen/dp7"
+            android:text="10"
+            android:textColor="@color/white_back"
+            android:textSize="@dimen/font18"
+            app:drawableRightCompat="@drawable/ic_double_arrow_up"
+            app:drawableTint="@color/white_back" />
+
+        <TextView
+            android:id="@+id/tv_down_10"
+            android:layout_width="wrap_content"
+            android:layout_height="match_parent"
+            android:clickable="true"
+            android:focusable="true"
+            android:foreground="?android:attr/selectableItemBackground"
+            android:gravity="center"
+            android:paddingHorizontal="@dimen/dp7"
+            android:text="10"
+            android:textColor="@color/white_back"
+            android:textSize="@dimen/font18"
+            app:drawableRightCompat="@drawable/ic_double_arrow_down"
+            app:drawableTint="@color/white_back" />
+
+
+        <View
+            android:layout_width="0dp"
+            android:layout_height="1dp"
+            android:layout_weight="1" />
+
+        <ImageView
+            android:id="@+id/iv_timer"
+            android:layout_width="wrap_content"
+            android:layout_height="match_parent"
+            android:clickable="true"
+            android:focusable="true"
+            android:foreground="?android:attr/selectableItemBackground"
+            android:paddingHorizontal="@dimen/dp10"
+            android:src="@drawable/ic_timer"
+            app:tint="@color/white_back" />
+
+        <ImageView
+            android:id="@+id/iv_share"
+            android:layout_width="wrap_content"
+            android:layout_height="match_parent"
+            android:clickable="true"
+            android:focusable="true"
+            android:foreground="?android:attr/selectableItemBackground"
+            android:paddingStart="@dimen/dp10"
+            android:paddingEnd="@dimen/dp15"
+            android:src="@drawable/ic_share"
+            app:tint="@color/white_back" />
+
+        <ImageView
+            android:id="@+id/iv_day_night"
+            android:layout_width="wrap_content"
+            android:layout_height="match_parent"
+            android:clickable="true"
+            android:focusable="true"
+            android:foreground="?android:attr/selectableItemBackground"
+            android:paddingHorizontal="@dimen/dp15"
+            android:src="@drawable/ic_moon" />
+    </LinearLayout>
+
+<!--    <include-->
+<!--        android:id="@+id/l_dict"-->
+<!--        layout="@layout/fragment_dict"-->
+<!--        android:layout_width="wrap_content"-->
+<!--        android:layout_height="match_parent"-->
+<!--        app:layout_constraintBottom_toBottomOf="parent"-->
+<!--        app:layout_constraintEnd_toEndOf="parent" />-->
 
 </androidx.constraintlayout.widget.ConstraintLayout>
