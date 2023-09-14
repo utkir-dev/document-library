@@ -1,4 +1,4 @@
-package com.tiptop.presentation.screens.settings.sign_in
+package com.tiptop.presentation.screens.sign_in
 
 interface SignInViewModel {
     fun signIn(email: String, password: String)

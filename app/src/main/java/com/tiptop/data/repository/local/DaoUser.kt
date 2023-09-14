@@ -50,7 +50,7 @@ interface DaoUser {
     @Query("SELECT * FROM users LEFT JOIN  devices ON users.id = devices.userId ORDER BY users.date DESC")
     fun getUserAndDevices(): Flow<Map<UserLocal, List<DeviceLocal>>>
 
-    @Query("SELECT * FROM users LEFT JOIN  devices ON users.id = devices.userId WHERE users.email LIKE :seachText || '%' ORDER BY users.date DESC")
+    @Query("SELECT * FROM users LEFT JOIN  devices ON users.id = devices.userId WHERE users.email LIKE :seachText  ORDER BY users.date DESC")
     fun getUserAndDevices(seachText: String): Flow<Map<UserLocal, List<DeviceLocal>>>
 
 }

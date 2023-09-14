@@ -11,11 +11,15 @@ import com.tiptop.R
 import com.tiptop.app.common.Constants
 import com.tiptop.app.common.Constants.MOTHER_ID
 import com.tiptop.app.common.Constants.TYPE_FOLDER
+import com.tiptop.app.common.Constants.TYPE_IMAGE
+import com.tiptop.app.common.Constants.TYPE_PDF
 import com.tiptop.app.common.hideKeyBoard
 import com.tiptop.app.common.isInternetAvailable
 import com.tiptop.data.models.local.DocumentForRv
 import com.tiptop.data.models.local.DocumentLocal
 import com.tiptop.data.models.remote.DocumentRemote
+import com.tiptop.presentation.screens.document_view.pdf.ARG_PARAM_DOCUMENT
+import com.tiptop.presentation.screens.document_view.image.ARG_PARAM_IMAGE
 import dagger.hilt.android.AndroidEntryPoint
 import java.io.File
 import java.util.UUID
@@ -24,7 +28,7 @@ import java.util.UUID
 @AndroidEntryPoint
 class ScreenAddEditDocuments : BaseFragmentAddEditDocuments() {
     private val vm by viewModels<AddEditDocumentViewModelImpl>()
-    private var adapter: AdapterDocument? = null
+    private var adapter: AdapterAddEditDocument? = null
     private var searchText = ""
     private var folders = ArrayList<String>()
 
@@ -32,7 +36,7 @@ class ScreenAddEditDocuments : BaseFragmentAddEditDocuments() {
         super.onViewCreated(view, savedInstanceState)
         vm.getDocumentsByParentId(MOTHER_ID)
         initClickListeners()
-        adapter = AdapterDocument(object : AdapterDocument.ClickListener {
+        adapter = AdapterAddEditDocument(object : AdapterAddEditDocument.ClickListener {
             override fun onClick(document: DocumentForRv, position: Int, v: View) {
                 when (v.id) {
                     R.id.iv_file_state -> {
@@ -82,8 +86,17 @@ class ScreenAddEditDocuments : BaseFragmentAddEditDocuments() {
     private fun showFile(document: DocumentLocal) {
         val selectedFile: File = requireContext().getFileStreamPath(document.id)
         if (selectedFile.exists()) {
-            if (document.type == Constants.TYPE_PDF) {
-                //  findNavController().navigate(R.id.fragment_pdf)
+            if (document.type == TYPE_PDF) {
+                findNavController().navigate(
+                    R.id.action_screenAddEditDocuments_to_screenDocument,
+                    bundleOf(ARG_PARAM_DOCUMENT to document.id)
+                )
+            }
+            if (document.type == Constants.TYPE_IMAGE) {
+                findNavController().navigate(
+                    R.id.screenImageView,
+                    bundleOf(ARG_PARAM_IMAGE to document.id)
+                )
             }
 //            else if (document.type == TYPE_TXT || document.name.substringAfterLast(".", "") == "txt") {
 //                findNavController().navigate(R.id.fragment_txt)
@@ -105,9 +118,15 @@ class ScreenAddEditDocuments : BaseFragmentAddEditDocuments() {
             CURRENT_FOLDER_ID = MOTHER_ID
             showAddFolderOrFile { v ->
                 when (v.id) {
-                    R.id.l_create_folder -> createFolder()
-                    R.id.l_upload_pdf -> createPdfFile()
-
+                    R.id.l_create_folder -> {
+                        createFolder()
+                    }
+                    R.id.l_upload_pdf -> {
+                        createFile(TYPE_PDF)
+                    }
+                    R.id.l_upload_image -> {
+                        createFile(TYPE_IMAGE)
+                    }
                 }
             }
         }

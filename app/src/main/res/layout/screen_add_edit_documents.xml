@@ -111,7 +111,7 @@
                 android:id="@+id/tv_child_main"
                 android:layout_width="wrap_content"
                 android:layout_height="wrap_content"
-                android:text="Asosiy"
+                android:text="Asosiy / "
                 android:textColor="@color/blue"
                 android:textSize="@dimen/font18"
                 android:visibility="visible" />
@@ -120,7 +120,6 @@
                 android:id="@+id/tv_child1"
                 android:layout_width="wrap_content"
                 android:layout_height="wrap_content"
-                android:text="text"
                 android:textColor="@color/blue"
                 android:textSize="@dimen/font18"
                 android:visibility="gone" />
@@ -129,7 +128,6 @@
                 android:id="@+id/tv_child2"
                 android:layout_width="wrap_content"
                 android:layout_height="wrap_content"
-                android:text=" / text"
                 android:textColor="@color/blue"
                 android:textSize="@dimen/font18"
                 android:visibility="gone" />
@@ -185,16 +183,6 @@
         app:layout_constraintBottom_toBottomOf="parent"
         app:layout_constraintEnd_toEndOf="parent" />
 
-    <TextView
-        android:id="@+id/tv_total_size"
-        android:layout_width="match_parent"
-        android:layout_height="wrap_content"
-        android:background="@color/white_back"
-        android:padding="@dimen/dp7"
-        android:textColor="@color/black"
-        android:textSize="@dimen/font14"
-        android:textStyle="italic"
-        app:layout_constraintBottom_toBottomOf="parent" />
 
     <LinearLayout
         android:id="@+id/l_bottom"

@@ -36,12 +36,12 @@ interface DaoDevice {
 
     @Query("SELECT * FROM devices ORDER BY date DESC")
     fun getAllDevices(): Flow<List<DeviceLocal>>
-    @Query("SELECT * FROM devices WHERE name LIKE :searchText || '%' ORDER BY date DESC")
+    @Query("SELECT * FROM devices WHERE name LIKE :searchText  ORDER BY date DESC")
     fun getSearchedDevices(searchText:String): Flow<List<DeviceLocal>>
 
-    @Query("SELECT * FROM devices WHERE admin=:isAdmin and blocked=:notBlocked and name LIKE :searchText || '%' ORDER BY date DESC")
+    @Query("SELECT * FROM devices WHERE admin=:isAdmin and blocked=:notBlocked and name LIKE :searchText  ORDER BY date DESC")
     fun getSearchedAdminDevices(searchText:String,isAdmin: Boolean=true,notBlocked: Boolean=false): Flow<List<DeviceLocal>>
-    @Query("SELECT * FROM devices WHERE  blocked=:isBlocked and name LIKE :searchText || '%' ORDER BY date DESC")
+    @Query("SELECT * FROM devices WHERE  blocked=:isBlocked and name LIKE :searchText  ORDER BY date DESC")
     fun getSearchedBlockedDevices(searchText:String,isBlocked: Boolean=true): Flow<List<DeviceLocal>>
 
     @Query("SELECT * FROM devices WHERE admin=:isAdmin and blocked=:notBlocked ORDER BY date DESC")

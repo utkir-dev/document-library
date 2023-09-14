@@ -2,7 +2,13 @@ package com.tiptop.presentation.screens
 
 
 import android.annotation.SuppressLint
+import android.app.AlarmManager
 import android.app.AlertDialog
+import android.app.PendingIntent
+import android.content.Intent
+import android.content.pm.ActivityInfo
+import android.content.res.Configuration
+import android.os.SystemClock
 import android.transition.Slide
 import android.transition.TransitionManager
 import android.view.Gravity
@@ -10,14 +16,21 @@ import android.view.View
 import android.view.ViewGroup
 import android.widget.LinearLayout
 import android.widget.PopupWindow
+import androidx.appcompat.app.AppCompatActivity
+import androidx.core.content.FileProvider
+import androidx.core.net.toUri
 import androidx.fragment.app.Fragment
 import com.google.android.material.snackbar.Snackbar
+import com.google.gson.Gson
+import com.google.gson.reflect.TypeToken
+import com.shockwave.pdfium.BuildConfig
 import com.tiptop.R
-import com.tiptop.app.common.Constants.MOTHER_ID
 import com.tiptop.data.models.local.DocumentLocal
 import com.tiptop.databinding.DialogAllertBinding
 import com.tiptop.databinding.DialogConfirmBinding
 import com.tiptop.databinding.PopupDeviceBinding
+import java.io.File
+import java.io.InputStream
 
 
 abstract class BaseFragment(layoutId: Int) : Fragment(layoutId) {
@@ -26,20 +39,36 @@ abstract class BaseFragment(layoutId: Int) : Fragment(layoutId) {
         super.onResume()
         val timeLimit = if (isLoading) 60_000 else 3000
         if (System.currentTimeMillis() - timeOut > timeLimit && !isBlocked) {
-            isBlocked = true
-            BlockScreenDialogFragment().show(
-                parentFragmentManager,
-                BlockScreenDialogFragment.TAG
-            )
+            blockScreen()
         } else {
             isBlocked = false
             isLoading = false
         }
     }
 
+     fun blockScreen() {
+         isBlocked = true
+         BlockScreenDialogFragment().show(
+            parentFragmentManager,
+            BlockScreenDialogFragment.TAG
+        )
+    }
+
     override fun onPause() {
         super.onPause()
         timeOut = System.currentTimeMillis()
+    }
+
+    @SuppressLint("SourceLockedOrientationActivity")
+    fun changeScreenOriantation() {
+        if (resources.configuration.orientation == Configuration.ORIENTATION_LANDSCAPE) {
+          //  activity?.requestedOrientation = ActivityInfo.SCREEN_ORIENTATION_UNSPECIFIED
+            activity?.requestedOrientation = ActivityInfo.SCREEN_ORIENTATION_PORTRAIT
+
+        } else {
+            activity?.requestedOrientation = ActivityInfo.SCREEN_ORIENTATION_LANDSCAPE
+        }
+       // activity?.requestedOrientation = ActivityInfo.SCREEN_ORIENTATION_UNSPECIFIED
     }
 
     fun showSnackBar(text: String) {

@@ -8,6 +8,7 @@ import android.content.Intent
 import android.net.Uri
 import android.os.Bundle
 import android.provider.Settings
+import android.util.Log
 import android.view.LayoutInflater
 import android.view.View
 import android.view.ViewGroup
@@ -24,7 +25,9 @@ import com.karumi.dexter.listener.multi.MultiplePermissionsListener
 import com.tiptop.R
 import com.tiptop.app.common.Constants.MOTHER_ID
 import com.tiptop.app.common.Constants.TYPE_FOLDER
+import com.tiptop.app.common.Constants.TYPE_IMAGE
 import com.tiptop.app.common.Constants.TYPE_PDF
+import com.tiptop.app.common.Encryptor
 import com.tiptop.app.common.Utils
 import com.tiptop.app.common.hideKeyBoard
 import com.tiptop.app.common.hideKeyboard
@@ -46,11 +49,11 @@ open class BaseFragmentAddEditDocuments : BaseFragment(R.layout.screen_add_edit_
     lateinit var binding: ScreenAddEditDocumentsBinding
     private val vm by viewModels<AddEditDocumentViewModelImpl>()
     private var pickedFile: Uri? = null
+
     override fun onCreateView(
         inflater: LayoutInflater, container: ViewGroup?,
         savedInstanceState: Bundle?
     ): View {
-        vm.observe()
         binding = ScreenAddEditDocumentsBinding.inflate(layoutInflater, container, false)
         return binding.root
     }
@@ -140,6 +143,7 @@ open class BaseFragmentAddEditDocuments : BaseFragment(R.layout.screen_add_edit_
         }
         view.lUploadImage.setOnClickListener {
             dialogUpload.dismiss()
+            function(view.lUploadImage)
             // uploadImage()
         }
     }
@@ -172,7 +176,8 @@ open class BaseFragmentAddEditDocuments : BaseFragment(R.layout.screen_add_edit_
         vBinding.tvCancel.setOnClickListener { alert.cancel() }
     }
 
-    fun createPdfFile() {
+    fun createFile(typeFile: Int) {
+        TYPE = typeFile
         val permission = MutableLiveData(false)
         requestPermissions(
             Manifest.permission.WRITE_EXTERNAL_STORAGE,
@@ -183,7 +188,17 @@ open class BaseFragmentAddEditDocuments : BaseFragment(R.layout.screen_add_edit_
         permission.observe(viewLifecycleOwner) {
             if (it) {
                 isLoading = true
-                val intent = Intent(Intent.ACTION_GET_CONTENT).apply { type = "application/pdf" }
+                val typeDocument = if (TYPE == TYPE_PDF) {
+                    "application/pdf"
+                } else if (TYPE == TYPE_IMAGE) {
+                    "image/*"
+                } else {
+                    "application/pdf"
+                }
+                // Intent.ACTION_OPEN_DOCUMENT
+                // Intent.ACTION_GET_CONTENT
+                //addCategory(Intent.CATEGORY_OPENABLE)
+                val intent = Intent(Intent.ACTION_GET_CONTENT).apply { type = typeDocument }
                 resultLauncher.launch(intent)
             }
         }
@@ -305,41 +320,67 @@ open class BaseFragmentAddEditDocuments : BaseFragment(R.layout.screen_add_edit_
                 val data: Intent? = result.data
                 pickedFile = data?.data
                 if (pickedFile != null) {
-                    createRemoteFile(TYPE_PDF)
+                    createRemoteFile()
                 }
             }
         }
 
 
     @SuppressLint("Recycle")
-    private fun createRemoteFile(type: Int) {
-        val file = File(pickedFile.toString())
-        val date = System.currentTimeMillis()
-        val documentFile =
-            DocumentFile.fromSingleUri(requireContext(), pickedFile!!)
-        val fileName = documentFile?.name ?: (date / 1000).toString()
-        val headBytesCount = Utils().getHeadBytesCount().toInt()
-        file.setReadable(true)
-        val bytes =
-            pickedFile?.let { requireContext().contentResolver.openInputStream(it)?.readBytes() }
-        val fileSize = bytes?.size ?: 0
-        val documentRemote = DocumentRemote(
-            id = UUID.randomUUID().toString(),
-            parentId = CURRENT_FOLDER_ID,
-            name = fileName,
-            headBytes = String(bytes!!.copyOfRange(0, headBytesCount)),
-            type = type,
-            size = fileSize.toLong(),
-            date = date,
-            dateAdded = date
-        )
-        vm.saveDocument(
-            documentRemote, bytes.copyOfRange(headBytesCount, fileSize)
-        )
+    private fun createRemoteFile() {
+        pickedFile?.let { pickedUri ->
+            val file = File(pickedUri.toString())
+            val date = System.currentTimeMillis()
+            val documentFile =
+                DocumentFile.fromSingleUri(requireContext(), pickedUri)
+            val fileName = documentFile?.name ?: (date / 1000).toString()
+            val headBytesCount = Utils().getHeadBytesCount().toInt()
+            file.setReadable(true)
+            val bytes = requireContext().contentResolver.openInputStream(pickedUri)?.readBytes()
+                ?: byteArrayOf()
+
+            val fileSize = bytes.size
+            val document = DocumentRemote(
+                id = UUID.randomUUID().toString(),
+                parentId = CURRENT_FOLDER_ID,
+                name = fileName,
+                headBytes = "",// String(bytes!!.copyOfRange(0, headBytesCount)),
+                type = TYPE,
+                size = fileSize.toLong(),
+                date = date,
+                dateAdded = date
+            )
+            if (TYPE == TYPE_PDF) {
+                Encryptor().getEncryptedBytes(
+                    Utils().getKeyStr(document.dateAdded),
+                    Utils().getSpecStr(document.dateAdded),
+                    bytes.copyOfRange(0, headBytesCount)
+                ) { encryptedHeadBytes ->
+                    vm.saveDocument(
+                        document = document,
+                        headByteArray = encryptedHeadBytes,
+                        bodyByteArray = bytes.copyOfRange(headBytesCount, fileSize)
+                    )
+                }
+            } else {
+                Encryptor().getEncryptedBytes(
+                    Utils().getKeyStr(document.dateAdded),
+                    Utils().getSpecStr(document.dateAdded),
+                    bytes
+                ) { encryptedBytes ->
+                    vm.saveDocument(
+                        document = document,
+                        headByteArray = null,
+                        bodyByteArray = encryptedBytes
+                    )
+                }
+            }
+        }
     }
 
     companion object {
         var CURRENT_FOLDER_ID = MOTHER_ID
         var REPLACING_DOCUMENT: DocumentLocal? = null
+        private var TYPE: Int = TYPE_PDF
     }
 }

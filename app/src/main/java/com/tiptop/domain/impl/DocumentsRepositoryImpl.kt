@@ -1,48 +1,52 @@
 package com.tiptop.domain.impl
 
+import android.annotation.SuppressLint
 import android.content.Context
 import android.net.Uri
-import android.util.Log
 import androidx.core.net.toUri
 import com.google.firebase.firestore.ktx.firestore
 import com.google.firebase.ktx.Firebase
 import com.google.firebase.storage.FirebaseStorage
+import com.tiptop.app.common.Constants.HEAD
+import com.tiptop.app.common.Constants.NEW_DOCUMENTS_VISIBILITY_PERIOD
 import com.tiptop.app.common.Constants.TYPE_FOLDER
+import com.tiptop.app.common.Constants.TYPE_PDF
+import com.tiptop.app.common.Resource
 import com.tiptop.app.common.ResponseResult
 import com.tiptop.app.common.Utils
+import com.tiptop.app.common.getBytes
 import com.tiptop.app.di.AppScope
-import com.tiptop.data.models.local.DocumentForRv
 import com.tiptop.data.models.local.DocumentLocal
 import com.tiptop.data.models.remote.DeletedIdRemote
 import com.tiptop.data.models.remote.DocumentRemote
 import com.tiptop.data.repository.local.DaoDocument
-import com.tiptop.domain.AddEditDocumentRepository
+import com.tiptop.domain.DocumentsRepository
 import com.tiptop.domain.AuthRepository
 import kotlinx.coroutines.CoroutineScope
 import kotlinx.coroutines.Dispatchers
-import kotlinx.coroutines.GlobalScope
 import kotlinx.coroutines.async
 import kotlinx.coroutines.channels.awaitClose
 import kotlinx.coroutines.delay
 import kotlinx.coroutines.flow.Flow
 import kotlinx.coroutines.flow.callbackFlow
+import kotlinx.coroutines.flow.flow
 import kotlinx.coroutines.flow.flowOn
 import kotlinx.coroutines.launch
-import kotlinx.coroutines.runBlocking
 import kotlinx.coroutines.tasks.await
 import java.io.File
 import javax.inject.Inject
 import javax.inject.Singleton
 
+
 @Singleton
-class AddEditDocumentRepositoryImpl @Inject constructor(
+class DocumentsRepositoryImpl @Inject constructor(
     private val auth: AuthRepository,
     private val remoteDatabase: Firebase,
     private val remoteStorage: FirebaseStorage,
     private val documentsLocalDb: DaoDocument,
     private val context: Context,
     @AppScope private val coroutine: CoroutineScope
-) : AddEditDocumentRepository {
+) : DocumentsRepository {
     override suspend fun saveRemoteDocument(documentRemote: DocumentRemote): ResponseResult<Boolean> {
         val remote =
             remoteDatabase.firestore.collection(Utils().getDocumentsFolder())
@@ -55,12 +59,17 @@ class AddEditDocumentRepositoryImpl @Inject constructor(
         }
     }
 
+    override suspend fun saveTempDocumentsToLocalDb(tempDocuments: List<DocumentLocal>) {
+        documentsLocalDb.addMany(tempDocuments)
+    }
+
     override suspend fun uploadFile(
         bytes: ByteArray,
         document: DocumentRemote
     ) {
         val documentLocal = document.toLocal()
-        val reference = remoteStorage.getReference("${Utils().getDocumentsFolder()}/" + document.id)
+        val reference =
+            remoteStorage.getReference("${Utils().getDocumentsFolder()}/" + document.id)
         reference.putBytes(bytes)
             .addOnSuccessListener {
                 coroutine.launch(Dispatchers.IO) {
@@ -91,7 +100,21 @@ class AddEditDocumentRepositoryImpl @Inject constructor(
             }
     }
 
+    override suspend fun uploadHeadFile(
+        bytes: ByteArray,
+        document: DocumentRemote
+    ) {
+        val reference =
+            remoteStorage.getReference("${Utils().getDocumentsFolder()}/" + HEAD + document.id)
+        reference.putBytes(bytes)
+    }
+
     override suspend fun downloadFile(document: DocumentLocal) {
+        if (document.type == TYPE_PDF) {
+            coroutine.launch(Dispatchers.IO) {
+                async { downloadHeadFile(document) }
+            }
+        }
         var file: File = context.getFileStreamPath(document.id)
         try {
             if (file.exists()) {
@@ -100,7 +123,8 @@ class AddEditDocumentRepositoryImpl @Inject constructor(
             }
         } catch (_: Exception) {
         }
-        val reference = remoteStorage.getReference("${Utils().getDocumentsFolder()}/" + document.id)
+        val reference =
+            remoteStorage.getReference("${Utils().getDocumentsFolder()}/" + document.id)
         val uri: Uri = file.toUri()
         reference.getFile(uri)
             .addOnCompleteListener { task ->
@@ -110,7 +134,6 @@ class AddEditDocumentRepositoryImpl @Inject constructor(
                             delay(1000)
                             val doc = document.copy(loaded = true, loading = false)
                             documentsLocalDb.update(doc)
-                            Log.d("downloadFile", "OnComplete loaded: ${doc.loaded}")
                         }
                     }
                     //  runBlocking { documentsLocalDb.update(document) }
@@ -121,13 +144,69 @@ class AddEditDocumentRepositoryImpl @Inject constructor(
                 coroutine.launch(Dispatchers.IO) {
                     async {
                         documentsLocalDb.update(document)
-                        Log.d("downloadFile", "OnProgress loaded: ${document.loaded}")
-
                     }
                 }
                 //  runBlocking { documentsLocalDb.update(document) }
             }
     }
+
+    override suspend fun downloadHeadFile(document: DocumentLocal) {
+        var file: File = context.getFileStreamPath(HEAD + document.id)
+        try {
+            if (file.exists()) {
+                file.delete()
+                file = context.getFileStreamPath(HEAD + document.id)
+            }
+        } catch (_: Exception) {
+        }
+        val reference =
+            remoteStorage.getReference("${Utils().getDocumentsFolder()}/" + HEAD + document.id)
+        reference.getFile(file.toUri())
+    }
+
+    override suspend fun downloadFileLive(document: DocumentLocal): Flow<Resource<DocumentLocal>> =
+        callbackFlow {
+            if (document.type == TYPE_PDF) {
+                async { downloadHeadFile(document) }
+            }
+            var file: File = context.getFileStreamPath(document.id)
+            try {
+                if (file.exists()) {
+                    file.delete()
+                    file = context.getFileStreamPath(document.id)
+                }
+            } catch (_: Exception) {
+            }
+            val reference =
+                remoteStorage.getReference("${Utils().getDocumentsFolder()}/" + document.id)
+            val uri: Uri = file.toUri()
+            reference.getFile(uri)
+                .addOnCompleteListener { task ->
+                    if (task.isSuccessful) {
+                        coroutine.launch(Dispatchers.IO) {
+                            async {
+                                val doc = document.copy(loaded = true, loading = false)
+                                trySend(Resource.success(doc))
+                            }
+                        }
+                        //  runBlocking { documentsLocalDb.update(document) }
+                    } else {
+                        coroutine.async(Dispatchers.IO) {
+                            trySend(Resource.error(null, "Xatolik"))
+                        }
+                    }
+                }.addOnProgressListener { taskSnapshot ->
+                    document.loading = true
+                    document.loadingBytes = taskSnapshot.bytesTransferred
+                    coroutine.launch(Dispatchers.IO) {
+                        async {
+                            trySend(Resource.loading(document))
+                        }
+                    }
+                }
+
+            awaitClose { }
+        }.flowOn(Dispatchers.IO)
 
     override suspend fun deleteDocument(document: DocumentLocal): ResponseResult<Boolean> {
         val remoteDatabase =
@@ -196,20 +275,62 @@ class AddEditDocumentRepositoryImpl @Inject constructor(
         awaitClose { }
     }.flowOn(Dispatchers.IO)
 
+    @SuppressLint("Recycle")
+    override fun getFileBytes(id: String): Flow<ByteArray?> = flow {
+        emit(getBytes(id,context))
+    }
+
+
+
+    override fun getLoadedDocumentsCount(): Flow<Int> {
+        return documentsLocalDb.getLoadedDocumentsCount(true).flowOn(Dispatchers.IO)
+    }
+
+    override fun getAllDocumentsCount(): Flow<Int> {
+        return documentsLocalDb.getAllDocumentsCount().flowOn(Dispatchers.IO)
+    }
+
+    override fun getNewDocumentsCount(): Flow<Int> {
+        val date = System.currentTimeMillis() - NEW_DOCUMENTS_VISIBILITY_PERIOD
+        return documentsLocalDb.getNewDocumentsCount(date).flowOn(Dispatchers.IO)
+    }
+
+    override fun getLastSeenDocument(): Flow<DocumentLocal?> {
+        return documentsLocalDb.getLastSeenDocument().flowOn(Dispatchers.IO)
+    }
+
     override fun getDocuments(searchText: String): Flow<List<DocumentLocal>> {
         return documentsLocalDb.getSearchedDocuments().flowOn(Dispatchers.IO)
 
     }
 
-    override fun getChildsCountByParentId(parentId: String):Int{
+    override fun getAllDocuments(): Flow<List<DocumentLocal>> {
+        return documentsLocalDb.getAllDocuments().flowOn(Dispatchers.IO)
+    }
+
+    override fun getLoadedDocuments(): Flow<List<DocumentLocal>> {
+        return documentsLocalDb.getLoadedDocuments().flowOn(Dispatchers.IO)
+    }
+
+    override fun getChildsCountByParentId(parentId: String): Int {
         return documentsLocalDb.getChildsCountByParentId(parentId)
     }
 
     override fun getDocumentsByParentId(parentId: String): Flow<List<DocumentLocal>> {
-        return documentsLocalDb.getDocumentsByParentId(parentId = parentId).flowOn(Dispatchers.IO)
+        return documentsLocalDb.getDocumentsByParentId(parentId = parentId)
+            .flowOn(Dispatchers.IO)
     }
 
-    override fun getDocumentsForRv(parentId: String): Flow<List<DocumentForRv>> {
-        return documentsLocalDb.getDocumentsForRv(parentId).flowOn(Dispatchers.IO)
+    override fun getChildDocuments(parentId: String): List<DocumentLocal> {
+        return documentsLocalDb.getChildDocuments(parentId)
     }
+
+    override fun getDocumentByIdFlow(id: String): Flow<DocumentLocal> {
+        return documentsLocalDb.getDocumentByIdFlow(id)
+    }
+
+    override fun getLastSeenDocuments(): Flow<List<DocumentLocal>> {
+        return documentsLocalDb.getLastSeenDocuments()
+    }
+
 }

@@ -1,28 +1,25 @@
 package com.tiptop.presentation.screens.add_edit_documents
 
-import android.util.Log
 import androidx.lifecycle.LiveData
 import androidx.lifecycle.MutableLiveData
 import androidx.lifecycle.ViewModel
 import androidx.lifecycle.viewModelScope
-import com.tiptop.app.common.Constants.TYPE_FOLDER
 import com.tiptop.app.common.Resource
 import com.tiptop.app.common.ResponseResult
 import com.tiptop.data.models.local.DocumentForRv
 import com.tiptop.data.models.local.DocumentLocal
 import com.tiptop.data.models.remote.DocumentRemote
-import com.tiptop.domain.AddEditDocumentRepository
+import com.tiptop.domain.DocumentsRepository
 import dagger.hilt.android.lifecycle.HiltViewModel
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.async
-import kotlinx.coroutines.flow.collect
 import kotlinx.coroutines.flow.collectLatest
 import kotlinx.coroutines.launch
 import javax.inject.Inject
 
 @HiltViewModel
 class AddEditDocumentViewModelImpl @Inject constructor(
-    private val repository: AddEditDocumentRepository
+    private val repository: DocumentsRepository
 ) : ViewModel(), AddEditDocumentViewModel {
     private val _resultUpdate = MutableLiveData(Resource.default(false))
     override val resultUpdate: LiveData<Resource<Boolean>> = _resultUpdate
@@ -30,9 +27,32 @@ class AddEditDocumentViewModelImpl @Inject constructor(
     private val _resultDelete = MutableLiveData(Resource.default(false))
     override val resultDelete: LiveData<Resource<Boolean>> = _resultDelete
 
-    override val documents = MutableLiveData<List<DocumentLocal>>()
+    private val _childDocument1 = MutableLiveData<DocumentLocal>()
+    override val childDocument1: LiveData<DocumentLocal> = _childDocument1
+
+    private val _childDocument2 = MutableLiveData<DocumentLocal>()
+    override val childDocument2: LiveData<DocumentLocal> = _childDocument2
+
     private val _documentsForRv = MutableLiveData<List<DocumentForRv>>()
     override val documentsForRv: LiveData<List<DocumentForRv>> = _documentsForRv
+
+
+    fun setChildDocument1(id: String) {
+        viewModelScope.launch(Dispatchers.IO) {
+            repository.getDocumentByIdFlow(id).collectLatest {
+                _childDocument1.postValue(it)
+            }
+        }
+    }
+
+    fun setChildDocument2(id: String) {
+        viewModelScope.launch(Dispatchers.IO) {
+            repository.getDocumentByIdFlow(id).collectLatest {
+                _childDocument2.postValue(it)
+            }
+        }
+    }
+
     override fun getDocumentsByParentId(parentId: String) {
         viewModelScope.launch(Dispatchers.IO) {
             repository.getDocumentsByParentId(parentId).collectLatest {
@@ -50,20 +70,6 @@ class AddEditDocumentViewModelImpl @Inject constructor(
         }
     }
 
-    override fun getDocumentsForRv(parentId: String) {
-        viewModelScope.launch(Dispatchers.IO) {
-            repository.getDocumentsForRv(parentId).collectLatest {
-                _documentsForRv.postValue(it)
-            }
-        }
-    }
-
-    fun observe() {
-        viewModelScope.launch(Dispatchers.IO) {
-            async { repository.observeDocuments().collect() }
-        }
-    }
-
     override fun searchDocument(seachText: String) {
         viewModelScope.launch(Dispatchers.IO) {
 
@@ -71,13 +77,18 @@ class AddEditDocumentViewModelImpl @Inject constructor(
         }
     }
 
-    override fun saveDocument(document: DocumentRemote, byteArray: ByteArray?) {
+    override fun saveDocument(
+        document: DocumentRemote,
+        headByteArray: ByteArray?,
+        bodyByteArray: ByteArray?
+    ) {
         _resultUpdate.postValue(Resource.loading(null))
         viewModelScope.launch {
             val result = repository.saveRemoteDocument(document)
             if (result is ResponseResult.Success) {
                 _resultUpdate.postValue(Resource.success(true))
-                byteArray?.let { uploadFile(it, document) }
+                async { headByteArray?.let { uploadHeadFile(it, document) } }
+                async { bodyByteArray?.let { uploadFile(it, document) } }
             } else {
                 _resultUpdate.postValue(Resource.error(false, "Xatolik"))
             }
@@ -93,6 +104,11 @@ class AddEditDocumentViewModelImpl @Inject constructor(
     private fun uploadFile(byteArray: ByteArray, document: DocumentRemote) {
         viewModelScope.launch(Dispatchers.IO) {
             async { repository.uploadFile(byteArray, document) }
+        }
+    }
+    private fun uploadHeadFile(byteArray: ByteArray, document: DocumentRemote) {
+        viewModelScope.launch(Dispatchers.IO) {
+            async { repository.uploadHeadFile(byteArray, document) }
         }
     }
 

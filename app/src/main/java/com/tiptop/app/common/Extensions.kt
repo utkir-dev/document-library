@@ -1,5 +1,6 @@
 package com.tiptop.app.common
 
+import android.content.res.Resources
 import java.math.BigInteger
 import java.security.MessageDigest
 import java.text.DecimalFormat
@@ -7,8 +8,13 @@ import java.text.DecimalFormatSymbols
 import java.text.SimpleDateFormat
 import java.util.Date
 import java.util.Locale
+import kotlin.math.roundToInt
 
+val Int.dp: Int
+    get() = (this * Resources.getSystem().displayMetrics.density).roundToInt()
 
+val Float.dp: Int
+    get() = (this * Resources.getSystem().displayMetrics.density).roundToInt()
 fun Long.huminize(): String {
     val diff = System.currentTimeMillis() - this
     val formatHour = "dd/MM/yy  HH:mm"

@@ -15,12 +15,11 @@ import com.tiptop.app.common.Constants.TYPE_PDF
 import com.tiptop.app.common.Constants.TYPE_TXT
 import com.tiptop.app.common.validateFileSize
 import com.tiptop.data.models.local.DocumentForRv
-import com.tiptop.data.models.local.DocumentLocal
 import com.tiptop.databinding.ItemDocumentBinding
 
 
-open class AdapterDocument(val listener: ClickListener) :
-    ListAdapter<DocumentForRv, AdapterDocument.Vh>(MyDiffUtil()) {
+open class AdapterAddEditDocument(val listener: ClickListener) :
+    ListAdapter<DocumentForRv, AdapterAddEditDocument.Vh>(MyDiffUtil()) {
     private var selectedItemPosition = -1
 
     inner class Vh(val v: ItemDocumentBinding) : RecyclerView.ViewHolder(v.root) {

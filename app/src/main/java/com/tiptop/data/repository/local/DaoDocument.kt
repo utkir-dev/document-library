@@ -5,10 +5,7 @@ import androidx.room.Insert
 import androidx.room.OnConflictStrategy
 import androidx.room.Query
 import androidx.room.Update
-import com.tiptop.data.models.local.DeviceLocal
-import com.tiptop.data.models.local.DocumentForRv
 import com.tiptop.data.models.local.DocumentLocal
-import com.tiptop.data.models.local.UserLocal
 import kotlinx.coroutines.flow.Flow
 
 @Dao
@@ -24,11 +21,17 @@ interface DaoDocument {
 
     @Query("SELECT COUNT(*) FROM documents")
     fun getCount(): Int
+    @Query("SELECT COUNT(*) FROM documents where type>0 AND loaded=:loaded")
+    fun getLoadedDocumentsCount(loaded:Boolean=true): Flow<Int>
+    @Query("SELECT COUNT(*) FROM documents WHERE type>0")
+    fun getAllDocumentsCount(): Flow<Int>
 
+    @Query("SELECT COUNT(*) FROM documents WHERE type>0 AND dateAdded>:date")
+    fun getNewDocumentsCount(date:Long): Flow<Int>
     @Query("DELETE FROM documents WHERE id=:id")
     suspend fun delete(id: String): Int
 
-    @Query("delete from documents where id in (:idList)")
+    @Query("DELETE FROM documents WHERE id IN (:idList)")
     fun deleteDocuments(idList: List<String>)
 
     @Query("DELETE FROM documents")
@@ -37,33 +40,48 @@ interface DaoDocument {
     @Query("SELECT MAX(date) FROM documents")
     fun getLastUpdatedTime(): Long
 
-    @Query("SELECT * from documents where id=:id limit 1")
+    @Query("SELECT * FROM documents WHERE id=:id LIMIT 1")
     fun getDocumentById(id: String): DocumentLocal
-    @Query("SELECT * from documents where parentId=:parentId ORDER BY date DESC")
+    @Query("SELECT * FROM documents WHERE id=:id LIMIT 1")
+    fun getDocumentByIdFlow(id: String): Flow<DocumentLocal>
+
+    // EXPERIMENTAL
+    @Query("SELECT * FROM documents ORDER BY lastSeenDate DESC")
+    fun getLastSeenDocuments(): Flow<List<DocumentLocal>>
+    @Query("SELECT * FROM documents WHERE type>0 ORDER BY lastSeenDate DESC LIMIT 1")
+    fun getLastSeenDocument(): Flow<DocumentLocal?>
+    @Query("SELECT * FROM documents WHERE parentId=:parentId ORDER BY date DESC")
     fun getDocumentsByParentId(parentId: String): Flow<List<DocumentLocal>>
-   @Query("SELECT COUNT(*) from documents where parentId=:parentId")
+
+    @Query("SELECT * FROM documents WHERE parentId=:parentId ORDER BY date DESC")
+    fun getChildDocuments(parentId: String): List<DocumentLocal>
+   @Query("SELECT COUNT(*) FROM documents WHERE parentId=:parentId")
     fun getChildsCountByParentId(parentId: String):Int
 
-    @Query("SELECT *  from documents   ORDER BY date DESC")
+    @Query("SELECT *  FROM documents   ORDER BY date DESC")
     fun getSearchedDocuments(): Flow<List<DocumentLocal>>
+    @Query("SELECT *  FROM documents  ORDER BY date DESC")
+    fun getAllDocuments(): Flow<List<DocumentLocal>>
+    @Query("SELECT *  FROM documents WHERE loaded=:loaded AND type>0 ORDER BY date DESC")
+    fun getLoadedDocuments(loaded:Boolean=true): Flow<List<DocumentLocal>>
 
-    @Query("SELECT " +
-            "parent.id as id, " +
-            "parent.parentId as parentId, " +
-            "parent.name as name, " +
-            "parent.searchText as searchText, " +
-            "parent.headBytes as headBytes, " +
-            "parent.loaded as loaded, " +
-            "parent.loading as loading, " +
-            "parent.loadingBytes as loadingBytes, " +
-            "parent.lastSeenPage as lastSeenPage, " +
-            "parent.type as type, " +
-            "parent.size as size, " +
-            "parent.lastSeenDate as lastSeenDate, " +
-            "parent.date as date, " +
-            "parent.dateAdded as dateAdded, " +
-            "(select count(*) from documents child where parent.parentId+parent.id=child.parentId) as count  from documents parent left join documents child " +
-            "on parent.parentId+parent.id=child.parentId where parent.parentId=:parentId  ORDER BY date DESC")
-    fun getDocumentsForRv(parentId: String): Flow<List<DocumentForRv>>
+//    @Query("SELECT " +
+//            "parent.id as id, " +
+//            "parent.parentId as parentId, " +
+//            "parent.name as name, " +
+//            "parent.searchText as searchText, " +
+//            "parent.headBytes as headBytes, " +
+//            "parent.loaded as loaded, " +
+//            "parent.loading as loading, " +
+//            "parent.loadingBytes as loadingBytes, " +
+//            "parent.lastSeenPage as lastSeenPage, " +
+//            "parent.type as type, " +
+//            "parent.size as size, " +
+//            "parent.lastSeenDate as lastSeenDate, " +
+//            "parent.date as date, " +
+//            "parent.dateAdded as dateAdded, " +
+//            "(select count(*) from documents child where parent.parentId+parent.id=child.parentId) as count  from documents parent left join documents child " +
+//            "on parent.parentId+parent.id=child.parentId where parent.parentId=:parentId  ORDER BY date DESC")
+//    fun getDocumentsForRv(parentId: String): Flow<List<DocumentForRv>>
 
 }

@@ -1,51 +1,68 @@
-package com.tiptop.presentation.screens.pdf_view
+package com.tiptop.presentation.screens.document_view.text
 
-import android.annotation.SuppressLint
-import android.content.pm.ActivityInfo
-import android.content.res.Configuration
 import android.os.Bundle
-import android.text.Editable
-import android.text.TextWatcher
-import android.transition.Slide
-import android.transition.TransitionManager
-import android.view.Gravity
 import android.view.LayoutInflater
 import android.view.View
 import android.view.ViewGroup
-import android.widget.LinearLayout
-import android.widget.PopupWindow
-import androidx.appcompat.app.AlertDialog
-import androidx.navigation.fragment.findNavController
-import androidx.recyclerview.widget.DividerItemDecoration
-import androidx.recyclerview.widget.LinearLayoutManager
-import com.github.barteksc.pdfviewer.listener.OnErrorListener
-import com.github.barteksc.pdfviewer.scroll.DefaultScrollHandle
-import com.github.barteksc.pdfviewer.util.FitPolicy
-import com.google.gson.Gson
+import androidx.fragment.app.viewModels
 import com.tiptop.R
-import com.tiptop.data.models.local.DocumentLocal
-import com.tiptop.databinding.ScreenPdfViewBinding
+import com.tiptop.databinding.ScreenTextViewBinding
 import com.tiptop.presentation.screens.BaseFragment
-import kotlinx.coroutines.DelicateCoroutinesApi
-import java.io.File
+import com.tiptop.presentation.screens.document_view.DocumentViewModelIml
+import com.tiptop.presentation.screens.document_view.pdf.ScreenPdfView
+import dagger.hilt.android.AndroidEntryPoint
 
 
-@DelicateCoroutinesApi
-class ScreenPdf : BaseFragment(R.layout.screen_pdf_view){
+const val ARG_PARAM_TEXT = "arg_param_text"
+
+@AndroidEntryPoint
+class ScreenTextView : BaseFragment(R.layout.screen_text_view) {
 //    private var popup: PopupWindow? = null
 //    private var searchingText = ""
 //    private val TAG = "FragmentPdf"
 //    private var booklist = ArrayList<DocumentLocal>()
 //    private var adapterDict: AdapterDict? = null
 //    private var strLastBooks = ""
-//
-//    private var _binding: ScreenPdfViewBinding? = null
-//    private val b get() = _binding!!
+
+    private val vm by viewModels<DocumentViewModelIml>()
+    private var _binding: ScreenTextViewBinding? = null
+    private val binding get() = _binding!!
 //    private var pageNumber = 0
 //    private var boo = true
 //    private var nightMode = false
-//
-//
+
+    override fun onCreate(savedInstanceState: Bundle?) {
+        super.onCreate(savedInstanceState)
+        arguments?.let {
+            val id = it.getString(ARG_PARAM_TEXT) ?: ""
+            if (id.isNotEmpty()) {
+                vm.setDocument(id)
+            }
+        }
+    }
+
+    override fun onCreateView(
+        inflater: LayoutInflater,
+        container: ViewGroup?,
+        savedInstanceState: Bundle?
+    ): View? {
+        _binding = ScreenTextViewBinding.inflate(layoutInflater, container, false)
+        return binding.root
+    }
+
+    override fun onViewCreated(view: View, savedInstanceState: Bundle?) {
+        super.onViewCreated(view, savedInstanceState)
+        showText()
+    }
+
+    private fun showText() {
+        vm.documentBytes.observe(viewLifecycleOwner) { bytes ->
+
+        }
+
+    }
+
+    //
 //    override fun onCreateView(
 //        inflater: LayoutInflater,
 //        container: ViewGroup?,
@@ -452,13 +469,23 @@ class ScreenPdf : BaseFragment(R.layout.screen_pdf_view){
 //        alert?.dismiss()
 //    }
 //
-//    override fun onDestroyView() {
-//        super.onDestroyView()
-//        _binding = null
-//    }
 //
 //    companion object {
 //        var alert: AlertDialog? = null
 //        var modeAr: Boolean = true
 //    }
+    override fun onDestroy() {
+        super.onDestroy()
+        _binding = null
+    }
+
+    companion object {
+        @JvmStatic
+        fun newInstance(param: String) =
+            ScreenPdfView().apply {
+                arguments = Bundle().apply {
+                    putString(ARG_PARAM_TEXT, param)
+                }
+            }
+    }
 }

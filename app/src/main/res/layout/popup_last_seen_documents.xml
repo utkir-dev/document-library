@@ -1,0 +1,38 @@
+<?xml version="1.0" encoding="utf-8"?>
+<androidx.cardview.widget.CardView xmlns:android="http://schemas.android.com/apk/res/android"
+    xmlns:app="http://schemas.android.com/apk/res-auto"
+    android:id="@+id/card_last_books"
+    android:layout_gravity="left"
+    android:layout_width="match_parent"
+    android:layout_height="wrap_content"
+    android:layout_marginHorizontal="@dimen/dp20"
+    android:maxHeight="700dp"
+    app:cardCornerRadius="@dimen/dp10"
+    app:cardElevation="@dimen/dp10">
+
+    <LinearLayout
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        android:orientation="vertical">
+
+        <TextView
+            android:id="@+id/tv_cancel"
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:layout_gravity="center_horizontal"
+            android:background="@color/white_back"
+            android:gravity="center"
+            android:padding="@dimen/dp8"
+            android:text="Bekor"
+            android:textColor="@color/blue" />
+
+        <androidx.recyclerview.widget.RecyclerView
+            android:id="@+id/rv_last_books"
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:background="@color/grey_light"
+            android:paddingHorizontal="@dimen/dp6"
+            app:layoutManager="androidx.recyclerview.widget.LinearLayoutManager" />
+
+    </LinearLayout>
+</androidx.cardview.widget.CardView>

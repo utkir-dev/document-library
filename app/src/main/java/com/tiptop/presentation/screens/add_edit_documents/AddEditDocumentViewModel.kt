@@ -10,13 +10,17 @@ import com.tiptop.data.models.remote.DocumentRemote
 interface AddEditDocumentViewModel {
     val resultUpdate: LiveData<Resource<Boolean>>
     val resultDelete: LiveData<Resource<Boolean>>
-    val documents: MutableLiveData<List<DocumentLocal>>
     val documentsForRv: LiveData<List<DocumentForRv>>
+    val childDocument1: LiveData<DocumentLocal>
+    val childDocument2: LiveData<DocumentLocal>
     fun getDocumentsByParentId(parentId: String)
     fun searchDocument(seachText: String)
-    fun saveDocument(document: DocumentRemote, byteArray: ByteArray?=null)
+    fun saveDocument(
+        document: DocumentRemote,
+        headByteArray: ByteArray?=null,
+        bodyByteArray: ByteArray?=null
+    )
+
     fun downloadDocument(document: DocumentLocal)
     fun deleteDocument(document: DocumentLocal)
-    fun getDocumentsForRv(parentId: String)
-
 }

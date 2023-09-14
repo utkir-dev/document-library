@@ -95,13 +95,9 @@ class BlockScreenDialogFragment : DialogFragment() {
         val actialCode = shared.getString(
             Utils().getBlockCodeKey(),
             Utils().getDefaultBlockCode().encrypt()
-        )
-            ?: Utils().getDefaultBlockCode().encrypt()
+        ) ?: Utils().getDefaultBlockCode().encrypt()
 
         if (pass.encrypt() == actialCode) {
-//            IS_ENTERED = true
-//            TEMPORARY_OUT = false
-//            PREF.setBoolean(KEY_SCREEN_LOCKED, false)
             dismiss()
         }
     }
@@ -131,13 +127,7 @@ class BlockScreenDialogFragment : DialogFragment() {
         }
     }
 
-    //    override fun onCreateDialog(savedInstanceState: Bundle?): Dialog {
-//
-//
-//    }
     companion object {
         val TAG = "BlockScreenDialogFragment"
     }
-
-
 }

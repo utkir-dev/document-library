@@ -1,5 +1,8 @@
 package com.tiptop.data.models.local
 
+import android.os.Bundle
+import com.gg.gapo.treeviewlib.model.NodeData
+
 
 data class DocumentForRv(
     var id: String = "",
@@ -16,8 +19,9 @@ data class DocumentForRv(
     var lastSeenDate: Long = 0,
     var date: Long = 0,
     var dateAdded: Long = 0,
-    var count: Int? = null
-) {
+    var count: Int? = null,
+    var child: List<DocumentForRv> = ArrayList()
+) : NodeData<DocumentForRv> {
     fun toDocumentLocal() = DocumentLocal(
         id = this.id,
         parentId = this.parentId,
@@ -34,4 +38,24 @@ data class DocumentForRv(
         date = this.date,
         dateAdded = this.dateAdded
     )
+
+    override fun areContentsTheSame(item: NodeData<DocumentForRv>): Boolean {
+        return this.equals(item)
+    }
+
+    override fun areItemsTheSame(item: NodeData<DocumentForRv>): Boolean {
+        return nodeViewId == item.nodeViewId
+    }
+
+    override fun getChangePayload(item: NodeData<DocumentForRv>): Bundle {
+        return Bundle()
+    }
+
+    override val nodeViewId: String
+        get() = id
+
+    override fun getNodeChild(): List<NodeData<DocumentForRv>> {
+        return child.sortedWith(compareBy<DocumentForRv> { it.type }.thenBy { it.name })
+    }
 }
+

@@ -1,4 +1,4 @@
-package com.tiptop.presentation.screens.settings.sign_in
+package com.tiptop.presentation.screens.sign_in
 
 import androidx.lifecycle.LiveData
 import androidx.lifecycle.MutableLiveData

@@ -32,4 +32,11 @@ class SharedPrefSimple(val ctx: Context) {
     fun getLong(key: String): Long {
         return sharedPref.getLong(key,0L)
     }
+    fun saveString(key: String, n: String) {
+        sharedPref.edit().putString(key, n).apply()
+    }
+
+    fun getString(key: String): String {
+        return sharedPref.getString(key,"")?:""
+    }
 }

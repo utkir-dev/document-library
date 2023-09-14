@@ -21,7 +21,7 @@
     <fragment
         android:id="@+id/screenSignIn"
         app:route="signIn"
-        android:name="com.tiptop.presentation.screens.settings.sign_in.ScreenSignIn"
+        android:name="com.tiptop.presentation.screens.sign_in.ScreenSignIn"
         android:label="Sign In" >
         <action
             android:id="@+id/action_screenSignIn_to_screenSignUp"
@@ -39,7 +39,14 @@
         android:id="@+id/screenHome"
         app:route="home"
         android:name="com.tiptop.presentation.screens.home.ScreenHome"
-        android:label="ScreenHome" />
+        android:label="ScreenHome" >
+        <action
+            android:id="@+id/action_screenHome_to_screenAllDocuments"
+            app:destination="@id/screenAllDocuments" />
+        <action
+            android:id="@+id/action_screenHome_to_screenLoadedDocuments"
+            app:destination="@id/screenLoadedDocuments" />
+    </fragment>
     <fragment
         android:id="@+id/screenAddEditDocuments"
         app:route="addEditDocuments"
@@ -48,6 +55,9 @@
         <action
             android:id="@+id/action_screenAddEditDocuments_to_screenAddEditDocumentsChild1"
             app:destination="@id/screenAddEditDocumentsChild1" />
+        <action
+            android:id="@+id/action_screenAddEditDocuments_to_screenDocument"
+            app:destination="@id/screenDocument" />
     </fragment>
     <fragment
         android:id="@+id/screenUsers"
@@ -67,12 +77,45 @@
         <action
             android:id="@+id/action_screenAddEditDocumentsChild1_to_screenAddEditDocumentsChild2"
             app:destination="@id/screenAddEditDocumentsChild2" />
+        <action
+            android:id="@+id/action_screenAddEditDocumentsChild1_to_screenDocument"
+            app:destination="@id/screenDocument" />
     </fragment>
     <fragment
         app:route="screenAddEditDocumentsChild2"
         android:id="@+id/screenAddEditDocumentsChild2"
         android:name="com.tiptop.presentation.screens.add_edit_documents.ScreenAddEditDocumentsChild2"
-        android:label="ScreenAddEditDocumentsChild2" />
+        android:label="ScreenAddEditDocumentsChild2" >
+        <action
+            android:id="@+id/action_screenAddEditDocumentsChild2_to_screenDocument"
+            app:destination="@id/screenDocument" />
+    </fragment>
+    <fragment
+        app:route="screenAllDocuments"
+        android:id="@+id/screenAllDocuments"
+        android:name="com.tiptop.presentation.screens.home.all_documents.ScreenAllDocuments"
+        android:label="ScreenAllDocuments" >
+        <action
+            android:id="@+id/action_screenAllDocuments_to_screenDocument"
+            app:destination="@id/screenDocument" />
+    </fragment>
+    <fragment
+        app:route="screenLoadedDocuments"
+        android:id="@+id/screenLoadedDocuments"
+        android:name="com.tiptop.presentation.screens.home.downloaded_documents.ScreenLoadedDocuments"
+        android:label="ScreenLoadedDocuments" >
+        <action
+            android:id="@+id/action_screenLoadedDocuments_to_screenDocument"
+            app:destination="@id/screenDocument" />
+    </fragment>
+    <fragment
+        android:id="@+id/screenDocument"
+        android:name="com.tiptop.presentation.screens.document_view.pdf.ScreenPdfView"
+        android:label="ScreenPdf" />
+    <fragment
+        android:id="@+id/screenImageView"
+        android:name="com.tiptop.presentation.screens.document_view.image.ScreenImageView"
+        android:label="ScreenImageView" />
 
 
 </navigation>

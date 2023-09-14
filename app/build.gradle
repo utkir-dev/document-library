@@ -109,6 +109,12 @@ dependencies {
     //permission
     implementation 'com.karumi:dexter:6.2.2'
 
+    //    recycler tree item
+    implementation 'vn.gapowork.android:tree-view:1.0.0-alpha01'
+
+    // zoom
+    implementation "com.otaliastudios:zoomlayout:1.9.0"
+
 }
 kapt {
     correctErrorTypes true

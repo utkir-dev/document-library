@@ -7,7 +7,7 @@
     android:keepScreenOn="true">
 
     <com.github.barteksc.pdfviewer.PDFView
-        android:id="@+id/pdf_view_fargment"
+        android:id="@+id/pdf_view"
         android:layout_width="match_parent"
         android:layout_height="match_parent" />
 
@@ -20,7 +20,7 @@
         android:orientation="horizontal"
         android:paddingTop="12dp"
         android:paddingBottom="4dp"
-        android:visibility="gone"
+        android:visibility="visible"
         app:layout_constraintTop_toTopOf="parent">
 
         <ImageView
@@ -120,40 +120,6 @@
 
     </LinearLayout>
 
-    <LinearLayout
-        android:id="@+id/l_last_books"
-        android:layout_width="match_parent"
-        android:layout_height="wrap_content"
-        android:orientation="vertical"
-        android:visibility="gone"
-        app:layout_constraintEnd_toEndOf="parent"
-        app:layout_constraintTop_toTopOf="parent"
-        tools:listitem="@layout/item_document">
-
-        <TextView
-            android:id="@+id/tv_cancel"
-            android:layout_width="match_parent"
-            android:layout_height="wrap_content"
-            android:layout_gravity="center_horizontal"
-            android:background="@color/white_back"
-            android:gravity="center"
-            android:padding="@dimen/dp8"
-            android:text="Bekor"
-            android:textColor="@color/blue" />
-
-        <androidx.recyclerview.widget.RecyclerView
-            android:id="@+id/rv_last_books"
-            android:layout_width="match_parent"
-            android:layout_height="wrap_content"
-            android:background="@color/grey_light"
-            android:paddingStart="@dimen/dp40"
-            android:paddingEnd="@dimen/dp6"
-            app:layoutManager="androidx.recyclerview.widget.LinearLayoutManager"
-            tools:ignore="RtlSymmetry"
-
-            tools:itemCount="10" />
-
-    </LinearLayout>
 
     <LinearLayout
         android:id="@+id/l_bottom"
@@ -164,7 +130,7 @@
         android:orientation="horizontal"
         android:paddingHorizontal="@dimen/dp6"
         android:paddingVertical="@dimen/dp5"
-        android:visibility="gone"
+        android:visibility="visible"
         app:layout_constraintBottom_toBottomOf="parent">
 
         <androidx.cardview.widget.CardView
@@ -178,7 +144,7 @@
             app:cardCornerRadius="@dimen/dp5">
 
             <TextView
-                android:id="@+id/et_goto_page"
+                android:id="@+id/tv_goto_page"
                 android:layout_width="match_parent"
                 android:layout_height="match_parent"
                 android:background="@color/blue"

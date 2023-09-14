@@ -20,16 +20,14 @@ import com.tiptop.data.repository.local.DaoDeletedId
 import com.tiptop.data.repository.local.DaoDevice
 import com.tiptop.data.repository.local.DaoDocument
 import com.tiptop.data.repository.local.DaoUser
-import com.tiptop.domain.AddEditDocumentRepository
+import com.tiptop.domain.DocumentsRepository
 import com.tiptop.domain.AuthRepository
 import com.tiptop.domain.UserRepository
-import com.tiptop.domain.impl.AddEditDocumentRepositoryImpl
+import com.tiptop.domain.impl.DocumentsRepositoryImpl
 import com.tiptop.domain.impl.AuthRepositoryImpl
 import com.tiptop.domain.impl.UsersRepositoryImpl
-import dagger.Binds
 import kotlinx.coroutines.CoroutineDispatcher
 import kotlinx.coroutines.CoroutineScope
-import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.SupervisorJob
 import javax.inject.Qualifier
 import javax.inject.Singleton
@@ -69,7 +67,7 @@ class AppModule {
         daoDocument: DaoDocument,
         ctx: Context,
         coroutineScope: CoroutineScope
-    ): AddEditDocumentRepository = AddEditDocumentRepositoryImpl(
+    ): DocumentsRepository = DocumentsRepositoryImpl(
         auth = auth,
         remoteDatabase = Firebase,
         remoteStorage = FirebaseStorage.getInstance(),
