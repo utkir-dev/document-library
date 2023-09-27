@@ -40,11 +40,20 @@ class AdapterAccounts(
     inner class Vh(val itemV: ItemAccountBinding) : RecyclerView.ViewHolder(itemV.root) {
         @SuppressLint("SetTextI18n", "DefaultLocale", "ResourceAsColor")
         fun onBind(user: UserLocal, position: Int) {
-            if (user.searchText.isNotEmpty()) {
+            if (user.searchText.isNotEmpty() && user.email.contains(
+                    user.searchText,
+                    ignoreCase = true
+                )
+            ) {
                 val spannableString = SpannableString(user.email)
+                val startIndex = user.email.indexOf(user.searchText, ignoreCase = true)
+                val endIndex = startIndex + user.searchText.length
+
                 spannableString.setSpan(
                     ForegroundColorSpan(Color.RED),
-                    0, user.searchText.length, Spanned.SPAN_EXCLUSIVE_EXCLUSIVE
+                    startIndex,
+                    endIndex,
+                    Spanned.SPAN_EXCLUSIVE_EXCLUSIVE
                 )
                 itemV.tvAccount.text = spannableString
             } else {

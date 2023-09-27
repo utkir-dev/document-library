@@ -479,13 +479,4 @@ class ScreenTextView : BaseFragment(R.layout.screen_text_view) {
         _binding = null
     }
 
-    companion object {
-        @JvmStatic
-        fun newInstance(param: String) =
-            ScreenPdfView().apply {
-                arguments = Bundle().apply {
-                    putString(ARG_PARAM_TEXT, param)
-                }
-            }
-    }
 }

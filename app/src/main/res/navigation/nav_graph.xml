@@ -46,6 +46,9 @@
         <action
             android:id="@+id/action_screenHome_to_screenLoadedDocuments"
             app:destination="@id/screenLoadedDocuments" />
+        <action
+            android:id="@+id/action_screenHome_to_screenDocument"
+            app:destination="@id/screenDocument" />
     </fragment>
     <fragment
         android:id="@+id/screenAddEditDocuments"

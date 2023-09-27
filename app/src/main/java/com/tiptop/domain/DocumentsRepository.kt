@@ -3,6 +3,7 @@ package com.tiptop.domain
 import com.tiptop.app.common.Resource
 import com.tiptop.app.common.ResponseResult
 import com.tiptop.data.models.local.DocumentLocal
+import com.tiptop.data.models.local.LibVersion
 import com.tiptop.data.models.remote.DocumentRemote
 import kotlinx.coroutines.flow.Flow
 
@@ -25,9 +26,12 @@ interface DocumentsRepository {
     fun getAllDocuments(): Flow<List<DocumentLocal>>
     fun getLoadedDocuments(): Flow<List<DocumentLocal>>
     fun getChildsCountByParentId(parentId: String): Int
+    fun getLoadedChildsCountByParentId(parentId: String): Int
     fun getDocumentsByParentId(parentId: String): Flow<List<DocumentLocal>>
     fun getChildDocuments(parentId: String): List<DocumentLocal>
     fun getDocumentByIdFlow(id: String): Flow<DocumentLocal>
+    fun getDocumentById(id: String): DocumentLocal
     fun getLastSeenDocuments(): Flow<List<DocumentLocal>>
     suspend fun downloadHeadFile(document: DocumentLocal)
+    fun checkLibVersion():Flow<LibVersion>
 }

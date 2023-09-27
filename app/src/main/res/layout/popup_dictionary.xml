@@ -1,0 +1,128 @@
+<?xml version="1.0" encoding="utf-8"?>
+<androidx.cardview.widget.CardView
+    xmlns:android="http://schemas.android.com/apk/res/android"
+    xmlns:app="http://schemas.android.com/apk/res-auto"
+    xmlns:tools="http://schemas.android.com/tools"
+    android:id="@+id/root_dictionary"
+    android:layout_width="wrap_content"
+    android:layout_height="wrap_content"
+    android:layout_marginHorizontal="@dimen/dp20"
+    android:visibility="visible"
+    android:animateLayoutChanges="true"
+    app:cardBackgroundColor="@android:color/transparent"
+    app:cardCornerRadius="@dimen/dp10"
+    app:cardElevation="10dp">
+
+    <LinearLayout
+        android:id="@+id/l_dictionary"
+        android:layout_width="wrap_content"
+        android:layout_height="match_parent"
+        android:layout_gravity="end"
+        android:background="@color/white_back"
+        android:minHeight="500dp"
+        android:minWidth="360dp"
+        android:focusableInTouchMode="true"
+        android:orientation="vertical"
+        android:paddingHorizontal="@dimen/dp6"
+        android:visibility="visible">
+
+        <LinearLayout
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:background="@color/white_back"
+            android:gravity="center_vertical"
+            android:layout_gravity="center_horizontal"
+            android:maxWidth="500dp"
+            android:orientation="horizontal"
+            android:paddingTop="@dimen/dp5">
+
+            <TextView
+                android:id="@+id/tv_ar"
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:layout_weight="1"
+                android:gravity="center"
+                android:text="Arabcha"
+                android:textColor="@color/black"
+                android:textSize="@dimen/font17"
+                android:textStyle="bold" />
+
+            <ImageView
+                android:id="@+id/iv_change"
+                android:layout_width="wrap_content"
+                android:layout_height="match_parent"
+                android:clickable="true"
+                android:focusable="true"
+                android:foreground="?android:attr/selectableItemBackground"
+                android:paddingHorizontal="@dimen/dp10"
+                android:src="@drawable/ic_change" />
+
+            <TextView
+                android:id="@+id/tv_uz"
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:layout_weight="1"
+                android:gravity="center"
+                android:paddingVertical="@dimen/dp7"
+                android:text="O'zbekcha"
+                android:textColor="@color/black"
+                android:textSize="@dimen/font17"
+                android:textStyle="bold"
+
+                />
+
+        </LinearLayout>
+
+
+        <TextView
+            android:id="@+id/et_search"
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:layout_marginHorizontal="@dimen/dp10"
+            android:background="@drawable/corner_begin_10_2"
+            android:drawableStart="@drawable/ic_search"
+            android:drawablePadding="@dimen/dp5"
+            android:drawableTint="@color/grey_dark"
+            android:hint="Qidirish"
+            android:lines="1"
+            android:minWidth="300dp"
+            android:paddingHorizontal="@dimen/dp8"
+            android:paddingVertical="@dimen/dp8"
+            android:visibility="gone" />
+
+        <SearchView
+            android:id="@+id/et_search_word"
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:layout_marginHorizontal="@dimen/dp10"
+            android:background="@drawable/corner_begin_10_2"
+            android:closeIcon="@drawable/ic_close"
+            android:iconifiedByDefault="false"
+            android:queryHint="Qidirish.."
+            android:visibility="visible"
+            app:layout_constraintEnd_toEndOf="parent"
+            app:layout_constraintStart_toStartOf="parent"
+            app:layout_constraintTop_toTopOf="parent" />
+
+        <androidx.recyclerview.widget.RecyclerView
+            android:id="@+id/rv_dict"
+            android:layout_width="match_parent"
+            android:layout_height="0dp"
+            android:layout_weight="1"
+            android:background="@color/white_back"
+            app:layoutManager="androidx.recyclerview.widget.LinearLayoutManager"
+            tools:listitem="@layout/item_dict" />
+
+        <Button
+            android:id="@+id/btn_close"
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:layout_gravity="center_horizontal"
+            android:layout_marginHorizontal="@dimen/dp10"
+            android:backgroundTint="@color/blue"
+            android:paddingVertical="@dimen/dp8"
+            android:text="Berkitish"
+            android:textSize="@dimen/font18" />
+    </LinearLayout>
+</androidx.cardview.widget.CardView>
+

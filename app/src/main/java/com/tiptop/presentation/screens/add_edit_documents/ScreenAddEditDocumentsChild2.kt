@@ -17,8 +17,8 @@ import com.tiptop.app.common.Constants.TYPE_PDF
 import com.tiptop.app.common.isInternetAvailable
 import com.tiptop.data.models.local.DocumentForRv
 import com.tiptop.data.models.local.DocumentLocal
-import com.tiptop.presentation.screens.document_view.pdf.ARG_PARAM_DOCUMENT
 import com.tiptop.presentation.screens.document_view.image.ARG_PARAM_IMAGE
+import com.tiptop.presentation.screens.document_view.pdf.ScreenPdfView
 import dagger.hilt.android.AndroidEntryPoint
 import java.io.File
 
@@ -92,9 +92,9 @@ class ScreenAddEditDocumentsChild2 : BaseFragmentAddEditDocuments() {
         val selectedFile: File = requireContext().getFileStreamPath(document.id)
         if (selectedFile.exists()) {
             if (document.type == Constants.TYPE_PDF) {
+                ScreenPdfView.currentId=document.id
                 findNavController().navigate(
-                    R.id.action_screenAddEditDocumentsChild2_to_screenDocument,
-                    bundleOf(ARG_PARAM_DOCUMENT to document.id)
+                    R.id.action_screenAddEditDocumentsChild2_to_screenDocument
                 )
             }
             if (document.type == Constants.TYPE_IMAGE) {

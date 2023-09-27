@@ -24,10 +24,12 @@ class LoadedDocumentsViewModelImpl @Inject constructor(
 
     private val _documents = MutableLiveData<List<DocumentForRv>>()
     override val documents: LiveData<List<DocumentForRv>> = _documents
+
+
     override fun getDocumentsWithoutFolders() {
         viewModelScope.launch(Dispatchers.IO) {
             repository.getLoadedDocuments().collectLatest {
-                val list = it.map { it.toRvModel() }
+                val list = it.filter { it.type > 0 }.map { it.toRvModel() }
                 _documents.postValue(list)
             }
         }
@@ -35,12 +37,12 @@ class LoadedDocumentsViewModelImpl @Inject constructor(
 
     override fun getDocumentsWithFolders() {
         viewModelScope.launch(Dispatchers.IO) {
-            repository.getAllDocuments().collectLatest {
+            repository.getLoadedDocuments().collectLatest {
                 val list = it.map { it.toRvModel() }
                 _documents.postValue(list)
                 async {
                     list.forEach {
-                        val count = repository.getChildsCountByParentId(it.parentId + it.id)
+                        val count = repository.getLoadedChildsCountByParentId(it.parentId + it.id)
                         it.count = count
                     }
                 }.await()

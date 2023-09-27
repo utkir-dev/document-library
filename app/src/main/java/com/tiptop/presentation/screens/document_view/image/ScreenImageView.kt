@@ -14,7 +14,6 @@ import com.tiptop.data.models.local.DocumentLocal
 import com.tiptop.databinding.ScreenImageViewBinding
 import com.tiptop.presentation.screens.BaseFragment
 import com.tiptop.presentation.screens.document_view.DocumentViewModelIml
-import com.tiptop.presentation.screens.document_view.pdf.ScreenPdfView
 import dagger.hilt.android.AndroidEntryPoint
 
 

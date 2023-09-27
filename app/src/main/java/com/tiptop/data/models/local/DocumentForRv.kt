@@ -2,6 +2,7 @@ package com.tiptop.data.models.local
 
 import android.os.Bundle
 import com.gg.gapo.treeviewlib.model.NodeData
+import com.tiptop.app.common.decryption
 
 
 data class DocumentForRv(
@@ -38,7 +39,9 @@ data class DocumentForRv(
         date = this.date,
         dateAdded = this.dateAdded
     )
-
+    fun nameDecrypted(): String {
+        return if (name.isEmpty()) "" else name.decryption(dateAdded)
+    }
     override fun areContentsTheSame(item: NodeData<DocumentForRv>): Boolean {
         return this.equals(item)
     }

@@ -21,7 +21,7 @@
         <View
             android:id="@+id/v_spacer"
             android:layout_width="@dimen/dp10"
-            android:layout_height="@dimen/dp1"
+            android:layout_height="0.1dp"
             android:background="@color/grey_light"
             android:visibility="gone" />
 
@@ -94,32 +94,8 @@
     <View
         android:id="@+id/v_line"
         android:layout_width="match_parent"
-        android:layout_height="1dp"
+        android:layout_height="0.1dp"
         android:background="@color/grey_light"
         android:visibility="gone" />
-
-    <LinearLayout
-        android:id="@+id/l_progress"
-        android:layout_width="match_parent"
-        android:layout_height="wrap_content"
-        android:orientation="vertical"
-        android:paddingHorizontal="@dimen/dp5"
-        android:visibility="gone">
-
-        <TextView
-            android:id="@+id/tv_progress_text"
-            android:layout_width="match_parent"
-            android:layout_height="wrap_content"
-            android:textColor="@color/color_blue_light" />
-
-        <ProgressBar
-            android:id="@+id/progressbar"
-            style="@style/Widget.AppCompat.ProgressBar.Horizontal"
-            android:layout_width="match_parent"
-            android:layout_height="wrap_content"
-            android:max="100"
-            android:progress="50"
-            android:progressTint="@color/color_blue_light" />
-    </LinearLayout>
 
 </LinearLayout>

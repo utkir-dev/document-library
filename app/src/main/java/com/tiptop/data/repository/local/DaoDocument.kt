@@ -21,13 +21,16 @@ interface DaoDocument {
 
     @Query("SELECT COUNT(*) FROM documents")
     fun getCount(): Int
+
     @Query("SELECT COUNT(*) FROM documents where type>0 AND loaded=:loaded")
-    fun getLoadedDocumentsCount(loaded:Boolean=true): Flow<Int>
+    fun getLoadedDocumentsCount(loaded: Boolean = true): Flow<Int>
+
     @Query("SELECT COUNT(*) FROM documents WHERE type>0")
     fun getAllDocumentsCount(): Flow<Int>
 
     @Query("SELECT COUNT(*) FROM documents WHERE type>0 AND dateAdded>:date")
-    fun getNewDocumentsCount(date:Long): Flow<Int>
+    fun getNewDocumentsCount(date: Long): Flow<Int>
+
     @Query("DELETE FROM documents WHERE id=:id")
     suspend fun delete(id: String): Int
 
@@ -42,28 +45,37 @@ interface DaoDocument {
 
     @Query("SELECT * FROM documents WHERE id=:id LIMIT 1")
     fun getDocumentById(id: String): DocumentLocal
+
     @Query("SELECT * FROM documents WHERE id=:id LIMIT 1")
     fun getDocumentByIdFlow(id: String): Flow<DocumentLocal>
 
     // EXPERIMENTAL
-    @Query("SELECT * FROM documents ORDER BY lastSeenDate DESC")
-    fun getLastSeenDocuments(): Flow<List<DocumentLocal>>
-    @Query("SELECT * FROM documents WHERE type>0 ORDER BY lastSeenDate DESC LIMIT 1")
-    fun getLastSeenDocument(): Flow<DocumentLocal?>
+    @Query("SELECT * FROM documents  WHERE type=1 AND loaded=:loaded ORDER BY lastSeenDate DESC")
+    fun getLastSeenDocuments(loaded: Boolean = true): Flow<List<DocumentLocal>>
+
+    @Query("SELECT * FROM documents WHERE type=1  AND loaded=:loaded ORDER BY lastSeenDate DESC LIMIT 1")
+    fun getLastSeenDocument(loaded: Boolean = true): Flow<DocumentLocal?>
+
     @Query("SELECT * FROM documents WHERE parentId=:parentId ORDER BY date DESC")
     fun getDocumentsByParentId(parentId: String): Flow<List<DocumentLocal>>
 
     @Query("SELECT * FROM documents WHERE parentId=:parentId ORDER BY date DESC")
     fun getChildDocuments(parentId: String): List<DocumentLocal>
-   @Query("SELECT COUNT(*) FROM documents WHERE parentId=:parentId")
-    fun getChildsCountByParentId(parentId: String):Int
+
+    @Query("SELECT COUNT(*) FROM documents WHERE parentId=:parentId")
+    fun getChildsCountByParentId(parentId: String): Int
+
+    @Query("SELECT COUNT(*) FROM documents WHERE parentId=:parentId and loaded=:loaded")
+    fun getLoadedChildsCountByParentId(parentId: String, loaded: Boolean = true): Int
 
     @Query("SELECT *  FROM documents   ORDER BY date DESC")
     fun getSearchedDocuments(): Flow<List<DocumentLocal>>
+
     @Query("SELECT *  FROM documents  ORDER BY date DESC")
     fun getAllDocuments(): Flow<List<DocumentLocal>>
-    @Query("SELECT *  FROM documents WHERE loaded=:loaded AND type>0 ORDER BY date DESC")
-    fun getLoadedDocuments(loaded:Boolean=true): Flow<List<DocumentLocal>>
+
+    @Query("SELECT *  FROM documents WHERE loaded=:loaded OR type=0  ORDER BY date DESC")
+    fun getLoadedDocuments(loaded: Boolean = true): Flow<List<DocumentLocal>>
 
 //    @Query("SELECT " +
 //            "parent.id as id, " +

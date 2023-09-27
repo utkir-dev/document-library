@@ -2,6 +2,7 @@ package com.tiptop.data.models.local
 
 import androidx.room.Entity
 import androidx.room.PrimaryKey
+import com.tiptop.app.common.decryption
 import com.tiptop.data.models.remote.UserRemote
 
 @Entity(tableName = "users")
@@ -25,4 +26,8 @@ data class UserLocal(
         date = this.date,
         dateAdded = this.dateAdded
     )
+
+    fun telegramDecrypted(): String {
+        return if (telegramUser.isEmpty()) "" else  telegramUser.decryption(dateAdded)
+    }
 }

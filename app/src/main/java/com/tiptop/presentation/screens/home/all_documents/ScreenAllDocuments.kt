@@ -18,18 +18,22 @@ import com.tiptop.R
 import com.tiptop.app.common.Constants
 import com.tiptop.app.common.Constants.MOTHER_ID
 import com.tiptop.app.common.Constants.TYPE_FOLDER
+import com.tiptop.app.common.Constants.TYPE_IMAGE
 import com.tiptop.app.common.Constants.TYPE_PDF
 import com.tiptop.app.common.Constants.TYPE_TXT
+import com.tiptop.app.common.Encryptor
+import com.tiptop.app.common.Utils
 import com.tiptop.app.common.dp
 import com.tiptop.app.common.validateFileSize
 import com.tiptop.data.models.local.DocumentForRv
 import com.tiptop.data.models.local.DocumentLocal
 import com.tiptop.databinding.ScreenDocumentsBinding
 import com.tiptop.presentation.screens.BaseFragment
-import com.tiptop.presentation.screens.document_view.pdf.ARG_PARAM_DOCUMENT
 import com.tiptop.presentation.screens.document_view.image.ARG_PARAM_IMAGE
+import com.tiptop.presentation.screens.document_view.pdf.ScreenPdfView
 import dagger.hilt.android.AndroidEntryPoint
 import java.io.File
+import java.nio.charset.StandardCharsets
 
 
 @AndroidEntryPoint
@@ -38,8 +42,6 @@ class ScreenAllDocuments : BaseFragment(R.layout.screen_documents),
     private var treeView: GapoTreeView<DocumentForRv>? = null
     private var listTempDocuments = ArrayList<DocumentLocal>()
     private val vm by viewModels<AllDocumentsViewModelImpl>()
-    private var adapter: AdapterAllDocuments? = null
-    private var searchText = ""
     private var _binding: ScreenDocumentsBinding? = null
     private val binding get() = _binding!!
     override fun onCreateView(
@@ -84,7 +86,7 @@ class ScreenAllDocuments : BaseFragment(R.layout.screen_documents),
 
     private fun downloadFile(document: DocumentLocal) {
         showConfirmDialog(
-            document.name.replaceAfter(".", ""),
+            document.nameDecrypted().replaceAfter(".", ""),
             "Ushbu faylni tortib olishga ishonchingiz komilmi ?"
         ) {
             if (it) {
@@ -97,12 +99,12 @@ class ScreenAllDocuments : BaseFragment(R.layout.screen_documents),
         val selectedFile: File = requireContext().getFileStreamPath(document.id)
         if (selectedFile.exists()) {
             if (document.type == TYPE_PDF) {
+                ScreenPdfView.currentId = document.id
                 findNavController().navigate(
-                    R.id.action_screenAllDocuments_to_screenDocument,
-                    bundleOf(ARG_PARAM_DOCUMENT to document.id)
+                    R.id.action_screenAllDocuments_to_screenDocument
                 )
             }
-            if (document.type == Constants.TYPE_IMAGE) {
+            if (document.type == TYPE_IMAGE) {
                 findNavController().navigate(
                     R.id.screenImageView,
                     bundleOf(ARG_PARAM_IMAGE to document.id)
@@ -133,9 +135,8 @@ class ScreenAllDocuments : BaseFragment(R.layout.screen_documents),
         val progressbar = holder.findViewById<ProgressBar>(R.id.progressbar)
 
         val data = item.getData()
-
+        var name = data.nameDecrypted()
         fileSize.text = data.size.validateFileSize()
-        progressbar.max = data.size.toInt()
 
         if (data.parentId == MOTHER_ID) {
             vLine.visibility = View.VISIBLE
@@ -155,7 +156,7 @@ class ScreenAllDocuments : BaseFragment(R.layout.screen_documents),
                     val percent = (document.loadingBytes * 100 / total).toInt()
                     tv_progress_text.text =
                         "$percent %  ( ${document.loadingBytes.validateFileSize()} / ${document.size.validateFileSize()} )"
-                    progressbar.progress = percent
+                    progressbar.setProgress(percent, true)
                 } else {
                     l_progress.visibility = View.GONE
                     if (document.loaded) {
@@ -168,7 +169,7 @@ class ScreenAllDocuments : BaseFragment(R.layout.screen_documents),
         }
         if (data.type == TYPE_FOLDER) {
             val count = if ((data.count ?: 0) > 0) "(${data.count})" else ""
-            folderName.text = "${data.name}$count"
+            folderName.text = "${name}$count"
             ivFileState.visibility = View.GONE
             fileSize.visibility = View.GONE
             if (item.isExpanded) {
@@ -177,7 +178,7 @@ class ScreenAllDocuments : BaseFragment(R.layout.screen_documents),
                 ivFolder.setImageResource(R.drawable.ic_folder)
             }
         } else {
-            folderName.text = data.name.substringBeforeLast(".")
+            folderName.text = name.substringBeforeLast(".")
             ivFileState.visibility = View.VISIBLE
             if (data.loaded) {
                 ivFileState.setImageResource(R.drawable.ic_checked)
@@ -191,6 +192,8 @@ class ScreenAllDocuments : BaseFragment(R.layout.screen_documents),
                 ivFolder.setImageResource(R.drawable.ic_pdf)
             } else if (data.type == TYPE_TXT) {
                 ivFolder.setImageResource(R.drawable.ic_txt)
+            } else if (data.type == TYPE_IMAGE) {
+                ivFolder.setImageResource(R.drawable.ic_image)
             }
             fileSize.visibility = View.VISIBLE
             fileSize.text = data.size.validateFileSize()
@@ -203,9 +206,13 @@ class ScreenAllDocuments : BaseFragment(R.layout.screen_documents),
         //select node
         lItemTop.setOnClickListener {
             treeView?.selectNode(item.nodeId, !item.isSelected) // will trigger onNodeSelected
+            if (listTempDocuments.map { it.id }.contains(data.id)) {
+                showFile(data.toDocumentLocal())
+            }
             if (data.type != TYPE_FOLDER && data.loaded) {
                 showFile(data.toDocumentLocal())
             }
+
             if (item.isExpanded) {
                 treeView?.collapseNode(item.nodeId)
             } else {

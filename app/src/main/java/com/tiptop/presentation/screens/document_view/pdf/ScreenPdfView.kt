@@ -2,27 +2,36 @@ package com.tiptop.presentation.screens.document_view.pdf
 
 import android.annotation.SuppressLint
 import android.app.AlertDialog
-import android.graphics.Paint
-import android.graphics.RectF
 import android.os.Bundle
 import android.transition.Slide
 import android.transition.TransitionManager
+import android.util.Log
 import android.view.Gravity
 import android.view.LayoutInflater
 import android.view.View
 import android.view.ViewGroup
+import android.view.animation.AnimationUtils
+import android.widget.ImageView
 import android.widget.LinearLayout
 import android.widget.PopupWindow
 import androidx.activity.addCallback
 import androidx.fragment.app.viewModels
 import androidx.navigation.fragment.findNavController
+import androidx.recyclerview.widget.DividerItemDecoration
+import androidx.recyclerview.widget.LinearLayoutManager
 import com.github.barteksc.pdfviewer.listener.OnErrorListener
 import com.github.barteksc.pdfviewer.scroll.DefaultScrollHandle
 import com.github.barteksc.pdfviewer.util.FitPolicy
 import com.tiptop.R
+import com.tiptop.app.common.CanvasData
 import com.tiptop.app.common.Constants.KEY_LAST_PAGE
 import com.tiptop.app.common.Constants.KEY_SCREEN_TIMER
+import com.tiptop.app.common.DebouncingQueryTextListener
+import com.tiptop.app.common.Encryptor
+import com.tiptop.app.common.MyColor
 import com.tiptop.app.common.SharedPrefSimple
+import com.tiptop.app.common.Utils
+import com.tiptop.app.common.hideKeyboard
 import com.tiptop.app.common.isInternetAvailable
 import com.tiptop.app.common.share
 import com.tiptop.data.models.local.DocumentLocal
@@ -30,47 +39,26 @@ import com.tiptop.databinding.DialogScreenTimerBinding
 import com.tiptop.databinding.PopupGoToPageBinding
 import com.tiptop.databinding.PopupLastSeenDocumentsBinding
 import com.tiptop.databinding.ScreenDocumentViewBinding
+import com.tiptop.presentation.MainActivity
 import com.tiptop.presentation.screens.BaseFragment
 import com.tiptop.presentation.screens.document_view.AdapterLastSeenDocuments
 import dagger.hilt.android.AndroidEntryPoint
+import java.nio.charset.StandardCharsets
 
-
-const val ARG_PARAM_DOCUMENT = "arg_param_document"
 
 @AndroidEntryPoint
 class ScreenPdfView : BaseFragment(R.layout.screen_document_view) {
-    //    private var adapterDict: AdapterDict? = null
+    private var canvasMap = HashMap<Int, List<CanvasData>>()
     private var alert: AlertDialog? = null
-
-    //    private var popup: PopupWindow? = null
-//    private var searchingText = ""
-//    private val TAG = "FragmentPdf"
     private var lastSeenDocuments = ArrayList<DocumentLocal>()
-    private var currentBytes: ByteArray? = null
     private var currentDocument: DocumentLocal? = null
     private var popup: PopupWindow? = null
-    private var currentId: String = ""
     private var currentPage = 0
-
     private val vm by viewModels<PdfViewModelIml>()
     private var _binding: ScreenDocumentViewBinding? = null
     private var pref: SharedPrefSimple? = null
     private val binding get() = _binding!!
 
-
-    override fun onCreate(savedInstanceState: Bundle?) {
-        super.onCreate(savedInstanceState)
-        arguments?.let {
-            currentId = it.getString(ARG_PARAM_DOCUMENT) ?: ""
-            setDocument()
-        }
-    }
-
-    private fun setDocument() {
-        if (currentId.isNotEmpty()) {
-            vm.setDocument(currentId)
-        }
-    }
 
     override fun onCreateView(
         inflater: LayoutInflater,
@@ -84,13 +72,25 @@ class ScreenPdfView : BaseFragment(R.layout.screen_document_view) {
     override fun onViewCreated(view: View, savedInstanceState: Bundle?) {
         super.onViewCreated(view, savedInstanceState)
         pref = SharedPrefSimple(requireActivity())
-        showPdf()
-        initClickListeners()
+        setDocument()
         initObservers()
+        initClickListeners()
+
         requireActivity().onBackPressedDispatcher.addCallback(viewLifecycleOwner) {
+            var isBackAvialable = true
             if (popup?.isShowing == true) {
                 popup?.dismiss()
-            } else {
+                isBackAvialable = false
+            }
+            if (binding.lDictionary.rootDictionary.visibility != View.GONE) {
+                isBackAvialable = false
+                closeDictionary()
+            }
+            if (binding.myCanvas.rootCustomCanvas.visibility == View.VISIBLE) {
+                isBackAvialable = false
+                binding.myCanvas.rootCustomCanvas.visibility = View.GONE
+            }
+            if (isBackAvialable) {
                 findNavController().popBackStack()
             }
         }
@@ -104,63 +104,15 @@ class ScreenPdfView : BaseFragment(R.layout.screen_document_view) {
         vm.getLastSeenDocuments()
     }
 
-    private fun showPdf() {
-        vm.documentBytes.observe(viewLifecycleOwner) { bytes ->
-            currentBytes = bytes
-            binding.pdfView
-                .fromBytes(bytes)
-                .defaultPage(pref?.getInt(KEY_LAST_PAGE + currentId) ?: 0)
-                .enableSwipe(true)
-                .swipeHorizontal(false)
-                .enableDoubletap(true)
-                .enableAntialiasing(true)
-                .enableAnnotationRendering(false)
-                .spacing(1)
-                .nightMode(false)
-                .onPageChange { page, pageCount ->
-                    vm.setCurrentPage(page)
-                    vm.updateTimer()
-                }
-                .onDraw { canvas, pageWidth, pageHeight, displayedPage ->
-
-                    val ratioX = pageWidth / canvas.width
-                    val ratioY = pageHeight / canvas.height
-
-                    val cx = pageWidth / 2
-                    val cy = pageHeight / 2
-
-                    val radius = if (pageWidth > pageHeight) {
-                        pageHeight / 4
-                    } else {
-                        pageWidth / 4
-                    }
-                    val paint = Paint()
-                    paint.color = resources.getColor(
-                        R.color.grey_clear,
-                        null
-                    )// Color.GREEN // установим зелёный цвет
-                    paint.style = Paint.Style.FILL
-                    canvas.drawCircle(cx, cy, radius, paint)
-                    val rect = RectF().apply {
-                        left = pageWidth * 0.2F
-                        right = pageWidth * 0.8F
-                        top = pageHeight * 0.6F
-                        bottom = pageHeight * 0.9F
-                    }
-
-                    canvas.drawRect(rect, paint)
-                }
-                .pageFitPolicy(FitPolicy.WIDTH)
-                .scrollHandle(DefaultScrollHandle(requireContext()))
-                .onError(OnErrorListener {
-                    showSnackBar("Xatolik, fayl ochilmadi !")
-                }
-                ).load()
-        }
-    }
 
     @SuppressLint("SetTextI18n")
     private fun initObservers() {
+        vm.documentBytes.observe(viewLifecycleOwner) { bytes ->
+            bytes?.let {
+                currentBytes = it
+                showPdf()
+            }
+        }
         vm.currentPage.observe(viewLifecycleOwner) { pageNumber ->
             currentPage = pageNumber
             binding.tvPageCount.text = "${binding.pdfView.pageCount}/${pageNumber + 1}"
@@ -168,7 +120,7 @@ class ScreenPdfView : BaseFragment(R.layout.screen_document_view) {
         }
         vm.currentDocument.observe(viewLifecycleOwner) { currentDocument ->
             this.currentDocument = currentDocument
-            binding.tvBookName.text = currentDocument.name.substringBeforeLast(".")
+            binding.tvBookName.text = currentDocument.nameDecrypted().substringBeforeLast(".")
         }
         vm.nightMode.observe(viewLifecycleOwner) { nightMode ->
             binding.pdfView.setNightMode(nightMode)
@@ -181,11 +133,11 @@ class ScreenPdfView : BaseFragment(R.layout.screen_document_view) {
         }
         vm.fullScreen.observe(viewLifecycleOwner) { fullScreen ->
             if (fullScreen) {
-                binding.lTop.visibility = View.GONE
-                binding.lBottom.visibility = View.GONE
+                openFullScreen()
+
             } else {
-                binding.lTop.visibility = View.VISIBLE
-                binding.lBottom.visibility = View.VISIBLE
+                closeFullScreen()
+
             }
         }
         vm.screenBlockState.observe(viewLifecycleOwner) { blocked ->
@@ -212,13 +164,12 @@ class ScreenPdfView : BaseFragment(R.layout.screen_document_view) {
         }
         binding.ivLastBooks.setOnClickListener {
             showLastSeenDocuments(binding.ivLastBooks)
-
         }
         binding.cardBushro.setOnClickListener {
             showBushro()
         }
         binding.cardJavohir.setOnClickListener {
-            // showJavohir()
+            showJavohir()
         }
         binding.ivScreenOrientation.setOnClickListener {
             changeScreenOriantation()
@@ -226,10 +177,10 @@ class ScreenPdfView : BaseFragment(R.layout.screen_document_view) {
 
         // bottom
         binding.tvUp10.setOnClickListener {
-            binding.pdfView.jumpTo(binding.pdfView.currentPage - 10)
+            binding.pdfView.jumpTo(binding.pdfView.currentPage - 10, true)
         }
         binding.tvDown10.setOnClickListener {
-            binding.pdfView.jumpTo(binding.pdfView.currentPage + 10)
+            binding.pdfView.jumpTo(binding.pdfView.currentPage + 10, true)
         }
         binding.ivShare.setOnClickListener {
             currentBytes?.let { bytes ->
@@ -255,7 +206,35 @@ class ScreenPdfView : BaseFragment(R.layout.screen_document_view) {
         binding.ivTimer.setOnClickListener {
             showTimer()
         }
+    }
 
+    private fun setDocument() {
+        if (currentId.isNotEmpty()) {
+            vm.setDocument(currentId)
+        }
+    }
+
+    private fun showPdf() {
+        binding.pdfView
+            .fromBytes(currentBytes ?: byteArrayOf())
+            .defaultPage(pref?.getInt(KEY_LAST_PAGE + currentId) ?: 0)
+            .enableSwipe(true)
+            .swipeHorizontal(false)
+            .enableDoubletap(true)
+            .enableAntialiasing(true)
+            .enableAnnotationRendering(false)
+            .spacing(0)
+            .nightMode(false)
+            .onPageChange { page, pageCount ->
+                vm.setCurrentPage(page)
+                vm.updateTimer()
+            }
+            .pageFitPolicy(FitPolicy.WIDTH)
+            .scrollHandle(DefaultScrollHandle(requireContext()))
+            .onError(OnErrorListener {
+                showSnackBar("Xatolik, fayl ochilmadi !")
+            }
+            ).load()
     }
 
     private fun showBushro() {
@@ -266,6 +245,117 @@ class ScreenPdfView : BaseFragment(R.layout.screen_document_view) {
             startActivity(launchIntent)
         } else {
             showSnackBar("'Bushro' ilovasi topilmadi, uni tortib o'rnating")
+        }
+    }
+
+    private fun showJavohir() {
+        openDictionary()
+        vm.getWords(currentId)
+        var modeAr = true
+        var searchText = ""
+        val adpaterWords = AdapterDictionary(
+            searchText,
+            object : AdapterDictionary.PageNumberClickListener {
+                override fun onClick(word: Dictionary) {
+                    binding.lDictionary.etSearchWord.clearFocus()
+                    binding.lDictionary.etSearchWord.hideKeyboard()
+                    val fr = DialogWord(word, vm, currentPage, currentDocument?.id ?: "")
+                    fr.isCancelable = true
+                    fr.show(childFragmentManager, DialogWord.TAG)
+                }
+
+                override fun onClickPage(page: Int) {
+                    closeDictionary()
+                    if (page != currentPage) {
+                        binding.pdfView.jumpTo(page, true)
+                    }
+                }
+            })
+        binding.lDictionary.rvDict.adapter = adpaterWords
+        vm.words.observe(viewLifecycleOwner) {
+            adpaterWords.submitList(it)
+        }
+        vm.closestPage.observe(viewLifecycleOwner) { index ->
+            binding.lDictionary.rvDict.scrollToPosition(index)
+        }
+        binding.lDictionary.etSearchWord.setOnQueryTextListener(DebouncingQueryTextListener(
+            requireActivity().lifecycle
+        ) {
+            searchText = it ?: ""
+            if (searchText.isNotEmpty()) {
+                vm.getSearchedBaseWords(searchText)
+            } else {
+                vm.getWords(currentId)
+            }
+        })
+        binding.lDictionary.ivChange.setOnClickListener {
+            modeAr = !modeAr
+            if (modeAr) {
+                binding.lDictionary.tvAr.text = "Arabcha"
+                binding.lDictionary.tvUz.text = "O'zbekcha"
+            } else {
+                binding.lDictionary.tvAr.text = "O'zbekcha"
+                binding.lDictionary.tvUz.text = "Arabcha"
+            }
+        }
+        binding.lDictionary.rvDict.addItemDecoration(
+            DividerItemDecoration(
+                requireContext(),
+                LinearLayoutManager.VERTICAL
+            )
+        )
+        binding.lDictionary.btnClose.setOnClickListener {
+            closeDictionary()
+        }
+    }
+
+    private fun openFullScreen() {
+        val animationSlideToUp =
+            AnimationUtils.loadAnimation(requireContext(), R.anim.slide_to_up)
+        val animationSlideBottomToDown =
+            AnimationUtils.loadAnimation(requireContext(), R.anim.slide_bottom_to_down)
+        binding.lTop.visibility = View.GONE
+        binding.lTop.startAnimation(animationSlideToUp)
+
+        binding.lBottom.visibility = View.GONE
+        binding.lBottom.startAnimation(animationSlideBottomToDown)
+        (activity as MainActivity).hideSystemUI()
+    }
+
+    private fun closeFullScreen() {
+        val animationSlideToDown =
+            AnimationUtils.loadAnimation(requireContext(), R.anim.slide_to_down)
+        val animationSlideBottomToUp =
+            AnimationUtils.loadAnimation(requireContext(), R.anim.slide_bottom_to_up)
+        binding.lTop.visibility = View.VISIBLE
+        binding.lTop.startAnimation(animationSlideToDown)
+        binding.lBottom.visibility = View.VISIBLE
+        binding.lBottom.startAnimation(animationSlideBottomToUp)
+        (activity as MainActivity).showSystemUI()
+    }
+
+    private fun openDictionary() {
+        val animationSlideToLeft =
+            AnimationUtils.loadAnimation(requireContext(), R.anim.slide_to_left)
+        binding.lDictionary.rootDictionary.visibility = View.VISIBLE
+        binding.lDictionary.rootDictionary.startAnimation(animationSlideToLeft)
+    }
+
+    private fun closeDictionary() {
+        binding.lDictionary.etSearchWord.setQuery("", true)
+        val animationSlideToRight =
+            AnimationUtils.loadAnimation(requireContext(), R.anim.slide_to_right)
+        binding.lDictionary.rootDictionary.visibility = View.GONE
+        binding.lDictionary.rootDictionary.startAnimation(animationSlideToRight)
+    }
+
+    private fun initColorList(iv: ImageView, colorList: List<ImageView>) {
+        colorList.forEach {
+            if (it == iv) {
+                it.visibility = View.VISIBLE
+            } else {
+                it.visibility = View.GONE
+            }
         }
     }
 
@@ -287,10 +377,13 @@ class ScreenPdfView : BaseFragment(R.layout.screen_document_view) {
         }
         viewPop.rvLastBooks.adapter =
             AdapterLastSeenDocuments(
-                lastSeenDocuments,
+                lastSeenDocuments.filter { it.id != currentId },
                 object : AdapterLastSeenDocuments.PageNumberClickListener {
+                    @SuppressLint("CommitTransaction", "DetachAndAttachSameFragment")
                     override fun onClick(document: DocumentLocal) {
-                        vm.setDocument(document.id)
+                        closeCurrentDocument()
+                        currentId = document.id
+                        setDocument()
                         popup?.dismiss()
                     }
                 })
@@ -303,8 +396,8 @@ class ScreenPdfView : BaseFragment(R.layout.screen_document_view) {
         v.getLocationOnScreen(location)
         popup?.showAtLocation(
             binding.root, Gravity.NO_GRAVITY, // root, Gravity.NO_GRAVITY,
-            binding.root.x.toInt()+v.measuredWidth / 2, //location[0] - 400,
-            location[1]// + v.measuredHeight / 2
+            binding.root.x.toInt() + v.measuredWidth / 2, //location[0] - 400,
+            binding.root.y.toInt() + v.measuredHeight / 2
         )
     }
 
@@ -325,12 +418,10 @@ class ScreenPdfView : BaseFragment(R.layout.screen_document_view) {
             exitTransition = slideOut
         }
 
-
-
         viewPop.rvPageNumbers.adapter =
             AdapterPageNumbers(getNumbers(), object : AdapterPageNumbers.PageNumberClickListener {
                 override fun onClick(value: Int) {
-                    binding.pdfView.jumpTo(value)
+                    binding.pdfView.jumpTo(value, true)
                     popup?.dismiss()
                 }
             })
@@ -353,10 +444,10 @@ class ScreenPdfView : BaseFragment(R.layout.screen_document_view) {
         val list = ArrayList<String>()
         for (i in 0 until binding.pdfView.pageCount) {
             list.add((i + 1).toString())
-
         }
         return list
     }
+
     private fun showTimer() {
         var currentTimer = pref?.getInt(KEY_SCREEN_TIMER) ?: 15
         val viewDialog = DialogScreenTimerBinding.inflate(layoutInflater)
@@ -373,12 +464,10 @@ class ScreenPdfView : BaseFragment(R.layout.screen_document_view) {
 
             30 -> {
                 viewDialog.rg.check(viewDialog.rb30.id)
-                //viewDialog.rb30.isChecked = true
             }
 
             60 -> {
                 viewDialog.rg.check(viewDialog.rb1.id)
-                //viewDialog.rb1.isChecked = true
             }
 
             120 -> {
@@ -437,124 +526,83 @@ class ScreenPdfView : BaseFragment(R.layout.screen_document_view) {
         }
     }
 
-
-    override fun onPause() {
-        super.onPause()
-        alert?.dismiss()
-        popup?.dismiss()
+    private fun closeCurrentDocument() {
         pref?.saveInt(KEY_LAST_PAGE + currentId, currentPage)
         vm.updateDocument()
+    }
+
+    override fun onStop() {
+        super.onStop()
+        alert?.dismiss()
+        popup?.dismiss()
+        closeCurrentDocument()
+        closeDictionary()
         vm.cancelTimer()
     }
 
     override fun onDestroy() {
         super.onDestroy()
+        currentBytes = null
         _binding = null
-
     }
 
-    //
-//    @SuppressLint("SetTextI18n")
-//    private fun showJavohir() {
-//        val list = DB_DIC.daoAruz().getAruzList()
-//        adapterDict =
-//            AdapterDict(list, searchingText, object : AdapterDict.PageNumberClickListener {
-//                override fun onClick(word: Dictionary) {
-//                    val fr = FragmentDialogWord(word)
-//                    fr.isCancelable = true
-//                    fr.show(APP.supportFragmentManager, FragmentDialogWord.TAG)
-//
-//                }
-//            })
-//        b.lDict.ivChange.setOnClickListener {
-//            modeAr = !modeAr
-//            b.lDict.etSearchWord.setText("")
-//            if (modeAr) {
-//                b.lDict.tvAr.text = "Arabcha"
-//                b.lDict.tvUz.text = "O'zbekcha"
-//            } else {
-//                b.lDict.tvAr.text = "O'zbekcha"
-//                b.lDict.tvUz.text = "Arabcha"
-//            }
-//        }
-//        b.lDict.btnClose.setOnClickListener {
-//            b.lDict.lDictionary.visibility = View.GONE
-//        }
-//        b.lDict.lDictionary.visibility = View.VISIBLE
-//        b.lDict.rvDict.adapter = adapterDict
-//
-//        b.lDict.rvDict.addItemDecoration(
-//            DividerItemDecoration(
-//                APP,
-//                LinearLayoutManager.VERTICAL
-//            )
-//        )
-//        b.lDict.etSearchWord.addTextChangedListener(object : TextWatcher {
-//            override fun beforeTextChanged(p0: CharSequence?, p1: Int, p2: Int, p3: Int) {
-//
-//            }
-//
-//            override fun onTextChanged(p0: CharSequence?, p1: Int, p2: Int, p3: Int) {
-//                searchingText = p0.toString()
-//                if (searchingText.isNotEmpty()) {
-//                    if (modeAr) {
-//                        val searchText = "$searchingText%"
-//                        val list2 = DB_DIC.daoAruz().searchWords(searchText)
-//                        adapterDict =
-//                            AdapterDict(
-//                                list2,
-//                                searchingText,
-//                                object : AdapterDict.PageNumberClickListener {
-//                                    override fun onClick(word: Dictionary) {
-//                                        val fr = FragmentDialogWord(word)
-//                                        fr.isCancelable = true
-//                                        fr.show(APP.supportFragmentManager, FragmentDialogWord.TAG)
-//                                    }
-//                                })
-//                    } else {
-//                        val searchText = "$searchingText%"
-//                        val list3 = DB_DIC.daoUzar().searchWords(searchText)
-//                        adapterDict =
-//                            AdapterDict(
-//                                list3,
-//                                searchingText,
-//                                object : AdapterDict.PageNumberClickListener {
-//                                    override fun onClick(word: Dictionary) {
-//                                        val fr = FragmentDialogWord(word)
-//                                        fr.isCancelable = true
-//                                        fr.show(APP.supportFragmentManager, FragmentDialogWord.TAG)
-//                                    }
-//                                })
-//                    }
-//                    b.lDict.rvDict.adapter = adapterDict
-//                } else {
-//                    b.lDict.etSearchWord.hideKeyboard()
-//                }
-//
-//                b.lDict.rvDict.addItemDecoration(
-//                    DividerItemDecoration(
-//                        APP,
-//                        LinearLayoutManager.VERTICAL
-//                    )
-//                )
-//            }
-//
-//            override fun afterTextChanged(p0: Editable?) {
-//
-//            }
-//
-//        })
-////-----------------------------------------------------------------
-////        val launchIntent =
-////            APP.packageManager.getLaunchIntentForPackage("uz.arabic.dictionary")
-////        if (launchIntent != null) {
-////            TEMPORARY_OUT=true
-////            APP.vm.updateTimer(5)
-////            startActivity(launchIntent)
-////        } else {
-////            "'Javohir' ilovasi topilmadi, uni tortib o'rnating".toToast()
-////        }
-//    }
-//
+    companion object {
+        var currentId: String = ""
+        private var currentBytes: ByteArray? = null
+    }
 
+    private fun showDrawingScreen() {
+        binding.pdfView.resetZoomWithAnimation()
+        vm.changeFullScreen()
+        val canvasLayout = binding.myCanvas
+        val canvas = canvasLayout.drawSquareCanvas
+        canvasMap[currentPage]?.let {
+            canvas.setData(it)
+        }
+
+        canvasLayout.rootCustomCanvas.visibility = View.VISIBLE
+        canvasLayout.tvCancel.setOnClickListener {
+            canvas.clear()
+            canvasLayout.rootCustomCanvas.visibility = View.GONE
+        }
+        canvasLayout.tvSave.setOnClickListener {
+            canvasLayout.rootCustomCanvas.visibility = View.GONE
+            canvas.save { canvasDataList ->
+                canvasMap[currentPage] = canvasDataList
+                binding.pdfView.loadPages()
+                //  canvas.clear()
+            }
+        }
+        canvasLayout.icUndo.setOnClickListener {
+            canvas.undo()
+        }
+        canvasLayout.icClear.setOnClickListener {
+            canvas.clear()
+        }
+
+        val colorList = listOf(
+            canvasLayout.ivRed,
+            canvasLayout.ivYellow,
+            canvasLayout.ivGreen,
+            canvasLayout.ivBlue
+        )
+        canvasLayout.rlRed.setOnClickListener {
+            canvas.setColor(MyColor.RED)
+            initColorList(canvasLayout.ivRed, colorList)
+        }
+        canvasLayout.rlYellow.setOnClickListener {
+            canvas.setColor(MyColor.YELLOW)
+            initColorList(canvasLayout.ivYellow, colorList)
+        }
+        canvasLayout.rlGreen.setOnClickListener {
+            canvas.setColor(MyColor.GREEN)
+            initColorList(canvasLayout.ivGreen, colorList)
+        }
+        canvasLayout.rlBlue.setOnClickListener {
+            canvas.setColor(MyColor.BLUE)
+            initColorList(canvasLayout.ivBlue, colorList)
+
+        }
+
+    }
 }

@@ -8,7 +8,6 @@ import android.content.Intent
 import android.net.Uri
 import android.os.Bundle
 import android.provider.Settings
-import android.util.Log
 import android.view.LayoutInflater
 import android.view.View
 import android.view.ViewGroup
@@ -29,6 +28,7 @@ import com.tiptop.app.common.Constants.TYPE_IMAGE
 import com.tiptop.app.common.Constants.TYPE_PDF
 import com.tiptop.app.common.Encryptor
 import com.tiptop.app.common.Utils
+import com.tiptop.app.common.encryption
 import com.tiptop.app.common.hideKeyBoard
 import com.tiptop.app.common.hideKeyboard
 import com.tiptop.app.common.isInternetAvailable
@@ -38,9 +38,11 @@ import com.tiptop.databinding.DialogAddEditNameBinding
 import com.tiptop.databinding.DialogCreateFolderOrUploadBinding
 import com.tiptop.databinding.DialogDocumentBinding
 import com.tiptop.databinding.ScreenAddEditDocumentsBinding
+import com.tiptop.presentation.MainActivity
 import com.tiptop.presentation.screens.BaseFragment
 import dagger.hilt.android.AndroidEntryPoint
 import java.io.File
+
 import java.util.UUID
 
 
@@ -131,20 +133,16 @@ open class BaseFragmentAddEditDocuments : BaseFragment(R.layout.screen_add_edit_
         view.lUploadPdf.setOnClickListener {
             dialogUpload.dismiss()
             function(view.lUploadPdf)
-            // uploadFile(REQUEST_CODE_PDF)
         }
         view.lUploadTxt.setOnClickListener {
             dialogUpload.dismiss()
-            //uploadFile(REQUEST_CODE_TXT)
         }
         view.lUploadWord.setOnClickListener {
             dialogUpload.dismiss()
-            //  uploadFile(REQUEST_CODE_WORD)
         }
         view.lUploadImage.setOnClickListener {
             dialogUpload.dismiss()
             function(view.lUploadImage)
-            // uploadImage()
         }
     }
 
@@ -159,7 +157,10 @@ open class BaseFragmentAddEditDocuments : BaseFragment(R.layout.screen_add_edit_
                 .create()
         }
         val alert = dialog.show()
-        vBinding.tvDocumentName.text = document.name.substringBeforeLast(".")
+
+        val fileName =  document.nameDecrypted()
+
+        vBinding.tvDocumentName.text = fileName.substringBeforeLast(".")
 
         vBinding.tvEditDocument.setOnClickListener {
             function(vBinding.tvEditDocument)
@@ -179,7 +180,7 @@ open class BaseFragmentAddEditDocuments : BaseFragment(R.layout.screen_add_edit_
     fun createFile(typeFile: Int) {
         TYPE = typeFile
         val permission = MutableLiveData(false)
-        requestPermissions(
+       requestPermissions(
             Manifest.permission.WRITE_EXTERNAL_STORAGE,
             Manifest.permission.READ_EXTERNAL_STORAGE
         ) {
@@ -188,17 +189,15 @@ open class BaseFragmentAddEditDocuments : BaseFragment(R.layout.screen_add_edit_
         permission.observe(viewLifecycleOwner) {
             if (it) {
                 isLoading = true
-                val typeDocument = if (TYPE == TYPE_PDF) {
-                    "application/pdf"
-                } else if (TYPE == TYPE_IMAGE) {
-                    "image/*"
-                } else {
-                    "application/pdf"
-                }
                 // Intent.ACTION_OPEN_DOCUMENT
                 // Intent.ACTION_GET_CONTENT
                 //addCategory(Intent.CATEGORY_OPENABLE)
-                val intent = Intent(Intent.ACTION_GET_CONTENT).apply { type = typeDocument }
+                val intent = if (TYPE == TYPE_PDF)
+                    Intent(Intent.ACTION_GET_CONTENT).apply { type = "application/pdf" }
+                else if (TYPE == TYPE_IMAGE)
+                    Intent(Intent.ACTION_GET_CONTENT).apply { type = "image/*" }
+                else
+                    Intent(Intent.ACTION_GET_CONTENT).apply { type = "application/pdf" }
                 resultLauncher.launch(intent)
             }
         }
@@ -206,16 +205,20 @@ open class BaseFragmentAddEditDocuments : BaseFragment(R.layout.screen_add_edit_
 
     fun editDocument(document: DocumentLocal) {
         val docName = if (document.type == TYPE_FOLDER) "Papka" else "Fayl"
+
+        val fileName =  document.nameDecrypted()
+
         showEditNameDialog(
             title = "$docName nomini o'zgartirish",
-            name = document.name.substringBeforeLast(".")
+            name = fileName.substringBeforeLast(".")
         ) { text ->
-            if (text == document.name.substringBeforeLast(".")) {
+            if (text == fileName.substringBeforeLast(".")) {
                 return@showEditNameDialog
             }
             if (text.isNotEmpty()) {
                 val date = System.currentTimeMillis()
-                val documentEdited = document.copy(name = text, date = date)
+                val newName =text.encryption(document.dateAdded)
+                val documentEdited = document.copy(name = newName, date = date)
                 if (isInternetAvailable(requireContext())) {
                     requireActivity().hideKeyBoard()
                     vm.saveDocument(documentEdited.toRemote())
@@ -227,8 +230,9 @@ open class BaseFragmentAddEditDocuments : BaseFragment(R.layout.screen_add_edit_
     }
 
     fun downloadFile(document: DocumentLocal) {
+        val fileName= document.nameDecrypted()
         showConfirmDialog(
-            document.name.replaceAfter(".", ""),
+            fileName.replaceAfter(".", ""),
             "Ushbu faylni tortib olishga ishonchingiz komilmi ?"
         ) {
             if (it) {
@@ -239,8 +243,9 @@ open class BaseFragmentAddEditDocuments : BaseFragment(R.layout.screen_add_edit_
 
     fun deleteDocument(document: DocumentLocal) {
         val docName = if (document.type == TYPE_FOLDER) "papka" else "fayl"
+        val fileName = document.nameDecrypted()
         showConfirmDialog(
-            title = document.name.substringBeforeLast("."),
+            title = fileName.substringBeforeLast("."),
             message = "Ushbu ${docName}ni o'chirishga ishonchingiz komilmi?"
         ) {
             if (it) {
@@ -253,66 +258,7 @@ open class BaseFragmentAddEditDocuments : BaseFragment(R.layout.screen_add_edit_
         }
     }
 
-    private fun requestPermissions(vararg permissions: String, function: (Boolean) -> Unit) {
-        Dexter.withContext(requireContext())
-            .withPermissions(
-                *permissions
-            )
-            .withListener(object : MultiplePermissionsListener {
-                override fun onPermissionsChecked(report: MultiplePermissionsReport?) {
-                    report?.let {
-                        if (report.areAllPermissionsGranted()) {
-                            function(true)
-                        } else {
-                            showSettingsDialog(*permissions)
-                        }
-                    }
-                }
 
-                override fun onPermissionRationaleShouldBeShown(
-                    permissions: MutableList<PermissionRequest>?,
-                    token: PermissionToken?
-                ) {
-                    token?.continuePermissionRequest()
-                }
-            })
-            .withErrorListener {
-                showSnackBar("Xatolik")
-            }
-            .check()
-    }
-
-    private fun showSettingsDialog(vararg permissions: String) {
-        val builder = androidx.appcompat.app.AlertDialog.Builder(requireContext())
-        builder.setTitle("Ruxsat kerak !")
-        builder.setMessage("${getPermissionNames(*permissions)}larga ruxsat talab etiladi!")
-        builder.setPositiveButton("Sozlamalar") { dialog, _ ->
-            dialog.cancel()
-            val intent = Intent(Settings.ACTION_APPLICATION_DETAILS_SETTINGS)
-            val uri = Uri.fromParts("package", requireContext().packageName, null)
-            intent.data = uri
-            startActivityForResult(intent, 101)
-        }
-        builder.setNegativeButton("Bekor") { dialog, _ ->
-            dialog.cancel()
-        }
-        builder.show()
-    }
-
-    private fun getPermissionNames(vararg permissions: String): String {
-        var names = ""
-        permissions.forEach {
-            when (it) {
-                Manifest.permission.CAMERA -> names = "kamera, $names"
-                Manifest.permission.REQUEST_INSTALL_PACKAGES -> names = "dastur o'rnatish, $names"
-                Manifest.permission.READ_EXTERNAL_STORAGE -> names = "xotiradan o'qish, $names"
-                Manifest.permission.WRITE_EXTERNAL_STORAGE -> names = "xotiraga yozish, $names"
-                Manifest.permission.ACCESS_COARSE_LOCATION -> names = "geo lokaciya, $names"
-                Manifest.permission.ACCESS_FINE_LOCATION -> names = "geo lokaciya, $names"
-            }
-        }
-        return if (names.length > 2) names.trim().substring(0, names.length - 2) else ""
-    }
 
     private var resultLauncher =
         this.registerForActivityResult(ActivityResultContracts.StartActivityForResult()) { result ->
@@ -333,7 +279,8 @@ open class BaseFragmentAddEditDocuments : BaseFragment(R.layout.screen_add_edit_
             val date = System.currentTimeMillis()
             val documentFile =
                 DocumentFile.fromSingleUri(requireContext(), pickedUri)
-            val fileName = documentFile?.name ?: (date / 1000).toString()
+            val fileName =(documentFile?.name ?: (date / 1000).toString()).encryption(date)
+
             val headBytesCount = Utils().getHeadBytesCount().toInt()
             file.setReadable(true)
             val bytes = requireContext().contentResolver.openInputStream(pickedUri)?.readBytes()

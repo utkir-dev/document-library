@@ -1,6 +1,7 @@
 package com.tiptop.presentation.screens
 
 
+import android.Manifest
 import android.annotation.SuppressLint
 import android.app.AlarmManager
 import android.app.AlertDialog
@@ -8,7 +9,9 @@ import android.app.PendingIntent
 import android.content.Intent
 import android.content.pm.ActivityInfo
 import android.content.res.Configuration
+import android.net.Uri
 import android.os.SystemClock
+import android.provider.Settings
 import android.transition.Slide
 import android.transition.TransitionManager
 import android.view.Gravity
@@ -23,6 +26,11 @@ import androidx.fragment.app.Fragment
 import com.google.android.material.snackbar.Snackbar
 import com.google.gson.Gson
 import com.google.gson.reflect.TypeToken
+import com.karumi.dexter.Dexter
+import com.karumi.dexter.MultiplePermissionsReport
+import com.karumi.dexter.PermissionToken
+import com.karumi.dexter.listener.PermissionRequest
+import com.karumi.dexter.listener.multi.MultiplePermissionsListener
 import com.shockwave.pdfium.BuildConfig
 import com.tiptop.R
 import com.tiptop.data.models.local.DocumentLocal
@@ -154,7 +162,63 @@ abstract class BaseFragment(layoutId: Int) : Fragment(layoutId) {
             allert.cancel()
         }
     }
+    fun requestPermissions(vararg permissions: String, function: (Boolean) -> Unit) {
+        Dexter.withContext(requireContext())
+            .withPermissions(
+                *permissions
+            )
+            .withListener(object : MultiplePermissionsListener {
+                override fun onPermissionsChecked(report: MultiplePermissionsReport?) {
+                    report?.let {
+                        if (report.areAllPermissionsGranted()) {
+                            function(true)
+                        } else {
+                            showSettingsDialog(*permissions)
+                        }
+                    }
+                }
 
+                override fun onPermissionRationaleShouldBeShown(
+                    permissions: MutableList<PermissionRequest>?,
+                    token: PermissionToken?
+                ) {
+                    token?.continuePermissionRequest()
+                }
+            })
+            .check()
+    }
+
+    private fun showSettingsDialog(vararg permissions: String) {
+        val builder = androidx.appcompat.app.AlertDialog.Builder(requireContext())
+        builder.setTitle("Ruxsat kerak !")
+        builder.setMessage("${getPermissionNames(*permissions)}larga ruxsat talab etiladi!")
+        builder.setPositiveButton("Sozlamalar") { dialog, _ ->
+            dialog.cancel()
+            val intent = Intent(Settings.ACTION_APPLICATION_DETAILS_SETTINGS)
+            val uri = Uri.fromParts("package", requireActivity().packageName, null)
+            intent.data = uri
+            startActivityForResult(intent, 101)
+        }
+        builder.setNegativeButton("Bekor") { dialog, _ ->
+            dialog.cancel()
+        }
+        builder.show()
+    }
+
+    private fun getPermissionNames(vararg permissions: String): String {
+        var names = ""
+        permissions.forEach {
+            when (it) {
+                Manifest.permission.CAMERA -> names = "kamera, $names"
+                Manifest.permission.REQUEST_INSTALL_PACKAGES -> names = "dastur o'rnatish, $names"
+                Manifest.permission.READ_EXTERNAL_STORAGE -> names = "xotiradan o'qish, $names"
+                Manifest.permission.WRITE_EXTERNAL_STORAGE -> names = "xotiraga yozish, $names"
+                Manifest.permission.ACCESS_COARSE_LOCATION -> names = "geo lokaciya, $names"
+                Manifest.permission.ACCESS_FINE_LOCATION -> names = "geo lokaciya, $names"
+            }
+        }
+        return if (names.length > 2) names.trim().substring(0, names.length - 2) else ""
+    }
 
     companion object {
         private var timeOut: Long = 0

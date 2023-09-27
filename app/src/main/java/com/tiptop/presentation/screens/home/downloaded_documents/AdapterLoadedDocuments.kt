@@ -12,11 +12,14 @@ import com.tiptop.app.common.Constants.TYPE_FOLDER
 import com.tiptop.app.common.Constants.TYPE_IMAGE
 import com.tiptop.app.common.Constants.TYPE_PDF
 import com.tiptop.app.common.Constants.TYPE_TXT
+import com.tiptop.app.common.Encryptor
+import com.tiptop.app.common.Utils
 import com.tiptop.app.common.collapse
 import com.tiptop.app.common.expand
 import com.tiptop.app.common.validateFileSize
 import com.tiptop.data.models.local.DocumentForRv
 import com.tiptop.databinding.ItemDocumentTreeBinding
+import java.nio.charset.StandardCharsets
 
 
 open class AdapterLoadedDocuments(val listener: ClickListener) :
@@ -25,7 +28,7 @@ open class AdapterLoadedDocuments(val listener: ClickListener) :
 
         @SuppressLint("SetTextI18n", "NotifyDataSetChanged")
         fun onBind(document: DocumentForRv, position: Int) {
-            var name = document.name
+            var name = document.nameDecrypted()
             when (document.type) {
                 TYPE_FOLDER -> {
                     v.tvFileSize.visibility = View.GONE
@@ -34,6 +37,7 @@ open class AdapterLoadedDocuments(val listener: ClickListener) :
                         name = "$name(${document.count})"
                     }
                 }
+
                 TYPE_PDF -> {
                     v.ivFolder.setImageResource(R.drawable.ic_pdf)
                     v.tvFileSize.visibility = View.VISIBLE
@@ -54,15 +58,16 @@ open class AdapterLoadedDocuments(val listener: ClickListener) :
             }
             v.tvFolderName.text = name.substringBeforeLast(".")
             v.tvFileSize.text = document.size.validateFileSize()
-            v.lProgress.visibility = View.GONE
             v.ivFileState.visibility = View.GONE
 
             v.lItemTop.setOnClickListener {
                 if (document.type == 0) {
                     if (v.rvDocuments.visibility == View.GONE) {
-                        listener.onClickFolder(document,  v.rvDocuments)
+                        listener.onClickFolder(document, v.rvDocuments)
+                        v.ivFolder.setImageResource(R.drawable.ic_open_folder)
                         expand(v.rvDocuments)
                     } else {
+                        v.ivFolder.setImageResource(R.drawable.ic_folder)
                         collapse(v.rvDocuments)
                     }
                 } else {

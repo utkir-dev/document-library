@@ -2,10 +2,12 @@ package com.tiptop.presentation.screens.users.devices
 
 import android.annotation.SuppressLint
 import android.graphics.Color
+import android.text.Spannable
 import android.text.SpannableString
 import android.text.SpannableStringBuilder
 import android.text.Spanned
 import android.text.style.ForegroundColorSpan
+import android.util.Log
 import android.view.LayoutInflater
 import android.view.View
 import android.view.ViewGroup
@@ -28,11 +30,15 @@ class AdapterDevices(
     inner class Vh(val v: ItemDeviceBinding) : RecyclerView.ViewHolder(v.root) {
         @SuppressLint("SetTextI18n")
         fun onBind(device: DeviceLocal, positionDevice: Int) {
-            if (device.searchText.isNotEmpty()) {
+            if (device.searchText.isNotEmpty() && device.name.contains(device.searchText, true)) {
+                val startIndex = device.name.indexOf(device.searchText, ignoreCase = true)
+                val endIndex = startIndex + device.searchText.length
                 val spannableString = SpannableString(device.name)
                 spannableString.setSpan(
                     ForegroundColorSpan(Color.RED),
-                    0, device.searchText.length, Spanned.SPAN_EXCLUSIVE_EXCLUSIVE
+                    startIndex,
+                    endIndex,
+                    Spanned.SPAN_EXCLUSIVE_EXCLUSIVE
                 )
                 v.tvDeviceName.text = spannableString
             } else {
@@ -86,15 +92,6 @@ class AdapterDevices(
     class MyDiffUtil : DiffUtil.ItemCallback<DeviceLocal>() {
         override fun areItemsTheSame(oldItem: DeviceLocal, newItem: DeviceLocal): Boolean {
             return oldItem.id == newItem.id
-//                    oldItem.userId == newItem.userId &&
-//                    oldItem.name == newItem.name &&
-//                    oldItem.tablet == newItem.tablet &&
-//                    oldItem.libVersion == newItem.libVersion &&
-//                    oldItem.blocked == newItem.blocked &&
-//                    oldItem.admin == newItem.admin &&
-//                    oldItem.date == newItem.date &&
-//                    oldItem.dateAdded == newItem.dateAdded&&
-//                    oldItem.hashCode() == newItem.hashCode()
         }
 
         override fun areContentsTheSame(oldItem: DeviceLocal, newItem: DeviceLocal): Boolean {

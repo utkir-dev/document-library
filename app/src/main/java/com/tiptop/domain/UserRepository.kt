@@ -25,7 +25,8 @@ interface UserRepository {
     suspend fun observeDeletedIds(): Flow<Boolean>
     suspend fun addFakeUsers()
 
-    fun checkLibVersion()
+
+
     fun getUsers(): Flow<List<UserLocal>>
     fun getUserAndDevices(): Flow<Map<UserLocal,List<DeviceLocal>>>
     fun getUserAndDevices(seachText:String): Flow<Map<UserLocal,List<DeviceLocal>>>

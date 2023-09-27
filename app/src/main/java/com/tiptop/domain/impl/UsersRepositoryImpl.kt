@@ -6,17 +6,13 @@ import androidx.lifecycle.MutableLiveData
 import com.google.firebase.firestore.ktx.firestore
 import com.google.firebase.firestore.ktx.toObject
 import com.google.firebase.ktx.Firebase
-import com.google.gson.Gson
-import com.tiptop.app.common.Constants.KEY_LIB_VERSION
 import com.tiptop.app.common.MyDevice
 import com.tiptop.app.common.ResponseResult
-import com.tiptop.app.common.SharedPrefSimple
 import com.tiptop.app.common.Utils
 import com.tiptop.data.models.local.DeviceLocal
 import com.tiptop.data.models.local.UserLocal
 import com.tiptop.data.models.remote.DeletedIdRemote
 import com.tiptop.data.models.remote.DeviceRemote
-import com.tiptop.data.models.remote.LibVersion
 import com.tiptop.data.models.remote.UserRemote
 import com.tiptop.data.repository.local.DaoDeletedId
 import com.tiptop.data.repository.local.DaoDevice
@@ -250,24 +246,9 @@ class UsersRepositoryImpl @Inject constructor(
         usersLocalDb.addMany(fakeUsers)
     }
 
-    override fun checkLibVersion() {
-        if (auth.currentUser != null) {
-            remoteDatabase.firestore.collection(Utils().getVersionFolder())
-                .document(Utils().getVersionFolder())
-                .addSnapshotListener { snapshot, error ->
-                    snapshot?.let {
-                        try {
-                            val device = snapshot.toObject(LibVersion::class.java)
-                            SharedPrefSimple(context).saveString(
-                                KEY_LIB_VERSION,
-                                Gson().toJson(device)
-                            )
-                        } catch (_: Exception) {
-                        }
-                    }
-                }
-        }
-    }
+
+
+
 
     override fun getUsers(): Flow<List<UserLocal>> {
         return usersLocalDb.getAll().flowOn(Dispatchers.IO)

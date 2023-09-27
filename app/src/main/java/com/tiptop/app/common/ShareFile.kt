@@ -20,7 +20,7 @@ import com.tiptop.data.models.local.DocumentLocal
 @SuppressLint("SuspiciousIndentation")
 fun share(document: DocumentLocal, bytes: ByteArray, context: Activity) {
     try {
-        val newFile = context.getFileStreamPath(document.name)
+        val newFile = context.getFileStreamPath(document.nameDecrypted())
             newFile.writeBytes(bytes!!)
             val pref = SharedPrefSimple(context)
             val stringJson = pref.getString(KEY_JSON_CLEAR_CASH)

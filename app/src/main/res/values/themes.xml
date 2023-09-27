@@ -15,7 +15,7 @@
     <style name="Theme.NavigationDrawer.AppBarOverlay" parent="ThemeOverlay.AppCompat.Dark.ActionBar" />
 
     <style name="Theme.NavigationDrawer.PopupOverlay" parent="ThemeOverlay.AppCompat.Light" />
-
+    <style name="CardView" parent="Base.CardView"/>
 
     <style name="MyForm">
         <item name="boxCornerRadiusBottomStart">@dimen/dp10</item>

@@ -60,7 +60,7 @@ fun Double.roundTen(): String {
 }
 
 fun Double.round() = Math.round(this * 100.0) / 100.0
-fun String.encrypt(): String {
+fun String.encryption(): String {
     val md = MessageDigest.getInstance("MD5")
     val digest = md.digest(toByteArray())
     val hexString = BigInteger(1, digest).toString(16)

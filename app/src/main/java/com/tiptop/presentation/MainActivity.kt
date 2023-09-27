@@ -1,11 +1,14 @@
 package com.tiptop.presentation
 
+import android.Manifest
 import android.annotation.SuppressLint
 import android.app.AlertDialog
 import android.content.Intent
 import android.content.pm.ActivityInfo
+import android.net.Uri
 import android.os.Build
 import android.os.Bundle
+import android.provider.Settings
 import android.util.Log
 import android.view.MenuItem
 import android.view.View
@@ -23,15 +26,26 @@ import androidx.core.view.WindowInsetsControllerCompat
 import androidx.drawerlayout.widget.DrawerLayout
 import androidx.drawerlayout.widget.DrawerLayout.LOCK_MODE_LOCKED_CLOSED
 import androidx.drawerlayout.widget.DrawerLayout.LOCK_MODE_UNDEFINED
+import androidx.fragment.app.Fragment
+import androidx.fragment.app.FragmentTransaction
+import androidx.lifecycle.MutableLiveData
 import androidx.lifecycle.asLiveData
 import androidx.navigation.findNavController
 import com.google.android.material.navigation.NavigationView
 import com.google.firebase.auth.ktx.auth
 import com.google.firebase.ktx.Firebase
+import com.karumi.dexter.Dexter
+import com.karumi.dexter.MultiplePermissionsReport
+import com.karumi.dexter.PermissionToken
+import com.karumi.dexter.listener.PermissionRequest
+import com.karumi.dexter.listener.multi.MultiplePermissionsListener
 import com.tiptop.R
+import com.tiptop.app.common.Constants
 import com.tiptop.app.common.DarkMode
+import com.tiptop.app.common.DownloadController
 import com.tiptop.app.common.Variables.CURRENT_DEVICE_ID
 import com.tiptop.app.common.Variables.CURRENT_USER_ID
+import com.tiptop.data.models.local.LibVersion
 import com.tiptop.databinding.ActivityMainBinding
 import com.tiptop.databinding.DialogConfirmBinding
 import com.tiptop.presentation.screens.BaseViewModel
@@ -46,15 +60,16 @@ class MainActivity : AppCompatActivity(), NavigationView.OnNavigationItemSelecte
     private var ivNightMode: ImageView? = null
     private var tvUserHeader: TextView? = null
     private var tvAdminTitle: TextView? = null
-    private val vm by viewModels<BaseViewModel>()
+    val vm by viewModels<BaseViewModel>()
+
     @SuppressLint("SourceLockedOrientationActivity")
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
         binding = ActivityMainBinding.inflate(layoutInflater)
         setContentView(binding.root)
-    //    requestedOrientation = ActivityInfo.SCREEN_ORIENTATION_LOCKED
+        hideSystemUI()
 
-//        hideSystemUI()
+//        requestedOrientation = ActivityInfo.SCREEN_ORIENTATION_LOCKED
 //        val actionBarToggle = ActionBarDrawerToggle(this, drawer, 0, 0)
 //        drawer.addDrawerListener(actionBarToggle)
 //        supportActionBar?.setDisplayHomeAsUpEnabled(true)
@@ -73,8 +88,11 @@ class MainActivity : AppCompatActivity(), NavigationView.OnNavigationItemSelecte
         initHeader()
         initListeners()
         initCurrentUser()
+
         //fakeEntreance()
     }
+
+
 
     @SuppressLint("SetTextI18n")
     fun initCurrentUser() {
@@ -111,7 +129,8 @@ class MainActivity : AppCompatActivity(), NavigationView.OnNavigationItemSelecte
                                 if (currentDevice.admin) {
                                     tvAdminTitle?.visibility = View.VISIBLE
                                     binding.navView.menu.findItem(R.id.screenUsers).isVisible = true
-                                    binding.navView.menu.findItem(R.id.screenAddEditDocuments).isVisible =true
+                                    binding.navView.menu.findItem(R.id.screenAddEditDocuments).isVisible =
+                                        true
                                     initDrawer(true)
                                     binding.appBarMain.navHost.visibility = View.VISIBLE
                                     binding.navView.visibility = View.VISIBLE
@@ -164,15 +183,17 @@ class MainActivity : AppCompatActivity(), NavigationView.OnNavigationItemSelecte
             }
         }
     }
-private fun fakeEntreance(){
-    tvAdminTitle?.visibility = View.VISIBLE
-    binding.navView.menu.findItem(R.id.screenUsers).isVisible = true
-    binding.navView.menu.findItem(R.id.screenAddEditDocuments).isVisible =true
-    initDrawer(true)
-    binding.appBarMain.navHost.visibility = View.VISIBLE
-    binding.navView.visibility = View.VISIBLE
-    binding.animBlock.visibility = View.GONE
-}
+
+    private fun fakeEntreance() {
+        tvAdminTitle?.visibility = View.VISIBLE
+        binding.navView.menu.findItem(R.id.screenUsers).isVisible = true
+        binding.navView.menu.findItem(R.id.screenAddEditDocuments).isVisible = true
+        initDrawer(true)
+        binding.appBarMain.navHost.visibility = View.VISIBLE
+        binding.navView.visibility = View.VISIBLE
+        binding.animBlock.visibility = View.GONE
+    }
+
     private fun initDrawer(isEnable: Boolean) {
         if (isEnable) {
             // drawer.setDrawerLockMode(LOCK_MODE_UNLOCKED)
@@ -234,10 +255,12 @@ private fun fakeEntreance(){
                 controller.popBackStack(R.id.screenAddEditDocuments, true)
                 controller.navigate(R.id.screenAddEditDocuments)
             }
+
             R.id.screenUsers -> {
                 controller.popBackStack(R.id.screenUsers, true)
                 controller.navigate(R.id.screenUsers)
             }
+
             R.id.screenSettings -> {
                 controller.popBackStack(R.id.screenSettings, true)
                 controller.navigate(R.id.screenSettings)
@@ -292,21 +315,29 @@ private fun fakeEntreance(){
         if (drawer.isDrawerOpen(GravityCompat.START)) {
             drawer.closeDrawer(GravityCompat.START)
         } else {
-            if (blocked|| unPermitted){
+            if (blocked || unPermitted) {
                 finish()
             }
             findNavController(R.id.nav_host).popBackStack()
         }
     }
 
-    private fun hideSystemUI() {
+    fun hideSystemUI() {
         WindowCompat.setDecorFitsSystemWindows(window, false)
-        WindowInsetsControllerCompat(window, binding.appBarMain.root).let { controller ->
+        WindowInsetsControllerCompat(window, binding.root).let { controller ->
             controller.hide(WindowInsetsCompat.Type.systemBars())
-            controller.systemBarsBehavior =
-                WindowInsetsControllerCompat.BEHAVIOR_SHOW_TRANSIENT_BARS_BY_SWIPE
+            controller.systemBarsBehavior = WindowInsetsControllerCompat.BEHAVIOR_SHOW_BARS_BY_SWIPE
         }
-        this.window?.addFlags(WindowManager.LayoutParams.FLAG_LAYOUT_NO_LIMITS)
+        window?.addFlags(
+            WindowManager.LayoutParams.FLAG_LAYOUT_NO_LIMITS
+        )
+    }
+
+    fun showSystemUI() {
+        WindowCompat.setDecorFitsSystemWindows(window, true)
+        window?.addFlags(
+            WindowManager.LayoutParams.FLAG_LAYOUT_NO_LIMITS
+        )
     }
 
     companion object {

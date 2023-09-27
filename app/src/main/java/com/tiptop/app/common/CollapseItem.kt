@@ -28,11 +28,14 @@ fun expand(v: View) {
     v.startAnimation(a)
 }
 
+
 fun collapse(v: View) {
     val initialHeight = v.measuredHeight
     val a: Animation = object : Animation() {
         override fun applyTransformation(interpolatedTime: Float, t: Transformation?) {
             if (interpolatedTime == 1f) {
+                v.layoutParams.height = 0
+                v.requestLayout()
                 v.visibility = View.GONE
             } else {
                 v.layoutParams.height = initialHeight - (initialHeight * interpolatedTime).toInt()

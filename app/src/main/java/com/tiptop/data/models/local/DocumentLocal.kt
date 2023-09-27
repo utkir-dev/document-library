@@ -2,6 +2,7 @@ package com.tiptop.data.models.local
 
 import androidx.room.Entity
 import androidx.room.PrimaryKey
+import com.tiptop.app.common.decryption
 import com.tiptop.data.models.remote.DocumentRemote
 
 @Entity(tableName = "documents")
@@ -49,4 +50,7 @@ data class DocumentLocal(
         date = this.date,
         dateAdded = this.dateAdded
     )
+    fun nameDecrypted(): String {
+        return if (name.isEmpty()) "" else  name.decryption(dateAdded)
+    }
 }

@@ -18,11 +18,18 @@ class Utils {
     external fun getDefaultBlockImageCode(): String
     external fun getOrderMaskKey(): String
     external fun getBlockCodeKey(): String
+    external fun getCoverBitmapKey(): String
     external fun getKeyStr(number:Long): String
     external fun getSpecStr(number:Long): String
     external fun getBlockBuffer(): Int
     external fun getEncryptor(): String
     external fun getSecretKey(): String
+    external fun getFactoryAlgorithm(): String
+    external fun getPBESecretKey(number:Long): String
+    external fun getSalt(number:Long): String
+    external fun getIv(number:Long): String
+    external fun getIterationCount(): Int
+    external fun getKeyLength(): Int
 
     companion object {
         init {

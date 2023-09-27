@@ -4,13 +4,13 @@
     android:id="@+id/card"
     android:layout_width="wrap_content"
     android:layout_height="wrap_content"
-    android:layout_marginVertical="@dimen/dp3"
+    android:layout_marginVertical="@dimen/dp4"
     android:layout_marginHorizontal="@dimen/dp3"
-    android:elevation="@dimen/dp5"
+    app:cardElevation="0dp"
     android:clickable="true"
+    app:cardBackgroundColor="@android:color/transparent"
     android:focusable="true"
     android:foreground="?android:attr/selectableItemBackground"
-
     app:cardCornerRadius="@dimen/dp10">
 
     <TextView

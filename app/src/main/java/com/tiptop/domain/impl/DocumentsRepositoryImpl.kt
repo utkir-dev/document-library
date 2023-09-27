@@ -2,27 +2,38 @@ package com.tiptop.domain.impl
 
 import android.annotation.SuppressLint
 import android.content.Context
+import android.content.SharedPreferences
 import android.net.Uri
+import android.util.Log
 import androidx.core.net.toUri
+import com.google.android.gms.tasks.Task
 import com.google.firebase.firestore.ktx.firestore
 import com.google.firebase.ktx.Firebase
 import com.google.firebase.storage.FirebaseStorage
+import com.google.firebase.storage.StorageMetadata
+import com.google.gson.Gson
+import com.tiptop.app.common.Constants
 import com.tiptop.app.common.Constants.HEAD
 import com.tiptop.app.common.Constants.NEW_DOCUMENTS_VISIBILITY_PERIOD
+import com.tiptop.app.common.Constants.NEW_VERSION
 import com.tiptop.app.common.Constants.TYPE_FOLDER
 import com.tiptop.app.common.Constants.TYPE_PDF
+import com.tiptop.app.common.DownloadController
 import com.tiptop.app.common.Resource
 import com.tiptop.app.common.ResponseResult
 import com.tiptop.app.common.Utils
 import com.tiptop.app.common.getBytes
+import com.tiptop.app.common.validateFileSize
 import com.tiptop.app.di.AppScope
 import com.tiptop.data.models.local.DocumentLocal
+import com.tiptop.data.models.local.LibVersion
 import com.tiptop.data.models.remote.DeletedIdRemote
 import com.tiptop.data.models.remote.DocumentRemote
 import com.tiptop.data.repository.local.DaoDocument
 import com.tiptop.domain.DocumentsRepository
 import com.tiptop.domain.AuthRepository
 import kotlinx.coroutines.CoroutineScope
+import kotlinx.coroutines.Deferred
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.async
 import kotlinx.coroutines.channels.awaitClose
@@ -45,6 +56,7 @@ class DocumentsRepositoryImpl @Inject constructor(
     private val remoteStorage: FirebaseStorage,
     private val documentsLocalDb: DaoDocument,
     private val context: Context,
+    private val shared: SharedPreferences,
     @AppScope private val coroutine: CoroutineScope
 ) : DocumentsRepository {
     override suspend fun saveRemoteDocument(documentRemote: DocumentRemote): ResponseResult<Boolean> {
@@ -164,6 +176,35 @@ class DocumentsRepositoryImpl @Inject constructor(
         reference.getFile(file.toUri())
     }
 
+    override fun checkLibVersion() = flow {
+        if (auth.currentUser != null) {
+            var fileName = ""
+            var fileUrl = ""
+            var fileSize = 0L
+            var task: Task<StorageMetadata>? = null
+            remoteStorage.getReference(NEW_VERSION).listAll().addOnSuccessListener { list ->
+                list.items.forEach { item ->
+                    fileName = item.name
+                    task = item.metadata.addOnSuccessListener {
+                        fileSize = it.sizeBytes
+                    }
+                }
+            }.await()
+
+            remoteStorage.getReference("$NEW_VERSION/$fileName").downloadUrl.addOnSuccessListener { uri ->
+                fileUrl = uri.toString()
+            }.await()
+            task?.await()
+            val lib = LibVersion(
+                apkName = fileName,
+                url = fileUrl,
+                size = fileSize.validateFileSize()
+            )
+            emit(lib)
+        }
+    }
+
+
     override suspend fun downloadFileLive(document: DocumentLocal): Flow<Resource<DocumentLocal>> =
         callbackFlow {
             if (document.type == TYPE_PDF) {
@@ -277,10 +318,8 @@ class DocumentsRepositoryImpl @Inject constructor(
 
     @SuppressLint("Recycle")
     override fun getFileBytes(id: String): Flow<ByteArray?> = flow {
-        emit(getBytes(id,context))
+        emit(getBytes(id, context))
     }
-
-
 
     override fun getLoadedDocumentsCount(): Flow<Int> {
         return documentsLocalDb.getLoadedDocumentsCount(true).flowOn(Dispatchers.IO)
@@ -316,6 +355,10 @@ class DocumentsRepositoryImpl @Inject constructor(
         return documentsLocalDb.getChildsCountByParentId(parentId)
     }
 
+    override fun getLoadedChildsCountByParentId(parentId: String): Int {
+        return documentsLocalDb.getLoadedChildsCountByParentId(parentId)
+    }
+
     override fun getDocumentsByParentId(parentId: String): Flow<List<DocumentLocal>> {
         return documentsLocalDb.getDocumentsByParentId(parentId = parentId)
             .flowOn(Dispatchers.IO)
@@ -326,11 +369,15 @@ class DocumentsRepositoryImpl @Inject constructor(
     }
 
     override fun getDocumentByIdFlow(id: String): Flow<DocumentLocal> {
-        return documentsLocalDb.getDocumentByIdFlow(id)
+        return documentsLocalDb.getDocumentByIdFlow(id).flowOn(Dispatchers.IO)
+    }
+
+    override fun getDocumentById(id: String): DocumentLocal {
+        return documentsLocalDb.getDocumentById(id)
     }
 
     override fun getLastSeenDocuments(): Flow<List<DocumentLocal>> {
-        return documentsLocalDb.getLastSeenDocuments()
+        return documentsLocalDb.getLastSeenDocuments().flowOn(Dispatchers.IO)
     }
 
 }

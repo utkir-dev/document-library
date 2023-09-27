@@ -2,17 +2,18 @@
 <androidx.cardview.widget.CardView xmlns:android="http://schemas.android.com/apk/res/android"
     xmlns:app="http://schemas.android.com/apk/res-auto"
     android:id="@+id/card_last_books"
-    android:layout_gravity="left"
     android:layout_width="match_parent"
     android:layout_height="wrap_content"
+    app:cardBackgroundColor="@android:color/transparent"
     android:layout_marginHorizontal="@dimen/dp20"
-    android:maxHeight="700dp"
     app:cardCornerRadius="@dimen/dp10"
-    app:cardElevation="@dimen/dp10">
+    app:cardElevation="0dp"
+    >
 
     <LinearLayout
         android:layout_width="match_parent"
         android:layout_height="wrap_content"
+        android:background="@color/black_clear"
         android:orientation="vertical">
 
         <TextView
@@ -24,14 +25,14 @@
             android:gravity="center"
             android:padding="@dimen/dp8"
             android:text="Bekor"
+            android:textStyle="bold"
             android:textColor="@color/blue" />
 
         <androidx.recyclerview.widget.RecyclerView
             android:id="@+id/rv_last_books"
+            android:paddingHorizontal="@dimen/dp6"
             android:layout_width="match_parent"
             android:layout_height="wrap_content"
-            android:background="@color/grey_light"
-            android:paddingHorizontal="@dimen/dp6"
             app:layoutManager="androidx.recyclerview.widget.LinearLayoutManager" />
 
     </LinearLayout>

@@ -20,7 +20,9 @@ import androidx.recyclerview.widget.RecyclerView
 import com.google.android.material.tabs.TabLayout
 import com.tiptop.R
 import com.tiptop.app.common.DebouncingQueryTextListener
+import com.tiptop.app.common.Encryptor
 import com.tiptop.app.common.Status
+import com.tiptop.app.common.Utils
 import com.tiptop.app.common.huminize
 import com.tiptop.app.common.isInternetAvailable
 import com.tiptop.data.models.local.DeviceLocal
@@ -331,6 +333,7 @@ class PageAccounts : BaseFragment(R.layout.page_accounts_devices) {
             if (mapUserAndDevices?.isNotEmpty() == true) {
                 if (!isUserInfoShown) {
                     isUserInfoShown = true
+                    val telegramUser =  user.telegramDecrypted()
                     val device = mapUserAndDevices.values.map { it.find { it.userId == user.id } }
                         .find { it?.userId == user.id }
                     val deviceName =
@@ -338,13 +341,12 @@ class PageAccounts : BaseFragment(R.layout.page_accounts_devices) {
                     val isPermitted =
                         if (user.permitted) "Kirishga ruxsat berilgan" else "Kirishga ruxsat yuq"
                     val telegram =
-                        if (user.telegramUser.isEmpty()) "Telegram nomi kiritilmagan" else "Telegram nomi ${user.telegramUser}"
+                        if (user.telegramUser.isEmpty()) "Telegram nomi kiritilmagan" else "Telegram nomi $telegramUser"
                     val message =
                         "Bu email ${user.dateAdded.huminize()} da yaratilgan. Yaratgan qurilma $deviceName. $isPermitted. $telegram. Oxirgi kirgan sana ${user.date.huminize()}"
                     showAllertDialog(title = user.email, message = message) {
                     }
                 }
-
             }
         }
     }

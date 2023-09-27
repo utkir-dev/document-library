@@ -9,18 +9,18 @@ import androidx.navigation.fragment.findNavController
 import androidx.recyclerview.widget.DividerItemDecoration
 import androidx.recyclerview.widget.LinearLayoutManager
 import com.tiptop.R
-import com.tiptop.app.common.Constants
 import com.tiptop.app.common.Constants.MOTHER_ID
 import com.tiptop.app.common.Constants.TYPE_FOLDER
 import com.tiptop.app.common.Constants.TYPE_IMAGE
 import com.tiptop.app.common.Constants.TYPE_PDF
+import com.tiptop.app.common.encryption
 import com.tiptop.app.common.hideKeyBoard
 import com.tiptop.app.common.isInternetAvailable
 import com.tiptop.data.models.local.DocumentForRv
 import com.tiptop.data.models.local.DocumentLocal
 import com.tiptop.data.models.remote.DocumentRemote
-import com.tiptop.presentation.screens.document_view.pdf.ARG_PARAM_DOCUMENT
 import com.tiptop.presentation.screens.document_view.image.ARG_PARAM_IMAGE
+import com.tiptop.presentation.screens.document_view.pdf.ScreenPdfView
 import dagger.hilt.android.AndroidEntryPoint
 import java.io.File
 import java.util.UUID
@@ -101,13 +101,13 @@ class ScreenAddEditDocumentsChild1 : BaseFragmentAddEditDocuments() {
     private fun showFile(document: DocumentLocal) {
         val selectedFile: File = requireContext().getFileStreamPath(document.id)
         if (selectedFile.exists()) {
-            if (document.type == Constants.TYPE_PDF) {
+            if (document.type == TYPE_PDF) {
+                ScreenPdfView.currentId=document.id
                 findNavController().navigate(
-                    R.id.action_screenAddEditDocumentsChild1_to_screenDocument,
-                    bundleOf(ARG_PARAM_DOCUMENT to document.id)
+                    R.id.action_screenAddEditDocumentsChild1_to_screenDocument
                 )
             }
-            if (document.type == Constants.TYPE_IMAGE) {
+            if (document.type == TYPE_IMAGE) {
                 findNavController().navigate(
                     R.id.screenImageView,
                     bundleOf(ARG_PARAM_IMAGE to document.id)
@@ -131,7 +131,7 @@ class ScreenAddEditDocumentsChild1 : BaseFragmentAddEditDocuments() {
         binding.tvChildMain.setTextColor(Color.BLACK)
         vm.childDocument1.observe(viewLifecycleOwner) {
             if (it != null) {
-                binding.tvChild1.text = it.name
+                binding.tvChild1.text = it.nameDecrypted()
             }
         }
 
@@ -184,10 +184,11 @@ class ScreenAddEditDocumentsChild1 : BaseFragmentAddEditDocuments() {
             }
             if (text.isNotEmpty()) {
                 val date = System.currentTimeMillis()
+                val name= text.encryption(date)
                 val document = DocumentRemote(
                     id = UUID.randomUUID().toString(),
                     parentId = parentId,
-                    name = text,
+                    name = name,
                     headBytes = "",
                     type = TYPE_FOLDER,
                     size = 0,

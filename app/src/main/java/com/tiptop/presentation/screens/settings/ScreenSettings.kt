@@ -10,7 +10,7 @@ import android.widget.AdapterView
 import android.widget.ArrayAdapter
 import com.tiptop.R
 import com.tiptop.app.common.Utils
-import com.tiptop.app.common.encrypt
+import com.tiptop.app.common.encryption
 import com.tiptop.app.common.hideKeyboard
 import com.tiptop.databinding.ScreenSettingsBinding
 import com.tiptop.presentation.screens.BaseFragment
@@ -61,15 +61,15 @@ class ScreenSettings : BaseFragment(R.layout.screen_settings) {
 
             val actialCode = shared.getString(
                 Utils().getBlockCodeKey(),
-                Utils().getDefaultBlockCode().encrypt()
-            ) ?: Utils().getDefaultBlockCode().encrypt()
+                Utils().getDefaultBlockCode().encryption()
+            ) ?: Utils().getDefaultBlockCode().encryption()
 
-            if (passCurrent.encrypt() != actialCode) {
+            if (passCurrent.encryption() != actialCode) {
                 showSnackBar("Hozirgi kod noto'g'ri kiritildi")
             } else if (pass1 != pass2) {
                 showSnackBar("Kodlar mos kelmadi")
             } else if (pass1 == pass2) {
-                shared.edit().putString(Utils().getBlockCodeKey(), pass1.encrypt()).apply()
+                shared.edit().putString(Utils().getBlockCodeKey(), pass1.encryption()).apply()
                 showSnackBar("Kod yangilandi")
             }
         }

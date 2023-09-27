@@ -13,9 +13,12 @@ import com.tiptop.app.common.Constants.TYPE_FOLDER
 import com.tiptop.app.common.Constants.TYPE_IMAGE
 import com.tiptop.app.common.Constants.TYPE_PDF
 import com.tiptop.app.common.Constants.TYPE_TXT
+import com.tiptop.app.common.Encryptor
+import com.tiptop.app.common.Utils
 import com.tiptop.app.common.validateFileSize
 import com.tiptop.data.models.local.DocumentForRv
 import com.tiptop.databinding.ItemDocumentBinding
+import java.nio.charset.StandardCharsets
 
 
 open class AdapterAddEditDocument(val listener: ClickListener) :
@@ -26,7 +29,7 @@ open class AdapterAddEditDocument(val listener: ClickListener) :
 
         @SuppressLint("SetTextI18n", "NotifyDataSetChanged")
         fun onBind(document: DocumentForRv, position: Int) {
-            var name = document.name
+            var name =document.nameDecrypted()
             when (document.type) {
                 TYPE_FOLDER -> {
                     v.tvFileSize.visibility = View.GONE
@@ -66,7 +69,6 @@ open class AdapterAddEditDocument(val listener: ClickListener) :
             } else {
                 v.lProgress.visibility = View.GONE
             }
-            Log.d("downloadFile","AdapterDocument loaded: ${document.loaded}")
 
             if (document.type == TYPE_FOLDER) {
                 v.ivFileState.visibility = View.GONE

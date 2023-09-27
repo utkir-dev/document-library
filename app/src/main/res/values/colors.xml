@@ -41,12 +41,16 @@
     <color name="background">#F6F6F6</color>
     <color name="blue_light">#71A5FC</color>
     <color name="blue">#166BFA</color>
+    <color name="blue_clear">#400761F8</color>
     <color name="blue_dark2">#0C5BBA</color>
     <color name="blue_center">#0F65CD</color>
     <color name="green">#39CE40</color>
+    <color name="green_clear">#4004FF10</color>
     <color name="green_dark">#12B31A</color>
     <color name="red">#FF0000</color>
+    <color name="red_clear">#40FF0000</color>
     <color name="yellow">#F4FF81</color>
+    <color name="yellow_clear">#4DEEFF02</color>
     <color name="orange">#FF7700</color>
     <color name="red_sms">#DD2371</color>
     <color name="white_night">#25303F</color>

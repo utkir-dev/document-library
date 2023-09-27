@@ -5,11 +5,14 @@ import androidx.room.Database
 import androidx.room.Room
 import androidx.room.RoomDatabase
 import com.tiptop.app.common.Utils
+import com.tiptop.data.models.local.ArabUzBase
+import com.tiptop.data.models.local.ArabUzUser
 import com.tiptop.data.models.local.DeletedIdLocal
 import com.tiptop.data.models.local.DeviceLocal
 import com.tiptop.data.models.local.DocumentLocal
-import com.tiptop.data.models.local.FolderLocal
 import com.tiptop.data.models.local.UserLocal
+import com.tiptop.data.models.local.UzArabBase
+import com.tiptop.data.models.local.UzArabUser
 
 
 @Database(
@@ -17,7 +20,11 @@ import com.tiptop.data.models.local.UserLocal
         DeviceLocal::class,
         DocumentLocal::class,
         UserLocal::class,
-        DeletedIdLocal::class
+        DeletedIdLocal::class,
+        UzArabBase::class,
+        ArabUzBase::class,
+        UzArabUser::class,
+        ArabUzUser::class
     ],
     version = 1,
     exportSchema = false
@@ -28,6 +35,10 @@ abstract class MyRoom : RoomDatabase() {
     abstract fun UserDao(): DaoUser
     abstract fun DeviceDao(): DaoDevice
     abstract fun DeletedIdDao(): DaoDeletedId
+    abstract fun UzarBaseDao(): DaoUzarBase
+    abstract fun AruzBaseDao(): DaoAruzBase
+    abstract fun UzarUserDao(): DaoUzarUser
+    abstract fun AruzUserDao(): DaoAruzUser
 
     companion object {
         @Volatile

@@ -1,32 +1,22 @@
 package com.tiptop.presentation.screens.home
 
-import android.content.Context
-import android.graphics.Bitmap
-import androidx.core.net.toUri
 import androidx.lifecycle.LiveData
 import androidx.lifecycle.MutableLiveData
 import androidx.lifecycle.ViewModel
 import androidx.lifecycle.viewModelScope
 import com.github.msarhan.ummalqura.calendar.UmmalquraCalendar
-import com.google.gson.Gson
-import com.shockwave.pdfium.PdfDocument
-import com.shockwave.pdfium.PdfiumCore
 import com.tiptop.app.common.Constants
-import com.tiptop.app.common.Constants.LIB_VERSION
-import com.tiptop.app.common.Resource
-import com.tiptop.app.common.SharedPrefSimple
+import com.tiptop.app.common.Encryptor
+import com.tiptop.app.common.Utils
 import com.tiptop.data.models.local.DocumentLocal
-import com.tiptop.domain.AuthRepository
 import com.tiptop.domain.DocumentsRepository
-import com.tiptop.domain.UserRepository
 import dagger.hilt.android.lifecycle.HiltViewModel
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.async
+import kotlinx.coroutines.flow.collect
 import kotlinx.coroutines.flow.collectLatest
+import kotlinx.coroutines.flow.combine
 import kotlinx.coroutines.launch
-import java.io.File
-import java.io.IOException
-import java.io.InputStream
 import java.text.SimpleDateFormat
 import java.util.Calendar
 import java.util.Date
@@ -51,6 +41,9 @@ class HomeViewModelImpl @Inject constructor(
     private val _countNewDocuments = MutableLiveData(0)
     override val countNewDocuments: LiveData<Int> = _countNewDocuments
 
+    private val _documentBytes = MutableLiveData<ByteArray?>()
+    val documentBytes: LiveData<ByteArray?> = _documentBytes
+
     private val _hijriy = MutableLiveData("")
     override val hijriy: LiveData<String> = _hijriy
 
@@ -73,7 +66,7 @@ class HomeViewModelImpl @Inject constructor(
             }
             async {
                 repository.getLastSeenDocument().collectLatest {
-                    it?.let {_lastSeenDocument.postValue(it)  }
+                    it?.let { _lastSeenDocument.postValue(it) }
                 }
             }
             async {
@@ -81,6 +74,30 @@ class HomeViewModelImpl @Inject constructor(
             }
         }
     }
+
+    fun getFileBytes(document: DocumentLocal) {
+        viewModelScope.async(Dispatchers.IO) {
+            combine(
+                repository.getFileBytes(Constants.HEAD + document.id),
+                repository.getFileBytes(document.id)
+            ) { headEncryptedBytes, bodyBytes ->
+                bodyBytes?.let { body ->
+                    headEncryptedBytes?.let { head ->
+                        Encryptor().getDecryptedBytes(
+                            Utils().getKeyStr(document.dateAdded),
+                            Utils().getSpecStr(document.dateAdded),
+                            head
+                        ) {
+                            it?.let {
+                                _documentBytes.postValue(it.plus(body))
+                            }
+                        }
+                    }
+                }
+            }.collect()
+        }
+    }
+
     private fun showHijri() {
         try {
             val ar = Locale("ar");

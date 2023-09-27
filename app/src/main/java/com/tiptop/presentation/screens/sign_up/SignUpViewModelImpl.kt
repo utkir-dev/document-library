@@ -8,6 +8,7 @@ import com.jaredrummler.android.device.DeviceName
 import com.tiptop.app.common.Constants
 import com.tiptop.app.common.Resource
 import com.tiptop.app.common.ResponseResult
+import com.tiptop.app.common.encryption
 import com.tiptop.data.models.remote.DeviceRemote
 import com.tiptop.data.models.remote.UserRemote
 import com.tiptop.domain.AuthRepository
@@ -43,11 +44,16 @@ class SignUpViewModelImpl @Inject constructor(
             if (result is ResponseResult.Success) {
                 if (result.data?.isNotEmpty() == true) {
                     val date = System.currentTimeMillis()
+                    var telegram = telegramUser
+                    if (telegramUser.isNotEmpty()) {
+                        telegram= telegramUser.encryption(date)
+                    }
+
                     val userRemote = UserRemote(
                         id = result.data,
                         deviceId = deviceId.value ?: "",
                         email = email,
-                        telegramUser = "@$telegramUser",
+                        telegramUser = telegram,
                         permitted = false,
                         date = date,
                         dateAdded = date
@@ -58,7 +64,6 @@ class SignUpViewModelImpl @Inject constructor(
                     } catch (e: Exception) {
                         deviceId.value ?: ""
                     }
-
                     val deviceRemote = DeviceRemote(
                         id = deviceId.value ?: "",
                         name = deviceName,

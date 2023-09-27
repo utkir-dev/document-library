@@ -163,12 +163,16 @@
             android:layout_width="wrap_content"
             android:layout_height="wrap_content"
             android:layout_gravity="center_horizontal"
-            android:layout_marginVertical="@dimen/dp20"
+            android:layout_marginVertical="@dimen/dp30"
             android:text="Yangi versiya lib1.6"
             android:textColor="@color/color_red"
-            android:textSize="@dimen/font_large"
-            android:visibility="gone" />
-    </LinearLayout>
+            android:textSize="@dimen/font17"
+            android:visibility="visible"
+            app:layout_constraintBottom_toBottomOf="parent"
+            app:layout_constraintEnd_toEndOf="parent"
+            app:layout_constraintStart_toStartOf="parent"
+            />
 
+    </LinearLayout>
 
 </ScrollView>

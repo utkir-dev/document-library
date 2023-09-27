@@ -1,0 +1,129 @@
+<?xml version="1.0" encoding="utf-8"?>
+<androidx.cardview.widget.CardView xmlns:android="http://schemas.android.com/apk/res/android"
+    xmlns:app="http://schemas.android.com/apk/res-auto"
+    android:id="@+id/card_last_books"
+    android:layout_width="match_parent"
+    android:layout_height="wrap_content"
+    android:layout_marginHorizontal="@dimen/dp10"
+    app:cardBackgroundColor="@android:color/transparent"
+    app:cardCornerRadius="@dimen/dp10"
+    app:cardElevation="0dp">
+
+    <LinearLayout
+        android:layout_width="match_parent"
+        android:layout_height="match_parent"
+        android:background="@color/white_back"
+        android:orientation="vertical"
+        android:padding="@dimen/dp8">
+
+        <LinearLayout
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:gravity="center_vertical"
+            android:orientation="horizontal">
+
+            <TextView
+                android:id="@+id/tv_searched_word"
+                android:layout_width="0dp"
+                android:layout_height="wrap_content"
+                android:layout_weight="1"
+                android:text="Searching"
+                android:textColor="@color/black"
+                android:textSize="@dimen/font22"
+                android:textStyle="bold" />
+
+            <ImageView
+                android:id="@+id/iv_saved_word"
+                android:layout_width="@dimen/dp40"
+                android:layout_height="@dimen/dp40"
+                android:clickable="true"
+                android:focusable="true"
+                android:foreground="?android:attr/selectableItemBackground"
+                android:src="@drawable/ic_star_unselected" />
+
+        </LinearLayout>
+
+
+        <View
+            android:layout_width="match_parent"
+            android:layout_height="1dp"
+            android:layout_marginVertical="@dimen/dp5"
+            android:background="@color/grey_light" />
+
+        <androidx.core.widget.NestedScrollView
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content">
+
+            <LinearLayout
+                android:layout_width="match_parent"
+                android:layout_height="wrap_content"
+                android:orientation="vertical">
+
+                <TextView
+                    android:id="@+id/tv_uz_title"
+                    android:layout_width="match_parent"
+                    android:layout_height="wrap_content"
+                    android:text="o'zbekchasi"
+                    android:textColor="@color/blue"
+                    android:textSize="@dimen/font14"
+                    android:visibility="gone" />
+
+                <TextView
+                    android:id="@+id/tv_uz"
+                    android:layout_width="match_parent"
+                    android:layout_height="wrap_content"
+                    android:text="Translation"
+                    android:textColor="@color/black"
+                    android:textSize="@dimen/font20" />
+
+                <View
+                    android:layout_width="match_parent"
+                    android:layout_height="1dp"
+                    android:layout_marginVertical="@dimen/dp5"
+                    android:background="@color/grey_light"
+                    android:visibility="gone" />
+
+                <TextView
+                    android:id="@+id/tv_rus_title"
+                    android:layout_width="match_parent"
+                    android:layout_height="wrap_content"
+                    android:text="ruschasi"
+                    android:textColor="@color/blue"
+                    android:textSize="@dimen/font14"
+                    android:visibility="gone" />
+
+                <TextView
+                    android:id="@+id/tv_rus"
+                    android:layout_width="match_parent"
+                    android:layout_height="wrap_content"
+                    android:text="Translation"
+                    android:textColor="@color/black"
+                    android:textSize="@dimen/font20"
+                    android:visibility="gone" />
+
+                <androidx.cardview.widget.CardView
+                    android:layout_width="wrap_content"
+                    android:layout_height="wrap_content"
+                    android:layout_gravity="end"
+                    android:layout_marginHorizontal="@dimen/dp6"
+                    app:cardCornerRadius="@dimen/dp20">
+                    <TextView
+                        android:id="@+id/btn_ok"
+                        android:layout_width="wrap_content"
+                        android:layout_height="wrap_content"
+                        android:layout_gravity="end"
+                        android:paddingVertical="@dimen/dp4"
+                        android:paddingHorizontal="@dimen/dp10"
+                        android:background="@color/grey"
+                        android:textColor="@color/white"
+                        android:text="OK" />
+                </androidx.cardview.widget.CardView>
+
+
+            </LinearLayout>
+        </androidx.core.widget.NestedScrollView>
+
+
+    </LinearLayout>
+</androidx.cardview.widget.CardView>
+

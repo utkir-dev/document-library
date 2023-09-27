@@ -16,15 +16,21 @@ import dagger.hilt.InstallIn
 import dagger.hilt.android.qualifiers.ApplicationContext
 import dagger.hilt.components.SingletonComponent
 import com.tiptop.app.common.Utils
+import com.tiptop.data.repository.local.DaoAruzBase
+import com.tiptop.data.repository.local.DaoAruzUser
 import com.tiptop.data.repository.local.DaoDeletedId
 import com.tiptop.data.repository.local.DaoDevice
 import com.tiptop.data.repository.local.DaoDocument
 import com.tiptop.data.repository.local.DaoUser
+import com.tiptop.data.repository.local.DaoUzarBase
+import com.tiptop.data.repository.local.DaoUzarUser
 import com.tiptop.domain.DocumentsRepository
 import com.tiptop.domain.AuthRepository
+import com.tiptop.domain.DictionaryRepository
 import com.tiptop.domain.UserRepository
 import com.tiptop.domain.impl.DocumentsRepositoryImpl
 import com.tiptop.domain.impl.AuthRepositoryImpl
+import com.tiptop.domain.impl.DictionaryRepositoryImpl
 import com.tiptop.domain.impl.UsersRepositoryImpl
 import kotlinx.coroutines.CoroutineDispatcher
 import kotlinx.coroutines.CoroutineScope
@@ -62,10 +68,35 @@ class AppModule {
 
     @Provides
     @Singleton
+    fun provideDictionaryRepository(
+        auth: AuthRepository,
+        daoUzarBase: DaoUzarBase,
+        daoAruzBase: DaoAruzBase,
+        daoUzarUser: DaoUzarUser,
+        daoAruzUser: DaoAruzUser,
+        ctx: Context,
+        sharedPref:SharedPreferences,
+        coroutineScope: CoroutineScope
+    ): DictionaryRepository = DictionaryRepositoryImpl(
+        auth = auth,
+        remoteDatabase = Firebase,
+        remoteStorage = FirebaseStorage.getInstance(),
+        uzarBaseDb = daoUzarBase,
+        aruzBaseDb = daoAruzBase,
+        uzarUserDb = daoUzarUser,
+        aruzUserDb = daoAruzUser,
+        context = ctx,
+        shared=sharedPref,
+        coroutine = coroutineScope
+    )
+
+    @Provides
+    @Singleton
     fun provideAddEditDocumentRepository(
         auth: AuthRepository,
         daoDocument: DaoDocument,
         ctx: Context,
+        sharedPref: SharedPreferences,
         coroutineScope: CoroutineScope
     ): DocumentsRepository = DocumentsRepositoryImpl(
         auth = auth,
@@ -73,7 +104,8 @@ class AppModule {
         remoteStorage = FirebaseStorage.getInstance(),
         documentsLocalDb = daoDocument,
         context = ctx,
-        coroutine=coroutineScope
+        shared=sharedPref,
+        coroutine = coroutineScope
     )
 
     @Provides
@@ -89,6 +121,22 @@ class AppModule {
     @Provides
     @Singleton
     fun provideLocalDatabase(app: Application): MyRoom = MyRoom.getInstance(app)
+
+    @Provides
+    @Singleton
+    fun provideDaoAruzUser(db: MyRoom): DaoAruzUser = db.AruzUserDao()
+
+    @Provides
+    @Singleton
+    fun provideDaoUzarUser(db: MyRoom): DaoUzarUser = db.UzarUserDao()
+
+    @Provides
+    @Singleton
+    fun provideDaoAruzBase(db: MyRoom): DaoAruzBase = db.AruzBaseDao()
+
+    @Provides
+    @Singleton
+    fun provideDaoUzarBase(db: MyRoom): DaoUzarBase = db.UzarBaseDao()
 
     @Provides
     @Singleton
@@ -134,6 +182,7 @@ class AppModule {
     ): CoroutineScope = CoroutineScope(SupervisorJob() + defaultDispatcher)
 
 }
+
 @Retention(AnnotationRetention.RUNTIME)
 @Qualifier
 annotation class AppScope

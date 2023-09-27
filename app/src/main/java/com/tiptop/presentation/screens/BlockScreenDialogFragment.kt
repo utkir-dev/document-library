@@ -8,7 +8,7 @@ import android.view.ViewGroup
 import androidx.fragment.app.DialogFragment
 import com.tiptop.R
 import com.tiptop.app.common.Utils
-import com.tiptop.app.common.encrypt
+import com.tiptop.app.common.encryption
 import com.tiptop.databinding.ScreenPincodeBinding
 import dagger.hilt.android.AndroidEntryPoint
 import javax.inject.Inject
@@ -94,10 +94,10 @@ class BlockScreenDialogFragment : DialogFragment() {
     private fun check() {
         val actialCode = shared.getString(
             Utils().getBlockCodeKey(),
-            Utils().getDefaultBlockCode().encrypt()
-        ) ?: Utils().getDefaultBlockCode().encrypt()
+            Utils().getDefaultBlockCode().encryption()
+        ) ?: Utils().getDefaultBlockCode().encryption()
 
-        if (pass.encrypt() == actialCode) {
+        if (pass.encryption() == actialCode) {
             dismiss()
         }
     }

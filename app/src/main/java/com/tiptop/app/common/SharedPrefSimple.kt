@@ -1,10 +1,12 @@
 package com.tiptop.app.common
 
 import android.content.Context
+import androidx.appcompat.app.AppCompatActivity
+import com.tiptop.app.App
 import com.tiptop.presentation.MainActivity
 
 class SharedPrefSimple(val ctx: Context) {
-    private val sharedPref = (ctx as MainActivity).getPreferences(Context.MODE_PRIVATE)
+    private val sharedPref = (ctx as AppCompatActivity).getPreferences(Context.MODE_PRIVATE)
     fun cleaAllData() {
         sharedPref.edit().clear().apply()
     }
