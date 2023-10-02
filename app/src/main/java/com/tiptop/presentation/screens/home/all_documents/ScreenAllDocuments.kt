@@ -64,7 +64,7 @@ class ScreenAllDocuments : BaseFragment(R.layout.screen_documents),
                 .withLayoutRes(R.layout.item_document)
                 .setListener(this)
                 .setData(it.filter { it.parentId == MOTHER_ID }
-                    .sortedWith(compareBy<DocumentForRv> { it.type }.thenBy { it.name }))
+                    .sortedWith(compareBy<DocumentForRv> { it.type }.thenByDescending { it.dateAdded }))
                 .itemMargin(16.dp) //optional: margin by node's level. default = 24dp
                 //.showAllNodes(false) //optional: show all nodes or just show parent node. default = false
                 //.addAdapters(config = Config.DEFAULT, adapters = arrayOf(adapter))
@@ -124,6 +124,7 @@ class ScreenAllDocuments : BaseFragment(R.layout.screen_documents),
         bundle: Bundle?
     ) {
         val folderName = holder.findViewById<TextView>(R.id.tv_folder_name)
+        val newDocs = holder.findViewById<TextView>(R.id.tv_new_documents_count)
         val fileSize = holder.findViewById<TextView>(R.id.tv_file_size)
         val ivFolder = holder.findViewById<ImageView>(R.id.iv_folder)
         val ivFileState = holder.findViewById<ImageView>(R.id.iv_file_state)
@@ -168,8 +169,13 @@ class ScreenAllDocuments : BaseFragment(R.layout.screen_documents),
 
         }
         if (data.type == TYPE_FOLDER) {
-            val count = if ((data.count ?: 0) > 0) "(${data.count})" else ""
+            folderName.setTextColor(resources.getColor(R.color.black,null))
+            val count = if ((data.count) > 0) "(${data.count})" else ""
             folderName.text = "${name}$count"
+            val countNewDocs =
+                if ((data.countNewDocuments) > 0) "+${data.countNewDocuments}" else ""
+            newDocs.text = countNewDocs
+
             ivFileState.visibility = View.GONE
             fileSize.visibility = View.GONE
             if (item.isExpanded) {
@@ -178,6 +184,11 @@ class ScreenAllDocuments : BaseFragment(R.layout.screen_documents),
                 ivFolder.setImageResource(R.drawable.ic_folder)
             }
         } else {
+            if (System.currentTimeMillis() - Constants.NEW_DOCUMENTS_VISIBILITY_PERIOD < data.dateAdded){
+                folderName.setTextColor(resources.getColor(R.color.green,null))
+            }else{
+                folderName.setTextColor(resources.getColor(R.color.black,null))
+            }
             folderName.text = name.substringBeforeLast(".")
             ivFileState.visibility = View.VISIBLE
             if (data.loaded) {

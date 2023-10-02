@@ -11,13 +11,16 @@ object Constants {
     const val UZAR = "uzar"
 
 
+    const val KEY_MASK_TIME = "key_mask_time"
+    const val KEY_SCREEN_BLOCK = "key_screen_block"
+    const val KEY_IS_LAUNCHER_ICON_INSTALLED = "key_is_launcher_icon_installed"
     const val KEY_VERSION_ARUZ = "key_version_aruz"
     const val KEY_VERSION_UZAR = "key_version_uzar"
     const val KEY_JSON_CLEAR_CASH = "key_json_clear_cash"
     const val KEY_SCREEN_TIMER = "key_screen_timer"
     const val KEY_LAST_PAGE = "key_last_page"
 
-    const val NEW_DOCUMENTS_VISIBILITY_PERIOD = 2 * 86_400_000
+    const val NEW_DOCUMENTS_VISIBILITY_PERIOD = 86_400_000
     const val COUNT_ARUZ = 37000
     const val COUNT_URAZ = 16000
     const val HEAD = "head"

@@ -50,36 +50,24 @@ class DownloadController(
     private fun showInstallOption(
         destination: String
     ) {
-        Log.d("DownloadController", "showInstallOption")
-
         // set BroadcastReceiver to install app when .apk is downloaded
         val onComplete = object : BroadcastReceiver() {
             override fun onReceive(
                 context: Context,
                 intent: Intent
             ) {
-                Log.d("DownloadController", "onReceive")
-
                 val contentUri = FileProvider.getUriForFile(
                     context,
                     "com.tiptop.provider",
                     File(destination)
                 )
-                Log.d("DownloadController", "contentUri :$contentUri")
-
                 val install = Intent(Intent.ACTION_VIEW)
                 install.addFlags(Intent.FLAG_GRANT_READ_URI_PERMISSION)
                 install.addFlags(Intent.FLAG_ACTIVITY_CLEAR_TOP)
                 install.putExtra(Intent.EXTRA_NOT_UNKNOWN_SOURCE, true)
                 install.data = contentUri
-                Log.d("DownloadController", "installed install.data")
-
                 context.startActivity(install)
-                Log.d("DownloadController", "satarted startActivity")
-
                 context.unregisterReceiver(this)
-                Log.d("DownloadController", "unregisterReceiver")
-
                 // finish()
             }
         }

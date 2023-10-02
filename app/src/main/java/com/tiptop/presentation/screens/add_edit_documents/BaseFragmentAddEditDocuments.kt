@@ -7,7 +7,6 @@ import android.app.AlertDialog
 import android.content.Intent
 import android.net.Uri
 import android.os.Bundle
-import android.provider.Settings
 import android.view.LayoutInflater
 import android.view.View
 import android.view.ViewGroup
@@ -16,11 +15,6 @@ import androidx.documentfile.provider.DocumentFile
 import androidx.fragment.app.viewModels
 import androidx.lifecycle.MutableLiveData
 import androidx.navigation.fragment.findNavController
-import com.karumi.dexter.Dexter
-import com.karumi.dexter.MultiplePermissionsReport
-import com.karumi.dexter.PermissionToken
-import com.karumi.dexter.listener.PermissionRequest
-import com.karumi.dexter.listener.multi.MultiplePermissionsListener
 import com.tiptop.R
 import com.tiptop.app.common.Constants.MOTHER_ID
 import com.tiptop.app.common.Constants.TYPE_FOLDER
@@ -38,7 +32,7 @@ import com.tiptop.databinding.DialogAddEditNameBinding
 import com.tiptop.databinding.DialogCreateFolderOrUploadBinding
 import com.tiptop.databinding.DialogDocumentBinding
 import com.tiptop.databinding.ScreenAddEditDocumentsBinding
-import com.tiptop.presentation.MainActivity
+import com.tiptop.presentation.MainActivity.Companion.TEMPORARY_OUT
 import com.tiptop.presentation.screens.BaseFragment
 import dagger.hilt.android.AndroidEntryPoint
 import java.io.File
@@ -188,7 +182,7 @@ open class BaseFragmentAddEditDocuments : BaseFragment(R.layout.screen_add_edit_
         }
         permission.observe(viewLifecycleOwner) {
             if (it) {
-                isLoading = true
+                TEMPORARY_OUT = true
                 // Intent.ACTION_OPEN_DOCUMENT
                 // Intent.ACTION_GET_CONTENT
                 //addCategory(Intent.CATEGORY_OPENABLE)

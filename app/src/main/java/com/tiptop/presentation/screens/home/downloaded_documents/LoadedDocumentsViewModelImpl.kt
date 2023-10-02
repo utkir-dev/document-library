@@ -1,5 +1,6 @@
 package com.tiptop.presentation.screens.home.downloaded_documents
 
+import android.util.Log
 import androidx.lifecycle.LiveData
 import androidx.lifecycle.MutableLiveData
 import androidx.lifecycle.ViewModel
@@ -59,5 +60,11 @@ class LoadedDocumentsViewModelImpl @Inject constructor(
                 _isFolder.postValue(true)
             }
         }
+    }
+
+    override fun onCleared() {
+        super.onCleared()
+        Log.d("viewmodelOnCleared","LoadedDocumentsViewmodel cleared")
+
     }
 }

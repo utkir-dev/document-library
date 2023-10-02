@@ -20,7 +20,8 @@ data class DocumentForRv(
     var lastSeenDate: Long = 0,
     var date: Long = 0,
     var dateAdded: Long = 0,
-    var count: Int? = null,
+    var count: Int=0,
+    var countNewDocuments: Int=0,
     var child: List<DocumentForRv> = ArrayList()
 ) : NodeData<DocumentForRv> {
     fun toDocumentLocal() = DocumentLocal(

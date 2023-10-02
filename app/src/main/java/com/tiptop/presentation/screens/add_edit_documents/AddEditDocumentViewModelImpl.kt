@@ -1,5 +1,6 @@
 package com.tiptop.presentation.screens.add_edit_documents
 
+import android.util.Log
 import androidx.lifecycle.LiveData
 import androidx.lifecycle.MutableLiveData
 import androidx.lifecycle.ViewModel
@@ -122,5 +123,11 @@ class AddEditDocumentViewModelImpl @Inject constructor(
                 _resultDelete.postValue(Resource.error(false, "Xatolik"))
             }
         }
+    }
+
+    override fun onCleared() {
+        super.onCleared()
+        Log.d("viewmodelOnCleared","AddEditDocumentViewmodel cleared")
+
     }
 }

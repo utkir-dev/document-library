@@ -3,14 +3,13 @@ package com.tiptop.presentation.screens
 
 import android.Manifest
 import android.annotation.SuppressLint
-import android.app.AlarmManager
 import android.app.AlertDialog
-import android.app.PendingIntent
+import android.content.DialogInterface
 import android.content.Intent
 import android.content.pm.ActivityInfo
 import android.content.res.Configuration
 import android.net.Uri
-import android.os.SystemClock
+import android.os.Bundle
 import android.provider.Settings
 import android.transition.Slide
 import android.transition.TransitionManager
@@ -19,64 +18,63 @@ import android.view.View
 import android.view.ViewGroup
 import android.widget.LinearLayout
 import android.widget.PopupWindow
-import androidx.appcompat.app.AppCompatActivity
-import androidx.core.content.FileProvider
-import androidx.core.net.toUri
 import androidx.fragment.app.Fragment
+import androidx.fragment.app.viewModels
 import com.google.android.material.snackbar.Snackbar
-import com.google.gson.Gson
-import com.google.gson.reflect.TypeToken
 import com.karumi.dexter.Dexter
 import com.karumi.dexter.MultiplePermissionsReport
 import com.karumi.dexter.PermissionToken
 import com.karumi.dexter.listener.PermissionRequest
 import com.karumi.dexter.listener.multi.MultiplePermissionsListener
-import com.shockwave.pdfium.BuildConfig
 import com.tiptop.R
-import com.tiptop.data.models.local.DocumentLocal
+import com.tiptop.app.common.Constants.KEY_MASK_TIME
+import com.tiptop.app.common.Constants.KEY_SCREEN_BLOCK
+import com.tiptop.app.common.SharedPrefSimple
 import com.tiptop.databinding.DialogAllertBinding
 import com.tiptop.databinding.DialogConfirmBinding
 import com.tiptop.databinding.PopupDeviceBinding
-import java.io.File
-import java.io.InputStream
+import com.tiptop.presentation.MainActivity
+import java.util.HashSet
 
 
 abstract class BaseFragment(layoutId: Int) : Fragment(layoutId) {
 
+    private var shared: SharedPrefSimple? = null
+
+
     override fun onResume() {
         super.onResume()
-        val timeLimit = if (isLoading) 60_000 else 3000
-        if (System.currentTimeMillis() - timeOut > timeLimit && !isBlocked) {
-            blockScreen()
-        } else {
-            isBlocked = false
-            isLoading = false
-        }
+
+       // setMask()
+//        vm.stateBlock.observe(viewLifecycleOwner) {
+//            if (it) {
+//                blockScreen()
+//            }
+//        }
+//        val timeLimit = if (TEMPORARY_OUT) 60_000 else 3000
+//        if (System.currentTimeMillis() - timeOut > timeLimit) {
+//            vm.setStateBlock(true)
+//            // blockScreen()
+//        }
     }
 
-     fun blockScreen() {
-         isBlocked = true
-         BlockScreenDialogFragment().show(
-            parentFragmentManager,
-            BlockScreenDialogFragment.TAG
-        )
-    }
+
 
     override fun onPause() {
         super.onPause()
         timeOut = System.currentTimeMillis()
+      //  shared?.saveLong(KEY_MASK_TIME, System.currentTimeMillis())
     }
 
     @SuppressLint("SourceLockedOrientationActivity")
     fun changeScreenOriantation() {
         if (resources.configuration.orientation == Configuration.ORIENTATION_LANDSCAPE) {
-          //  activity?.requestedOrientation = ActivityInfo.SCREEN_ORIENTATION_UNSPECIFIED
+            //  activity?.requestedOrientation = ActivityInfo.SCREEN_ORIENTATION_UNSPECIFIED
             activity?.requestedOrientation = ActivityInfo.SCREEN_ORIENTATION_PORTRAIT
 
         } else {
             activity?.requestedOrientation = ActivityInfo.SCREEN_ORIENTATION_LANDSCAPE
         }
-       // activity?.requestedOrientation = ActivityInfo.SCREEN_ORIENTATION_UNSPECIFIED
     }
 
     fun showSnackBar(text: String) {
@@ -162,6 +160,7 @@ abstract class BaseFragment(layoutId: Int) : Fragment(layoutId) {
             allert.cancel()
         }
     }
+
     fun requestPermissions(vararg permissions: String, function: (Boolean) -> Unit) {
         Dexter.withContext(requireContext())
             .withPermissions(
@@ -221,8 +220,11 @@ abstract class BaseFragment(layoutId: Int) : Fragment(layoutId) {
     }
 
     companion object {
+//        private val masks = HashSet<BlockScreenDialogFragment>()
+//        private var blockScreenDialog: BlockScreenDialogFragment? = null
+//        var IS_ENTERED = false
+//        var TEMPORARY_OUT: Boolean = false
         private var timeOut: Long = 0
-        private var isBlocked: Boolean = false
-        var isLoading: Boolean = false
+        var IS_BLOCKED = false
     }
 }

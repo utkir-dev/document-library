@@ -5,7 +5,10 @@
         <item name="colorPrimary">@color/colorPrimary</item>
     </style>
 
-    <style name="Theme.LibraryPdf" parent="Base.Theme.LibraryPdf" />
+    <style name="Theme.LibraryPdf" parent="Base.Theme.LibraryPdf">
+        <item name="windowActionBar">false</item>
+        <item name="windowNoTitle">true</item>
+    </style>
 
     <style name="Theme.LibraryPdf.NoActionBar">
         <item name="windowActionBar">false</item>

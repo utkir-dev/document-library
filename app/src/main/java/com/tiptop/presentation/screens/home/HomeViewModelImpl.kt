@@ -1,5 +1,6 @@
 package com.tiptop.presentation.screens.home
 
+import android.util.Log
 import androidx.lifecycle.LiveData
 import androidx.lifecycle.MutableLiveData
 import androidx.lifecycle.ViewModel
@@ -125,6 +126,12 @@ class HomeViewModelImpl @Inject constructor(
         } catch (e: Exception) {
             e.printStackTrace()
         }
+
+    }
+
+    override fun onCleared() {
+        super.onCleared()
+        Log.d("viewmodelOnCleared","HomeViewmodel cleared")
 
     }
 }

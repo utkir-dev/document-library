@@ -1,16 +1,13 @@
 package com.tiptop.presentation
 
-import android.Manifest
 import android.annotation.SuppressLint
 import android.app.AlertDialog
+import android.content.ComponentName
 import android.content.Intent
-import android.content.pm.ActivityInfo
-import android.net.Uri
+import android.content.pm.PackageManager
 import android.os.Build
 import android.os.Bundle
-import android.provider.Settings
 import android.util.Log
-import android.view.MenuItem
 import android.view.View
 import android.view.WindowManager
 import android.widget.ImageView
@@ -26,41 +23,36 @@ import androidx.core.view.WindowInsetsControllerCompat
 import androidx.drawerlayout.widget.DrawerLayout
 import androidx.drawerlayout.widget.DrawerLayout.LOCK_MODE_LOCKED_CLOSED
 import androidx.drawerlayout.widget.DrawerLayout.LOCK_MODE_UNDEFINED
-import androidx.fragment.app.Fragment
-import androidx.fragment.app.FragmentTransaction
-import androidx.lifecycle.MutableLiveData
 import androidx.lifecycle.asLiveData
+import androidx.navigation.NavController
 import androidx.navigation.findNavController
-import com.google.android.material.navigation.NavigationView
 import com.google.firebase.auth.ktx.auth
 import com.google.firebase.ktx.Firebase
-import com.karumi.dexter.Dexter
-import com.karumi.dexter.MultiplePermissionsReport
-import com.karumi.dexter.PermissionToken
-import com.karumi.dexter.listener.PermissionRequest
-import com.karumi.dexter.listener.multi.MultiplePermissionsListener
 import com.tiptop.R
 import com.tiptop.app.common.Constants
+import com.tiptop.app.common.Constants.KEY_IS_LAUNCHER_ICON_INSTALLED
 import com.tiptop.app.common.DarkMode
-import com.tiptop.app.common.DownloadController
+import com.tiptop.app.common.SharedPrefSimple
 import com.tiptop.app.common.Variables.CURRENT_DEVICE_ID
 import com.tiptop.app.common.Variables.CURRENT_USER_ID
-import com.tiptop.data.models.local.LibVersion
 import com.tiptop.databinding.ActivityMainBinding
 import com.tiptop.databinding.DialogConfirmBinding
 import com.tiptop.presentation.screens.BaseViewModel
+import com.tiptop.presentation.screens.BlockScreenDialogFragment
 import dagger.hilt.android.AndroidEntryPoint
 
 
 @AndroidEntryPoint
-class MainActivity : AppCompatActivity(), NavigationView.OnNavigationItemSelectedListener {
+class MainActivity : AppCompatActivity() {
     private lateinit var binding: ActivityMainBinding
-    lateinit var drawer: DrawerLayout
+    private lateinit var drawer: DrawerLayout
     private var ivAvatar: ImageView? = null
     private var ivNightMode: ImageView? = null
     private var tvUserHeader: TextView? = null
     private var tvAdminTitle: TextView? = null
+    private var controller: NavController? = null
     val vm by viewModels<BaseViewModel>()
+    private var shared: SharedPrefSimple? = null
 
     @SuppressLint("SourceLockedOrientationActivity")
     override fun onCreate(savedInstanceState: Bundle?) {
@@ -68,22 +60,98 @@ class MainActivity : AppCompatActivity(), NavigationView.OnNavigationItemSelecte
         binding = ActivityMainBinding.inflate(layoutInflater)
         setContentView(binding.root)
         hideSystemUI()
-
-//        requestedOrientation = ActivityInfo.SCREEN_ORIENTATION_LOCKED
-//        val actionBarToggle = ActionBarDrawerToggle(this, drawer, 0, 0)
-//        drawer.addDrawerListener(actionBarToggle)
-//        supportActionBar?.setDisplayHomeAsUpEnabled(true)
-//        actionBarToggle.syncState()
+        if (savedInstanceState != null) {
+            val fr =
+                supportFragmentManager.findFragmentByTag(BlockScreenDialogFragment.TAG) as BlockScreenDialogFragment?
+            fr?.show(
+                supportFragmentManager,
+                BlockScreenDialogFragment.TAG
+            )
+        }
+        Log.d("lifecicle", "onCreate")
     }
 
     override fun onStart() {
         super.onStart()
+        shared = SharedPrefSimple(this)
+
         initFuns()
+        checkAppIcon()
+        Log.d("lifecicle", "onStart")
+    }
+
+    override fun onRestart() {
+        super.onRestart()
+        Log.d("lifecicle", "onRestart")
+
+    }
+
+    override fun onResume() {
+        super.onResume()
+        setMask()
+        Log.d("lifecicle", "onResume")
+
+    }
+
+    override fun onPause() {
+        super.onPause()
+        shared?.saveLong(Constants.KEY_MASK_TIME, System.currentTimeMillis())
+
+        Log.d("lifecicle", "onPause")
+    }
+
+    private fun setMask() {
+
+        val timeOut = shared?.getLong(Constants.KEY_MASK_TIME) ?: 0L
+        val isScreenBlocked = shared?.getBoolean(Constants.KEY_SCREEN_BLOCK) ?: true
+        if (!isScreenBlocked) {
+            if (IS_ENTERED && TEMPORARY_OUT && System.currentTimeMillis() - timeOut < 60_000) {
+
+            } else if (IS_ENTERED && System.currentTimeMillis() - timeOut < 2500) {
+
+            } else {
+                blockScreen()
+            }
+        } else {
+            blockScreen()
+        }
+    }
+
+    fun blockScreen() {
+        IS_ENTERED = false
+        val fr = BlockScreenDialogFragment()
+        fr.show(
+            supportFragmentManager,
+            BlockScreenDialogFragment.TAG
+        )
+        if (masks.isNotEmpty()) {
+            masks.forEach {
+                try {
+                    it.dismiss()
+                } catch (_: Exception) {
+                }
+            }
+            masks.clear()
+        }
+        masks.add(fr)
+    }
+
+    override fun onStop() {
+        super.onStop()
+        Log.d("lifecicle", "onStop")
+    }
+
+    override fun onDestroy() {
+        super.onDestroy()
+        Log.d("lifecicle", "onDestroy")
+
     }
 
     private fun initFuns() {
         drawer = binding.drawerLayout
-        binding.navView.setNavigationItemSelectedListener(this)
+        controller = findNavController(R.id.nav_host)
+        //  binding.navView.setNavigationItemSelectedListener(this)
+        initNavigationDrawerListener()
         initBackPressed()
         initHeader()
         initListeners()
@@ -91,8 +159,6 @@ class MainActivity : AppCompatActivity(), NavigationView.OnNavigationItemSelecte
 
         //fakeEntreance()
     }
-
-
 
     @SuppressLint("SetTextI18n")
     fun initCurrentUser() {
@@ -184,17 +250,8 @@ class MainActivity : AppCompatActivity(), NavigationView.OnNavigationItemSelecte
         }
     }
 
-    private fun fakeEntreance() {
-        tvAdminTitle?.visibility = View.VISIBLE
-        binding.navView.menu.findItem(R.id.screenUsers).isVisible = true
-        binding.navView.menu.findItem(R.id.screenAddEditDocuments).isVisible = true
-        initDrawer(true)
-        binding.appBarMain.navHost.visibility = View.VISIBLE
-        binding.navView.visibility = View.VISIBLE
-        binding.animBlock.visibility = View.GONE
-    }
-
     private fun initDrawer(isEnable: Boolean) {
+
         if (isEnable) {
             // drawer.setDrawerLockMode(LOCK_MODE_UNLOCKED)
             drawer.setDrawerLockMode(LOCK_MODE_UNDEFINED)
@@ -204,6 +261,10 @@ class MainActivity : AppCompatActivity(), NavigationView.OnNavigationItemSelecte
             }
             drawer.setDrawerLockMode(LOCK_MODE_LOCKED_CLOSED)
         }
+    }
+
+    fun openDrawer() {
+        drawer.open()
     }
 
     @SuppressLint("SetTextI18n")
@@ -242,41 +303,49 @@ class MainActivity : AppCompatActivity(), NavigationView.OnNavigationItemSelecte
         }
     }
 
-    override fun onNavigationItemSelected(item: MenuItem): Boolean {
-        Log.d("onNavigationItemSelected", "item.id = ${item.itemId}")
-        val controller = findNavController(R.id.nav_host)
-        when (item.itemId) {
-            R.id.screenHome -> {
-                controller.popBackStack(R.id.screenHome, true)
-                controller.navigate(R.id.screenHome)
-            }
+    private fun initNavigationDrawerListener() {
+        binding.navView.setNavigationItemSelectedListener { menuItem ->
+            drawer.closeDrawer(GravityCompat.START)
+            when (menuItem.itemId) {
+                R.id.screenHome -> {
+                    controller?.popBackStack(R.id.screenHome, true)
+                    controller?.navigate(R.id.screenHome)
+                    true
+                }
 
-            R.id.screenAddEditDocuments -> {
-                controller.popBackStack(R.id.screenAddEditDocuments, true)
-                controller.navigate(R.id.screenAddEditDocuments)
-            }
+                R.id.screenAddEditDocuments -> {
+                    controller?.popBackStack(R.id.screenAddEditDocuments, true)
+                    controller?.navigate(R.id.screenAddEditDocuments)
+                    true
+                }
 
-            R.id.screenUsers -> {
-                controller.popBackStack(R.id.screenUsers, true)
-                controller.navigate(R.id.screenUsers)
-            }
+                R.id.screenUsers -> {
+                    controller?.popBackStack(R.id.screenUsers, true)
+                    controller?.navigate(R.id.screenUsers)
+                    true
+                }
 
-            R.id.screenSettings -> {
-                controller.popBackStack(R.id.screenSettings, true)
-                controller.navigate(R.id.screenSettings)
-            }
+                R.id.screenSettings -> {
+                    controller?.popBackStack(R.id.screenSettings, true)
+                    controller?.navigate(R.id.screenSettings)
+                    true
+                }
 
-            R.id.sign_out -> {
-                showConfirmDialog { response ->
-                    if (response) {
-                        Firebase.auth.signOut()
-                        startActivity(Intent(this, MainActivity::class.java))
+                R.id.sign_out -> {
+                    showConfirmDialog { response ->
+                        if (response) {
+                            Firebase.auth.signOut()
+                            startActivity(Intent(this, MainActivity::class.java))
+                        }
                     }
+                    true
+                }
+
+                else -> {
+                    false
                 }
             }
         }
-        drawer.closeDrawer(GravityCompat.START)
-        return true
     }
 
     @SuppressLint("SetTextI18n")
@@ -318,7 +387,13 @@ class MainActivity : AppCompatActivity(), NavigationView.OnNavigationItemSelecte
             if (blocked || unPermitted) {
                 finish()
             }
-            findNavController(R.id.nav_host).popBackStack()
+            val count = findNavController(R.id.nav_host).currentBackStack.value.size
+            Log.d("currentBackStack", "count = $count")
+            if (count < 2) {
+                finish()
+            } else {
+                findNavController(R.id.nav_host).popBackStack()
+            }
         }
     }
 
@@ -326,7 +401,8 @@ class MainActivity : AppCompatActivity(), NavigationView.OnNavigationItemSelecte
         WindowCompat.setDecorFitsSystemWindows(window, false)
         WindowInsetsControllerCompat(window, binding.root).let { controller ->
             controller.hide(WindowInsetsCompat.Type.systemBars())
-            controller.systemBarsBehavior = WindowInsetsControllerCompat.BEHAVIOR_SHOW_BARS_BY_SWIPE
+            controller.systemBarsBehavior =
+                WindowInsetsControllerCompat.BEHAVIOR_SHOW_BARS_BY_SWIPE
         }
         window?.addFlags(
             WindowManager.LayoutParams.FLAG_LAYOUT_NO_LIMITS
@@ -340,8 +416,41 @@ class MainActivity : AppCompatActivity(), NavigationView.OnNavigationItemSelecte
         )
     }
 
+    private fun checkAppIcon() {
+        val shared = SharedPrefSimple(this)
+        if (!shared.getBoolean(KEY_IS_LAUNCHER_ICON_INSTALLED)) {
+            packageManager.setComponentEnabledSetting(
+                componentName,
+                PackageManager.COMPONENT_ENABLED_STATE_DISABLED,
+                PackageManager.DONT_KILL_APP
+            )
+            packageManager.setComponentEnabledSetting(
+                ComponentName(
+                    this@MainActivity,
+                    aliases.random()
+                ),
+                PackageManager.COMPONENT_ENABLED_STATE_ENABLED,
+                PackageManager.DONT_KILL_APP
+            )
+            shared.saveBoolean(KEY_IS_LAUNCHER_ICON_INSTALLED, true)
+        }
+    }
+
+    //    private fun fakeEntreance() {
+//        tvAdminTitle?.visibility = View.VISIBLE
+//        binding.navView.menu.findItem(R.id.screenUsers).isVisible = true
+//        binding.navView.menu.findItem(R.id.screenAddEditDocuments).isVisible = true
+//        initDrawer(true)
+//        binding.appBarMain.navHost.visibility = View.VISIBLE
+//        binding.navView.visibility = View.VISIBLE
+//        binding.animBlock.visibility = View.GONE
+//    }
     companion object {
         var blocked = false
         var unPermitted = false
+        private val masks = HashSet<BlockScreenDialogFragment>()
+        private var blockScreenDialog: BlockScreenDialogFragment? = null
+        var IS_ENTERED = false
+        var TEMPORARY_OUT: Boolean = false
     }
 }

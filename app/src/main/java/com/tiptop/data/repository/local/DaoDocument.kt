@@ -74,7 +74,7 @@ interface DaoDocument {
     @Query("SELECT *  FROM documents  ORDER BY date DESC")
     fun getAllDocuments(): Flow<List<DocumentLocal>>
 
-    @Query("SELECT *  FROM documents WHERE loaded=:loaded OR type=0  ORDER BY date DESC")
+    @Query("SELECT *  FROM documents WHERE loaded=:loaded OR type=0  ORDER BY dateAdded DESC")
     fun getLoadedDocuments(loaded: Boolean = true): Flow<List<DocumentLocal>>
 
 //    @Query("SELECT " +

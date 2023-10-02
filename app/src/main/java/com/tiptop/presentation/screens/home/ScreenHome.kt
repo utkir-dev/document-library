@@ -61,6 +61,9 @@ class ScreenHome : BaseFragment(R.layout.screen_home) {
         binding.cardAllDocuments.setOnClickListener {
             findNavController().navigate(R.id.action_screenHome_to_screenAllDocuments)
         }
+        binding.ivToggle.setOnClickListener {
+            (activity as MainActivity).openDrawer()
+        }
     }
 
     @SuppressLint("SetTextI18n")

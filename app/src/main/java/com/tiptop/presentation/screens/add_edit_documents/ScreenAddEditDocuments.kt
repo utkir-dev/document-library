@@ -111,6 +111,7 @@ class ScreenAddEditDocuments : BaseFragmentAddEditDocuments() {
 
     private fun initVisibilities() {
         binding.lTopRecycler.visibility = View.GONE
+        binding.ivScreenOrientation.visibility = View.GONE
     }
 
     private fun initClickListeners() {

@@ -178,29 +178,34 @@ class DocumentsRepositoryImpl @Inject constructor(
 
     override fun checkLibVersion() = flow {
         if (auth.currentUser != null) {
-            var fileName = ""
-            var fileUrl = ""
-            var fileSize = 0L
-            var task: Task<StorageMetadata>? = null
-            remoteStorage.getReference(NEW_VERSION).listAll().addOnSuccessListener { list ->
-                list.items.forEach { item ->
-                    fileName = item.name
-                    task = item.metadata.addOnSuccessListener {
-                        fileSize = it.sizeBytes
+            if (LIB_VERSION != null) {
+                emit(LIB_VERSION!!)
+            } else {
+                var fileName = ""
+                var fileUrl = ""
+                var fileSize = 0L
+                var task: Task<StorageMetadata>? = null
+                remoteStorage.getReference(NEW_VERSION).listAll().addOnSuccessListener { list ->
+                    list.items.forEach { item ->
+                        fileName = item.name
+                        task = item.metadata.addOnSuccessListener {
+                            fileSize = it.sizeBytes
+                        }
                     }
-                }
-            }.await()
+                }.await()
 
-            remoteStorage.getReference("$NEW_VERSION/$fileName").downloadUrl.addOnSuccessListener { uri ->
-                fileUrl = uri.toString()
-            }.await()
-            task?.await()
-            val lib = LibVersion(
-                apkName = fileName,
-                url = fileUrl,
-                size = fileSize.validateFileSize()
-            )
-            emit(lib)
+                remoteStorage.getReference("$NEW_VERSION/$fileName").downloadUrl.addOnSuccessListener { uri ->
+                    fileUrl = uri.toString()
+                }.await()
+                task?.await()
+                val lib = LibVersion(
+                    apkName = fileName,
+                    url = fileUrl,
+                    size = fileSize.validateFileSize()
+                )
+                LIB_VERSION = lib
+                emit(lib)
+            }
         }
     }
 
@@ -380,4 +385,8 @@ class DocumentsRepositoryImpl @Inject constructor(
         return documentsLocalDb.getLastSeenDocuments().flowOn(Dispatchers.IO)
     }
 
+    companion object {
+        private var LIB_VERSION: LibVersion? = null
+
+    }
 }

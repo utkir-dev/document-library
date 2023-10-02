@@ -36,21 +36,42 @@
             android:layout_width="0dp"
             android:layout_height="wrap_content"
             android:layout_weight="1"
+            android:orientation="vertical"
             android:paddingStart="@dimen/dp3"
-            android:paddingEnd="@dimen/dp3"
-            android:orientation="vertical">
+            android:paddingEnd="@dimen/dp3">
 
-            <TextView
-                android:id="@+id/tv_folder_name"
+            <LinearLayout
                 android:layout_width="match_parent"
                 android:layout_height="wrap_content"
-                android:layout_gravity="center_vertical"
-                android:gravity="center_vertical"
-                android:maxLines="1"
-                android:padding="@dimen/dp2"
-                android:text="folder"
-                android:textColor="@color/black"
-                android:textSize="@dimen/font18" />
+                android:orientation="horizontal">
+
+                <TextView
+                    android:id="@+id/tv_folder_name"
+                    android:layout_width="wrap_content"
+                    android:layout_height="wrap_content"
+                    android:layout_gravity="center_vertical"
+                    android:gravity="center_vertical"
+                    android:maxLines="1"
+                    android:padding="@dimen/dp2"
+                    android:text="folder"
+                    android:textColor="@color/black"
+                    android:textSize="@dimen/font18" />
+
+                <TextView
+                    android:id="@+id/tv_new_documents_count"
+                    android:layout_width="wrap_content"
+                    android:layout_height="wrap_content"
+                    android:layout_marginEnd="@dimen/dp2"
+                    android:layout_gravity="center_vertical"
+                    android:textColor="@color/green"
+                    android:textSize="@dimen/font14" />
+
+                <View
+                    android:layout_width="0dp"
+                    android:layout_height="match_parent"
+                    android:layout_weight="1" />
+            </LinearLayout>
+
 
             <TextView
                 android:id="@+id/tv_file_size"
@@ -69,10 +90,10 @@
             android:layout_width="wrap_content"
             android:layout_height="match_parent"
             android:layout_gravity="center_vertical"
-            android:gravity="center"
             android:clickable="true"
             android:focusable="true"
             android:foreground="?android:attr/selectableItemBackground"
+            android:gravity="center"
             android:paddingHorizontal="@dimen/dp7"
             android:src="@drawable/ic_file_download"
             android:visibility="visible" />
@@ -82,8 +103,8 @@
         android:id="@+id/v_line"
         android:layout_width="match_parent"
         android:layout_height="1dp"
-        android:visibility="gone"
-        android:background="@color/grey_light" />
+        android:background="@color/grey_light"
+        android:visibility="gone" />
 
     <LinearLayout
         android:id="@+id/l_progress"
@@ -104,8 +125,8 @@
             style="@style/Widget.AppCompat.ProgressBar.Horizontal"
             android:layout_width="match_parent"
             android:layout_height="wrap_content"
-            android:progressTint="@color/color_blue_light"
-            android:max="100" />
+            android:max="100"
+            android:progressTint="@color/color_blue_light" />
     </LinearLayout>
 
 </LinearLayout>

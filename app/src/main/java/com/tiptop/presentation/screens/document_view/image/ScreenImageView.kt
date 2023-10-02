@@ -2,7 +2,6 @@ package com.tiptop.presentation.screens.document_view.image
 
 import android.graphics.BitmapFactory
 import android.os.Bundle
-import android.util.Log
 import android.view.LayoutInflater
 import android.view.View
 import android.view.ViewGroup
@@ -12,8 +11,8 @@ import com.tiptop.app.common.isInternetAvailable
 import com.tiptop.app.common.share
 import com.tiptop.data.models.local.DocumentLocal
 import com.tiptop.databinding.ScreenImageViewBinding
+import com.tiptop.presentation.MainActivity.Companion.TEMPORARY_OUT
 import com.tiptop.presentation.screens.BaseFragment
-import com.tiptop.presentation.screens.document_view.DocumentViewModelIml
 import dagger.hilt.android.AndroidEntryPoint
 
 
@@ -21,7 +20,7 @@ const val ARG_PARAM_IMAGE = "arg_param_image"
 
 @AndroidEntryPoint
 class ScreenImageView : BaseFragment(R.layout.screen_image_view) {
-    private val vm by viewModels<DocumentViewModelIml>()
+    private val vm by viewModels<ImageViewModelIml>()
     private var _binding: ScreenImageViewBinding? = null
     private var currentDocument: DocumentLocal? = null
     private val binding get() = _binding!!
@@ -72,7 +71,7 @@ class ScreenImageView : BaseFragment(R.layout.screen_image_view) {
         binding.ivShare.setOnClickListener {
             currentBytes?.let { bytes ->
                 currentDocument?.let { doc ->
-                    isLoading = true
+                    TEMPORARY_OUT = true
                     if (isInternetAvailable(requireContext())) {
                         share(doc, bytes, requireActivity())
                     } else {

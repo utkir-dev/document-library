@@ -4,6 +4,7 @@ import androidx.lifecycle.LiveData
 import androidx.lifecycle.MutableLiveData
 import androidx.lifecycle.ViewModel
 import androidx.lifecycle.viewModelScope
+import com.tiptop.app.common.Constants
 import com.tiptop.app.common.Encryptor
 import com.tiptop.app.common.Utils
 import com.tiptop.data.models.local.DocumentLocal
@@ -11,7 +12,9 @@ import com.tiptop.domain.DocumentsRepository
 import dagger.hilt.android.lifecycle.HiltViewModel
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.async
+import kotlinx.coroutines.flow.collect
 import kotlinx.coroutines.flow.collectLatest
+import kotlinx.coroutines.flow.combine
 import javax.inject.Inject
 
 @HiltViewModel

@@ -82,7 +82,7 @@ class ScreenAddEditDocumentsChild2 : BaseFragmentAddEditDocuments() {
         )
         binding.lTopRecycler.visibility = View.GONE
         vm.documentsForRv.observe(viewLifecycleOwner) {
-            val documents = it.sortedWith(compareBy<DocumentForRv> { it.type }.thenBy { it.name })
+            val documents = it.sortedWith(compareBy<DocumentForRv> { it.type }.thenBy { it.dateAdded })
             folders = it.filter { it.type == 0 }.map { it.name } as ArrayList<String>
             adapter?.submitList(documents)
         }
@@ -91,13 +91,13 @@ class ScreenAddEditDocumentsChild2 : BaseFragmentAddEditDocuments() {
     private fun showFile(document: DocumentLocal) {
         val selectedFile: File = requireContext().getFileStreamPath(document.id)
         if (selectedFile.exists()) {
-            if (document.type == Constants.TYPE_PDF) {
+            if (document.type == TYPE_PDF) {
                 ScreenPdfView.currentId=document.id
                 findNavController().navigate(
                     R.id.action_screenAddEditDocumentsChild2_to_screenDocument
                 )
             }
-            if (document.type == Constants.TYPE_IMAGE) {
+            if (document.type == TYPE_IMAGE) {
                 findNavController().navigate(
                     R.id.screenImageView,
                     bundleOf(ARG_PARAM_IMAGE to document.id)
@@ -116,6 +116,7 @@ class ScreenAddEditDocumentsChild2 : BaseFragmentAddEditDocuments() {
 
     @SuppressLint("SetTextI18n")
     private fun initVisibilities() {
+        binding.ivScreenOrientation.visibility = View.GONE
         binding.lTopRecycler.visibility = View.VISIBLE
         binding.tvChild1.visibility = View.VISIBLE
         binding.tvChild2.visibility = View.VISIBLE
@@ -124,13 +125,13 @@ class ScreenAddEditDocumentsChild2 : BaseFragmentAddEditDocuments() {
         binding.tvChild1.setTextColor(Color.BLACK)
         vm.childDocument1.observe(viewLifecycleOwner) {
             if (it != null) {
-                val child1 = it.name
+                val child1 = it.nameDecrypted()
                 binding.tvChild1.text = "$child1 / "
             }
         }
         vm.childDocument2.observe(viewLifecycleOwner) {
             if (it != null) {
-                binding.tvChild2.text = it.name
+                binding.tvChild2.text = it.nameDecrypted()
             }
         }
     }

@@ -8,8 +8,6 @@ import androidx.fragment.app.viewModels
 import com.tiptop.R
 import com.tiptop.databinding.ScreenTextViewBinding
 import com.tiptop.presentation.screens.BaseFragment
-import com.tiptop.presentation.screens.document_view.DocumentViewModelIml
-import com.tiptop.presentation.screens.document_view.pdf.ScreenPdfView
 import dagger.hilt.android.AndroidEntryPoint
 
 
@@ -24,7 +22,7 @@ class ScreenTextView : BaseFragment(R.layout.screen_text_view) {
 //    private var adapterDict: AdapterDict? = null
 //    private var strLastBooks = ""
 
-    private val vm by viewModels<DocumentViewModelIml>()
+  //  private val vm by viewModels<DocumentViewModelIml>()
     private var _binding: ScreenTextViewBinding? = null
     private val binding get() = _binding!!
 //    private var pageNumber = 0
@@ -36,7 +34,7 @@ class ScreenTextView : BaseFragment(R.layout.screen_text_view) {
         arguments?.let {
             val id = it.getString(ARG_PARAM_TEXT) ?: ""
             if (id.isNotEmpty()) {
-                vm.setDocument(id)
+              //  vm.setDocument(id)
             }
         }
     }
@@ -56,9 +54,9 @@ class ScreenTextView : BaseFragment(R.layout.screen_text_view) {
     }
 
     private fun showText() {
-        vm.documentBytes.observe(viewLifecycleOwner) { bytes ->
-
-        }
+//        vm.documentBytes.observe(viewLifecycleOwner) { bytes ->
+//
+//        }
 
     }
 

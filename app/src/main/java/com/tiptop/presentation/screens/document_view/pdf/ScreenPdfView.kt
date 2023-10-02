@@ -5,7 +5,6 @@ import android.app.AlertDialog
 import android.os.Bundle
 import android.transition.Slide
 import android.transition.TransitionManager
-import android.util.Log
 import android.view.Gravity
 import android.view.LayoutInflater
 import android.view.View
@@ -27,10 +26,8 @@ import com.tiptop.app.common.CanvasData
 import com.tiptop.app.common.Constants.KEY_LAST_PAGE
 import com.tiptop.app.common.Constants.KEY_SCREEN_TIMER
 import com.tiptop.app.common.DebouncingQueryTextListener
-import com.tiptop.app.common.Encryptor
 import com.tiptop.app.common.MyColor
 import com.tiptop.app.common.SharedPrefSimple
-import com.tiptop.app.common.Utils
 import com.tiptop.app.common.hideKeyboard
 import com.tiptop.app.common.isInternetAvailable
 import com.tiptop.app.common.share
@@ -40,10 +37,10 @@ import com.tiptop.databinding.PopupGoToPageBinding
 import com.tiptop.databinding.PopupLastSeenDocumentsBinding
 import com.tiptop.databinding.ScreenDocumentViewBinding
 import com.tiptop.presentation.MainActivity
+import com.tiptop.presentation.MainActivity.Companion.TEMPORARY_OUT
 import com.tiptop.presentation.screens.BaseFragment
 import com.tiptop.presentation.screens.document_view.AdapterLastSeenDocuments
 import dagger.hilt.android.AndroidEntryPoint
-import java.nio.charset.StandardCharsets
 
 
 @AndroidEntryPoint
@@ -71,7 +68,7 @@ class ScreenPdfView : BaseFragment(R.layout.screen_document_view) {
 
     override fun onViewCreated(view: View, savedInstanceState: Bundle?) {
         super.onViewCreated(view, savedInstanceState)
-        pref = SharedPrefSimple(requireActivity())
+        pref = SharedPrefSimple(requireContext())
         setDocument()
         initObservers()
         initClickListeners()
@@ -142,7 +139,7 @@ class ScreenPdfView : BaseFragment(R.layout.screen_document_view) {
         }
         vm.screenBlockState.observe(viewLifecycleOwner) { blocked ->
             if (blocked) {
-                blockScreen()
+                (activity as MainActivity).blockScreen()
             }
         }
 
@@ -185,7 +182,7 @@ class ScreenPdfView : BaseFragment(R.layout.screen_document_view) {
         binding.ivShare.setOnClickListener {
             currentBytes?.let { bytes ->
                 currentDocument?.let { doc ->
-                    isLoading = true
+                    TEMPORARY_OUT = true
                     if (isInternetAvailable(requireContext())) {
                         share(doc, bytes, requireActivity())
                     } else {
@@ -241,7 +238,7 @@ class ScreenPdfView : BaseFragment(R.layout.screen_document_view) {
         val launchIntent =
             requireContext().packageManager.getLaunchIntentForPackage("com.samples.bushro")
         if (launchIntent != null) {
-            isLoading = true
+            TEMPORARY_OUT = true
             startActivity(launchIntent)
         } else {
             showSnackBar("'Bushro' ilovasi topilmadi, uni tortib o'rnating")

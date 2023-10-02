@@ -7,14 +7,18 @@ import android.view.View
 import android.view.ViewGroup
 import androidx.fragment.app.DialogFragment
 import com.tiptop.R
+import com.tiptop.app.common.Constants.KEY_SCREEN_BLOCK
+import com.tiptop.app.common.SharedPrefSimple
 import com.tiptop.app.common.Utils
 import com.tiptop.app.common.encryption
 import com.tiptop.databinding.ScreenPincodeBinding
+import com.tiptop.presentation.MainActivity.Companion.IS_ENTERED
+import com.tiptop.presentation.MainActivity.Companion.TEMPORARY_OUT
 import dagger.hilt.android.AndroidEntryPoint
 import javax.inject.Inject
 
 @AndroidEntryPoint
-class BlockScreenDialogFragment : DialogFragment() {
+class BlockScreenDialogFragment() : DialogFragment() {
     @Inject
     lateinit var shared: SharedPreferences
     private var code = ""
@@ -88,7 +92,6 @@ class BlockScreenDialogFragment : DialogFragment() {
 
     private fun printCode() {
         b!!.tvEnteredPass.text = pass
-
     }
 
     private fun check() {
@@ -98,6 +101,9 @@ class BlockScreenDialogFragment : DialogFragment() {
         ) ?: Utils().getDefaultBlockCode().encryption()
 
         if (pass.encryption() == actialCode) {
+            IS_ENTERED = true
+            TEMPORARY_OUT = false
+            SharedPrefSimple(requireContext()).saveBoolean(KEY_SCREEN_BLOCK, false)
             dismiss()
         }
     }

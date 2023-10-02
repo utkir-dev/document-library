@@ -125,6 +125,7 @@ class ScreenAddEditDocumentsChild1 : BaseFragmentAddEditDocuments() {
     }
 
     private fun initVisibilities() {
+        binding.ivScreenOrientation.visibility = View.GONE
         binding.lTopRecycler.visibility = View.VISIBLE
         binding.tvChild1.visibility = View.VISIBLE
         binding.tvChild2.visibility = View.GONE
