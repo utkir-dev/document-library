@@ -13,6 +13,7 @@ import android.view.ViewGroup
 import androidx.activity.result.contract.ActivityResultContracts
 import androidx.documentfile.provider.DocumentFile
 import androidx.fragment.app.viewModels
+import androidx.lifecycle.LiveData
 import androidx.lifecycle.MutableLiveData
 import androidx.navigation.fragment.findNavController
 import com.tiptop.R
@@ -21,11 +22,13 @@ import com.tiptop.app.common.Constants.TYPE_FOLDER
 import com.tiptop.app.common.Constants.TYPE_IMAGE
 import com.tiptop.app.common.Constants.TYPE_PDF
 import com.tiptop.app.common.Encryptor
+import com.tiptop.app.common.Resource
 import com.tiptop.app.common.Utils
 import com.tiptop.app.common.encryption
 import com.tiptop.app.common.hideKeyBoard
 import com.tiptop.app.common.hideKeyboard
 import com.tiptop.app.common.isInternetAvailable
+import com.tiptop.data.models.local.DocumentForRv
 import com.tiptop.data.models.local.DocumentLocal
 import com.tiptop.data.models.remote.DocumentRemote
 import com.tiptop.databinding.DialogAddEditNameBinding
@@ -45,6 +48,10 @@ open class BaseFragmentAddEditDocuments : BaseFragment(R.layout.screen_add_edit_
     lateinit var binding: ScreenAddEditDocumentsBinding
     private val vm by viewModels<AddEditDocumentViewModelImpl>()
     private var pickedFile: Uri? = null
+    private var documentNames = emptyList<String>()
+    private var parentIds = emptyList<String>()
+    var folderNames = emptyList<String>()
+
 
     override fun onCreateView(
         inflater: LayoutInflater, container: ViewGroup?,
@@ -58,6 +65,15 @@ open class BaseFragmentAddEditDocuments : BaseFragment(R.layout.screen_add_edit_
         super.onViewCreated(view, savedInstanceState)
         binding.ivBack.setOnClickListener {
             findNavController().popBackStack()
+        }
+        vm.documentNames.observe(viewLifecycleOwner) {
+            documentNames = it
+        }
+        vm.folderNames.observe(viewLifecycleOwner) {
+            folderNames = it
+        }
+        vm.parentIds.observe(viewLifecycleOwner) {
+            parentIds = it
         }
     }
 
@@ -152,7 +168,7 @@ open class BaseFragmentAddEditDocuments : BaseFragment(R.layout.screen_add_edit_
         }
         val alert = dialog.show()
 
-        val fileName =  document.nameDecrypted()
+        val fileName = document.nameDecrypted()
 
         vBinding.tvDocumentName.text = fileName.substringBeforeLast(".")
 
@@ -174,7 +190,7 @@ open class BaseFragmentAddEditDocuments : BaseFragment(R.layout.screen_add_edit_
     fun createFile(typeFile: Int) {
         TYPE = typeFile
         val permission = MutableLiveData(false)
-       requestPermissions(
+        requestPermissions(
             Manifest.permission.WRITE_EXTERNAL_STORAGE,
             Manifest.permission.READ_EXTERNAL_STORAGE
         ) {
@@ -186,45 +202,75 @@ open class BaseFragmentAddEditDocuments : BaseFragment(R.layout.screen_add_edit_
                 // Intent.ACTION_OPEN_DOCUMENT
                 // Intent.ACTION_GET_CONTENT
                 //addCategory(Intent.CATEGORY_OPENABLE)
-                val intent = if (TYPE == TYPE_PDF)
-                    Intent(Intent.ACTION_GET_CONTENT).apply { type = "application/pdf" }
-                else if (TYPE == TYPE_IMAGE)
-                    Intent(Intent.ACTION_GET_CONTENT).apply { type = "image/*" }
-                else
-                    Intent(Intent.ACTION_GET_CONTENT).apply { type = "application/pdf" }
-                resultLauncher.launch(intent)
+                if (TYPE == TYPE_PDF) {
+                    val intent = Intent(Intent.ACTION_GET_CONTENT)
+                    intent.type = "application/pdf"
+                    resultLauncher.launch(intent)
+                } else if (TYPE == TYPE_IMAGE) {
+                    val intent =// Intent(Intent.ACTION_GET_CONTENT)
+                        Intent(Intent.ACTION_PICK)
+                    intent.type = "image/*"
+                    resultLauncher.launch(intent)
+                }
             }
         }
     }
 
-    fun editDocument(document: DocumentLocal) {
-        val docName = if (document.type == TYPE_FOLDER) "Papka" else "Fayl"
-
-        val fileName =  document.nameDecrypted()
-
-        showEditNameDialog(
-            title = "$docName nomini o'zgartirish",
-            name = fileName.substringBeforeLast(".")
-        ) { text ->
-            if (text == fileName.substringBeforeLast(".")) {
-                return@showEditNameDialog
+    fun editDocument(document: DocumentForRv) {
+        if (document.type == TYPE_FOLDER) {
+            val firstName = document.name
+            showEditNameDialog(
+                title = "Papka nomini o'zgartirish",
+                name = document.name
+            ) { text ->
+                if (text == firstName) {
+                    return@showEditNameDialog
+                }
+                if (folderNames.contains(text.lowercase())) {
+                    showSnackBar("Bu nomli papka allaqachon mavjud")
+                } else if (text.isNotEmpty()) {
+                    val documentEdited = document.copy(
+                        name = text,
+                        date = System.currentTimeMillis()
+                    )
+                    if (isInternetAvailable(requireContext())) {
+                        requireActivity().hideKeyBoard()
+                        vm.saveDocument(documentEdited.toRemote())
+                    } else {
+                        showSnackBarNoConnection()
+                    }
+                }
             }
-            if (text.isNotEmpty()) {
-                val date = System.currentTimeMillis()
-                val newName =text.encryption(document.dateAdded)
-                val documentEdited = document.copy(name = newName, date = date)
-                if (isInternetAvailable(requireContext())) {
-                    requireActivity().hideKeyBoard()
-                    vm.saveDocument(documentEdited.toRemote())
-                } else {
-                    showSnackBarNoConnection()
+        } else {
+            val firstName = document.name.substringBeforeLast(".")
+            // val extention = document.name.substringAfterLast(".")
+            showEditNameDialog(
+                title = "Fayl nomini o'zgartirish",
+                name = firstName
+            ) { text ->
+                if (text == firstName) {
+                    return@showEditNameDialog
+                }
+                if (documentNames.contains(text.lowercase())) {
+                    showSnackBar("Bu nomli fayl allaqachon mavjud")
+                } else if (text.isNotEmpty()) {
+                    val documentEdited = document.copy(
+                        name = text,
+                        date = System.currentTimeMillis()
+                    )
+                    if (isInternetAvailable(requireContext())) {
+                        requireActivity().hideKeyBoard()
+                        vm.saveDocument(documentEdited.toRemote())
+                    } else {
+                        showSnackBarNoConnection()
+                    }
                 }
             }
         }
     }
 
     fun downloadFile(document: DocumentLocal) {
-        val fileName= document.nameDecrypted()
+        val fileName = document.nameDecrypted()
         showConfirmDialog(
             fileName.replaceAfter(".", ""),
             "Ushbu faylni tortib olishga ishonchingiz komilmi ?"
@@ -236,22 +282,42 @@ open class BaseFragmentAddEditDocuments : BaseFragment(R.layout.screen_add_edit_
     }
 
     fun deleteDocument(document: DocumentLocal) {
-        val docName = if (document.type == TYPE_FOLDER) "papka" else "fayl"
-        val fileName = document.nameDecrypted()
-        showConfirmDialog(
-            title = fileName.substringBeforeLast("."),
-            message = "Ushbu ${docName}ni o'chirishga ishonchingiz komilmi?"
-        ) {
-            if (it) {
-                if (isInternetAvailable(requireContext())) {
-                    vm.deleteDocument(document)
-                } else {
-                    showSnackBarNoConnection()
+        if (document.type == TYPE_FOLDER) {
+            if (parentIds.any { it.contains(document.id) }) {
+                showSnackBar("Ushbu papkada fayllar bor. Avval ularni o'chiring")
+            } else {
+                showConfirmDialog(
+                    title = document.nameDecrypted(),
+                    message = "Ushbu papkani o'chirishga ishonchingiz komilmi?"
+                ) {
+                    if (it) {
+                        if (isInternetAvailable(requireContext())) {
+                            vm.deleteDocument(document)
+                        } else {
+                            showSnackBarNoConnection()
+                        }
+                    }
                 }
             }
-        }
-    }
 
+        } else {
+            showConfirmDialog(
+                title = document.nameDecrypted().substringBeforeLast("."),
+                message = "Ushbu faylni o'chirishga ishonchingiz komilmi?"
+            ) {
+                if (it) {
+                    if (isInternetAvailable(requireContext())) {
+                        vm.deleteDocument(document)
+                    } else {
+                        showSnackBarNoConnection()
+                    }
+                }
+            }
+
+        }
+
+
+    }
 
 
     private var resultLauncher =
@@ -265,7 +331,6 @@ open class BaseFragmentAddEditDocuments : BaseFragment(R.layout.screen_add_edit_
             }
         }
 
-
     @SuppressLint("Recycle")
     private fun createRemoteFile() {
         pickedFile?.let { pickedUri ->
@@ -273,8 +338,11 @@ open class BaseFragmentAddEditDocuments : BaseFragment(R.layout.screen_add_edit_
             val date = System.currentTimeMillis()
             val documentFile =
                 DocumentFile.fromSingleUri(requireContext(), pickedUri)
-            val fileName =(documentFile?.name ?: (date / 1000).toString()).encryption(date)
-
+            val fileName = (documentFile?.name ?: (date / 1000).toString()).encryption(date)
+            if (documentNames.contains(fileName.lowercase())) {
+                showSnackBar("Bu nomli fayl allaqachon mavjud")
+                return@let
+            }
             val headBytesCount = Utils().getHeadBytesCount().toInt()
             file.setReadable(true)
             val bytes = requireContext().contentResolver.openInputStream(pickedUri)?.readBytes()

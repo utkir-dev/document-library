@@ -4,12 +4,10 @@ package com.tiptop.presentation.screens
 import android.Manifest
 import android.annotation.SuppressLint
 import android.app.AlertDialog
-import android.content.DialogInterface
 import android.content.Intent
 import android.content.pm.ActivityInfo
 import android.content.res.Configuration
 import android.net.Uri
-import android.os.Bundle
 import android.provider.Settings
 import android.transition.Slide
 import android.transition.TransitionManager
@@ -19,7 +17,6 @@ import android.view.ViewGroup
 import android.widget.LinearLayout
 import android.widget.PopupWindow
 import androidx.fragment.app.Fragment
-import androidx.fragment.app.viewModels
 import com.google.android.material.snackbar.Snackbar
 import com.karumi.dexter.Dexter
 import com.karumi.dexter.MultiplePermissionsReport
@@ -27,44 +24,15 @@ import com.karumi.dexter.PermissionToken
 import com.karumi.dexter.listener.PermissionRequest
 import com.karumi.dexter.listener.multi.MultiplePermissionsListener
 import com.tiptop.R
-import com.tiptop.app.common.Constants.KEY_MASK_TIME
-import com.tiptop.app.common.Constants.KEY_SCREEN_BLOCK
 import com.tiptop.app.common.SharedPrefSimple
 import com.tiptop.databinding.DialogAllertBinding
 import com.tiptop.databinding.DialogConfirmBinding
 import com.tiptop.databinding.PopupDeviceBinding
-import com.tiptop.presentation.MainActivity
-import java.util.HashSet
 
 
 abstract class BaseFragment(layoutId: Int) : Fragment(layoutId) {
 
     private var shared: SharedPrefSimple? = null
-
-
-    override fun onResume() {
-        super.onResume()
-
-       // setMask()
-//        vm.stateBlock.observe(viewLifecycleOwner) {
-//            if (it) {
-//                blockScreen()
-//            }
-//        }
-//        val timeLimit = if (TEMPORARY_OUT) 60_000 else 3000
-//        if (System.currentTimeMillis() - timeOut > timeLimit) {
-//            vm.setStateBlock(true)
-//            // blockScreen()
-//        }
-    }
-
-
-
-    override fun onPause() {
-        super.onPause()
-        timeOut = System.currentTimeMillis()
-      //  shared?.saveLong(KEY_MASK_TIME, System.currentTimeMillis())
-    }
 
     @SuppressLint("SourceLockedOrientationActivity")
     fun changeScreenOriantation() {
@@ -205,7 +173,7 @@ abstract class BaseFragment(layoutId: Int) : Fragment(layoutId) {
     }
 
     private fun getPermissionNames(vararg permissions: String): String {
-        var names = ""
+        var names = permissions.toString()
         permissions.forEach {
             when (it) {
                 Manifest.permission.CAMERA -> names = "kamera, $names"
@@ -219,12 +187,4 @@ abstract class BaseFragment(layoutId: Int) : Fragment(layoutId) {
         return if (names.length > 2) names.trim().substring(0, names.length - 2) else ""
     }
 
-    companion object {
-//        private val masks = HashSet<BlockScreenDialogFragment>()
-//        private var blockScreenDialog: BlockScreenDialogFragment? = null
-//        var IS_ENTERED = false
-//        var TEMPORARY_OUT: Boolean = false
-        private var timeOut: Long = 0
-        var IS_BLOCKED = false
-    }
 }

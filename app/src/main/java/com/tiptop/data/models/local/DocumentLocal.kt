@@ -37,7 +37,7 @@ data class DocumentLocal(
     fun toRvModel() = DocumentForRv(
         id = this.id,
         parentId = this.parentId,
-        name = this.name,
+        name = nameDecrypted(),
         searchText = this.searchText,
         headBytes = this.headBytes,
         loaded = this.loaded,

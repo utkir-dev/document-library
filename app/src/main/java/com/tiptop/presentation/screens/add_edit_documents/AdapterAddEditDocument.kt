@@ -29,7 +29,7 @@ open class AdapterAddEditDocument(val listener: ClickListener) :
 
         @SuppressLint("SetTextI18n", "NotifyDataSetChanged")
         fun onBind(document: DocumentForRv, position: Int) {
-            var name =document.nameDecrypted()
+            var name =document.name
             when (document.type) {
                 TYPE_FOLDER -> {
                     v.tvFileSize.visibility = View.GONE

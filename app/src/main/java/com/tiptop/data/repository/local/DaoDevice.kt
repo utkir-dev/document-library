@@ -24,33 +24,53 @@ interface DaoDevice {
 
     @Query("DELETE FROM devices WHERE id=:id")
     suspend fun delete(id: String): Int
+
     @Query("delete from devices where id in (:idList)")
     fun deleteDevices(idList: List<String>)
+
     @Query("DELETE FROM devices WHERE id !=:id")
     fun clear(id: String)
 
+    @Query("DELETE FROM devices")
+    fun clear()
+
     @Query("SELECT * FROM devices WHERE id=:id limit 1")
     fun getCurrentDeviceFlowable(id: String): Flow<DeviceLocal>
+
     @Query("SELECT * FROM devices WHERE id=:id limit 1")
     fun getCurrentDevice(id: String): DeviceLocal
 
     @Query("SELECT * FROM devices ORDER BY date DESC")
     fun getAllDevices(): Flow<List<DeviceLocal>>
+
     @Query("SELECT * FROM devices WHERE name LIKE :searchText  ORDER BY date DESC")
-    fun getSearchedDevices(searchText:String): Flow<List<DeviceLocal>>
+    fun getSearchedDevices(searchText: String): Flow<List<DeviceLocal>>
 
     @Query("SELECT * FROM devices WHERE admin=:isAdmin and blocked=:notBlocked and name LIKE :searchText  ORDER BY date DESC")
-    fun getSearchedAdminDevices(searchText:String,isAdmin: Boolean=true,notBlocked: Boolean=false): Flow<List<DeviceLocal>>
+    fun getSearchedAdminDevices(
+        searchText: String,
+        isAdmin: Boolean = true,
+        notBlocked: Boolean = false
+    ): Flow<List<DeviceLocal>>
+
     @Query("SELECT * FROM devices WHERE  blocked=:isBlocked and name LIKE :searchText  ORDER BY date DESC")
-    fun getSearchedBlockedDevices(searchText:String,isBlocked: Boolean=true): Flow<List<DeviceLocal>>
+    fun getSearchedBlockedDevices(
+        searchText: String,
+        isBlocked: Boolean = true
+    ): Flow<List<DeviceLocal>>
 
     @Query("SELECT * FROM devices WHERE admin=:isAdmin and blocked=:notBlocked ORDER BY date DESC")
-    fun getAdminDevices(isAdmin:Boolean=true,notBlocked:Boolean=false): Flow<List<DeviceLocal>>
+    fun getAdminDevices(
+        isAdmin: Boolean = true,
+        notBlocked: Boolean = false
+    ): Flow<List<DeviceLocal>>
+
     @Query("SELECT * FROM devices WHERE blocked=:isBlocked ORDER BY date DESC")
-    fun getBlockedDevices(isBlocked:Boolean=true): Flow<List<DeviceLocal>>
+    fun getBlockedDevices(isBlocked: Boolean = true): Flow<List<DeviceLocal>>
+
     @Query("SELECT * FROM devices  WHERE userId=:userId order by date")
     fun getUserDevices(userId: String): Flow<List<DeviceLocal>>
 
-    @Query("SELECT MAX(date) FROM devices")
-    fun getLastUpdatedTime(): Long
+    @Query("SELECT MAX(date) FROM devices  WHERE id!=:deviceId")
+    fun getLastUpdatedTime(deviceId: String): Long
 }

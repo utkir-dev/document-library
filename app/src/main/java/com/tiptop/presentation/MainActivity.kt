@@ -7,6 +7,7 @@ import android.content.Intent
 import android.content.pm.PackageManager
 import android.os.Build
 import android.os.Bundle
+import android.telephony.TelephonyManager
 import android.util.Log
 import android.view.View
 import android.view.WindowManager
@@ -68,40 +69,26 @@ class MainActivity : AppCompatActivity() {
                 BlockScreenDialogFragment.TAG
             )
         }
-        Log.d("lifecicle", "onCreate")
     }
 
     override fun onStart() {
         super.onStart()
         shared = SharedPrefSimple(this)
-
         initFuns()
         checkAppIcon()
-        Log.d("lifecicle", "onStart")
-    }
-
-    override fun onRestart() {
-        super.onRestart()
-        Log.d("lifecicle", "onRestart")
-
     }
 
     override fun onResume() {
         super.onResume()
         setMask()
-        Log.d("lifecicle", "onResume")
-
     }
 
     override fun onPause() {
         super.onPause()
         shared?.saveLong(Constants.KEY_MASK_TIME, System.currentTimeMillis())
-
-        Log.d("lifecicle", "onPause")
     }
 
     private fun setMask() {
-
         val timeOut = shared?.getLong(Constants.KEY_MASK_TIME) ?: 0L
         val isScreenBlocked = shared?.getBoolean(Constants.KEY_SCREEN_BLOCK) ?: true
         if (!isScreenBlocked) {
@@ -134,17 +121,6 @@ class MainActivity : AppCompatActivity() {
             masks.clear()
         }
         masks.add(fr)
-    }
-
-    override fun onStop() {
-        super.onStop()
-        Log.d("lifecicle", "onStop")
-    }
-
-    override fun onDestroy() {
-        super.onDestroy()
-        Log.d("lifecicle", "onDestroy")
-
     }
 
     private fun initFuns() {
@@ -215,7 +191,11 @@ class MainActivity : AppCompatActivity() {
 
                                     val currentRoute =
                                         findNavController(R.id.nav_host).currentDestination?.route
-                                    if (currentRoute != "home") {
+                                    if (currentRoute == "users"
+                                        || currentRoute == "screenAddEditDocuments"
+                                        || currentRoute == "screenAddEditDocumentsChild1"
+                                        || currentRoute == "screenAddEditDocumentsChild2"
+                                    ) {
                                         findNavController(R.id.nav_host).popBackStack()
                                     }
                                 }
@@ -335,6 +315,7 @@ class MainActivity : AppCompatActivity() {
                     showConfirmDialog { response ->
                         if (response) {
                             Firebase.auth.signOut()
+                            finish()
                             startActivity(Intent(this, MainActivity::class.java))
                         }
                     }

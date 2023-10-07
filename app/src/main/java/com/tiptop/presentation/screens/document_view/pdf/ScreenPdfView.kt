@@ -5,6 +5,7 @@ import android.app.AlertDialog
 import android.os.Bundle
 import android.transition.Slide
 import android.transition.TransitionManager
+import android.util.Log
 import android.view.Gravity
 import android.view.LayoutInflater
 import android.view.View
@@ -31,8 +32,13 @@ import com.tiptop.app.common.SharedPrefSimple
 import com.tiptop.app.common.hideKeyboard
 import com.tiptop.app.common.isInternetAvailable
 import com.tiptop.app.common.share
+import com.tiptop.data.models.local.ArabUzBase
+import com.tiptop.data.models.local.ArabUzUser
 import com.tiptop.data.models.local.DocumentLocal
+import com.tiptop.data.models.local.UzArabBase
+import com.tiptop.databinding.DialogAllertBinding
 import com.tiptop.databinding.DialogScreenTimerBinding
+import com.tiptop.databinding.DialogWordBinding
 import com.tiptop.databinding.PopupGoToPageBinding
 import com.tiptop.databinding.PopupLastSeenDocumentsBinding
 import com.tiptop.databinding.ScreenDocumentViewBinding
@@ -256,9 +262,10 @@ class ScreenPdfView : BaseFragment(R.layout.screen_document_view) {
                 override fun onClick(word: Dictionary) {
                     binding.lDictionary.etSearchWord.clearFocus()
                     binding.lDictionary.etSearchWord.hideKeyboard()
-                    val fr = DialogWord(word, vm, currentPage, currentDocument?.id ?: "")
-                    fr.isCancelable = true
-                    fr.show(childFragmentManager, DialogWord.TAG)
+                    showWordDialog(word) { modifiedWord ->
+                        binding.lDictionary.etSearchWord.setQuery("",true)
+                        vm.updateBaseWord(modifiedWord, currentPage, currentDocument?.id ?: "")
+                    }
                 }
 
                 override fun onClickPage(page: Int) {
@@ -537,6 +544,49 @@ class ScreenPdfView : BaseFragment(R.layout.screen_document_view) {
         vm.cancelTimer()
     }
 
+    private fun showWordDialog(word: Dictionary, function: (Dictionary) -> Unit) {
+        val b = DialogWordBinding.inflate(layoutInflater)
+        val dialog = AlertDialog.Builder(requireContext(), R.style.MyDialogStyle).apply {
+            setView(b.root)
+                .setCancelable(true)
+                .create()
+        }
+        val allert = dialog.show()
+        if (word is ArabUzBase) {
+            b.tvSearchedWord.text = word.c0arab
+            b.tvRus.text = word.c3rus
+            b.tvUz.text = word.c2uzbek
+            if (word.saved) {
+                b.ivSavedWord.setImageResource(R.drawable.star1)
+            } else {
+                b.ivSavedWord.setImageResource(R.drawable.ic_star_unselected)
+            }
+            b.ivSavedWord.setOnClickListener {
+                function(word.copy(saved = !word.saved))
+                allert.cancel()
+            }
+        } else if (word is ArabUzUser) {
+            b.tvSearchedWord.text = word.c0arab
+            b.tvRus.text = word.c3rus
+            b.tvUz.text = word.c2uzbek
+            b.ivSavedWord.setImageResource(R.drawable.ic_delete)
+            b.ivSavedWord.setOnClickListener {
+                function(word)
+                allert.cancel()
+            }
+        } else if (word is UzArabBase) {
+            b.tvSearchedWord.text = word.c0uzbek
+            b.tvUzTitle.text = "arabchasi"
+            b.tvUz.text = word.c1arab
+            b.tvRusTitle.visibility = View.GONE
+            b.tvRus.visibility = View.GONE
+        }
+
+        b.btnOk.setOnClickListener {
+            allert.cancel()
+        }
+    }
+
     override fun onDestroy() {
         super.onDestroy()
         currentBytes = null
@@ -600,6 +650,5 @@ class ScreenPdfView : BaseFragment(R.layout.screen_document_view) {
             initColorList(canvasLayout.ivBlue, colorList)
 
         }
-
     }
 }

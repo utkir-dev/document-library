@@ -112,8 +112,8 @@
                         android:layout_width="wrap_content"
                         android:layout_height="wrap_content"
                         android:layout_gravity="end"
-                        android:paddingVertical="@dimen/dp4"
-                        android:paddingHorizontal="@dimen/dp10"
+                        android:paddingVertical="@dimen/dp5"
+                        android:paddingHorizontal="12dp"
                         android:background="@color/grey"
                         android:textColor="@color/white"
                         android:text="OK" />

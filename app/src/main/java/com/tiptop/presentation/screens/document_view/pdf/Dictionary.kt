@@ -1,5 +1,5 @@
 package com.tiptop.presentation.screens.document_view.pdf
 
-interface  Dictionary{
+interface Dictionary {
     var docid: Int
 }

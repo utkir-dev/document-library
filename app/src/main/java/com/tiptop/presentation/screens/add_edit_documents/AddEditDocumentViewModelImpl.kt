@@ -5,6 +5,7 @@ import androidx.lifecycle.LiveData
 import androidx.lifecycle.MutableLiveData
 import androidx.lifecycle.ViewModel
 import androidx.lifecycle.viewModelScope
+import com.tiptop.app.common.Constants.TYPE_FOLDER
 import com.tiptop.app.common.Resource
 import com.tiptop.app.common.ResponseResult
 import com.tiptop.data.models.local.DocumentForRv
@@ -28,6 +29,15 @@ class AddEditDocumentViewModelImpl @Inject constructor(
     private val _resultDelete = MutableLiveData(Resource.default(false))
     override val resultDelete: LiveData<Resource<Boolean>> = _resultDelete
 
+    private val _folderNames = MutableLiveData<List<String>>()
+    val folderNames: LiveData<List<String>> = _folderNames
+
+    private val _parentIds = MutableLiveData<List<String>>()
+    val parentIds: LiveData<List<String>> = _parentIds
+
+    private val _documentNames = MutableLiveData<List<String>>()
+    val documentNames: LiveData<List<String>> = _documentNames
+
     private val _childDocument1 = MutableLiveData<DocumentLocal>()
     override val childDocument1: LiveData<DocumentLocal> = _childDocument1
 
@@ -37,6 +47,18 @@ class AddEditDocumentViewModelImpl @Inject constructor(
     private val _documentsForRv = MutableLiveData<List<DocumentForRv>>()
     override val documentsForRv: LiveData<List<DocumentForRv>> = _documentsForRv
 
+
+    init {
+        viewModelScope.async(Dispatchers.IO) {
+            repository.getAllDocuments().collectLatest {
+                _folderNames.postValue(it.filter { it.type == TYPE_FOLDER }
+                    .map { it.nameDecrypted().lowercase() })
+                _documentNames.postValue(it.filter { it.type != TYPE_FOLDER }
+                    .map { it.nameDecrypted().substringBeforeLast(".").lowercase() })
+                _parentIds.postValue(it.map { it.parentId })
+            }
+        }
+    }
 
     fun setChildDocument1(id: String) {
         viewModelScope.launch(Dispatchers.IO) {
@@ -107,6 +129,7 @@ class AddEditDocumentViewModelImpl @Inject constructor(
             async { repository.uploadFile(byteArray, document) }
         }
     }
+
     private fun uploadHeadFile(byteArray: ByteArray, document: DocumentRemote) {
         viewModelScope.launch(Dispatchers.IO) {
             async { repository.uploadHeadFile(byteArray, document) }
@@ -127,7 +150,7 @@ class AddEditDocumentViewModelImpl @Inject constructor(
 
     override fun onCleared() {
         super.onCleared()
-        Log.d("viewmodelOnCleared","AddEditDocumentViewmodel cleared")
+        Log.d("viewmodelOnCleared", "AddEditDocumentViewmodel cleared")
 
     }
 }

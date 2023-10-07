@@ -83,11 +83,11 @@ class SignInViewModelImpl @Inject constructor(
                                 id = deviceId.value ?: "",
                                 name = deviceName,
                                 tablet = isTablet.value ?: false,
+                                userId = authRepository.currentUser?.uid ?: "",
                                 blocked = false,
                                 admin = false,
                                 date = date,
                                 libVersion = LIB_VERSION,
-                                userId = authRepository.currentUser?.uid ?: "",
                                 dateAdded = date
                             )
                         val resultSaveRemoteDevice = async {

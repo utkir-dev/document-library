@@ -61,10 +61,4 @@ class LoadedDocumentsViewModelImpl @Inject constructor(
             }
         }
     }
-
-    override fun onCleared() {
-        super.onCleared()
-        Log.d("viewmodelOnCleared","LoadedDocumentsViewmodel cleared")
-
-    }
 }

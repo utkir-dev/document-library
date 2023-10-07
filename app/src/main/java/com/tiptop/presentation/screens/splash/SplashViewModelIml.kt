@@ -36,24 +36,9 @@ class SplashViewModelIml @Inject constructor(
     }
 
     private fun init() {
-        viewModelScope.launch {
-            auth.currentUser?.let {
-                val date = System.currentTimeMillis()
-                try {
-                    val currentDevice = remoteRepository.getCurrentDevice()
-                    currentDevice.date = date
-                    currentDevice.libVersion = Constants.LIB_VERSION
-
-                    val user = remoteRepository.getCurrentUser()
-                    user.date = date
-
-                    viewModelScope.launch(Dispatchers.IO) {
-                        async { remoteRepository.saveRemoteUser(user.toRemote()) }
-                        async { remoteRepository.saveRemoteDevice(currentDevice.toRemote()) }
-                    }
-                } catch (_: Exception) {
-                }
-            }
+        viewModelScope.async {
+            async { remoteRepository.updateDateRemoteUser() }
+            async { remoteRepository.updateDateRemoteDevice() }
         }
     }
 }

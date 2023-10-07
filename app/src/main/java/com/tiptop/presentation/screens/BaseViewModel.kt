@@ -35,19 +35,25 @@ class BaseViewModel @Inject constructor(
 
     fun initObservers() {
         viewModelScope.launch {
+            async { userRepository.observeDeletedIds().collect() }
             userRepository.observeAuthState().collect {
-                if (it) {
-                    async { userRepository.observeUser().collect() }
-                    async { userRepository.observeDevice().collect() }
-                    async { userRepository.observeDeletedIds().collect() }
-                    async { documentRepository.observeDocuments().collect() }
-                    async {
+                if (it && !initialized) {
+                    val task1 = async { userRepository.observeUser().collect() }
+                    val task2 = async { userRepository.observeDevice().collect() }
+                    val task3 = async { documentRepository.observeDocuments().collect() }
+                    val task4 = async {
                         documentRepository.checkLibVersion().collectLatest {
                             _libVersion.postValue(it)
                         }
                     }
-                    async { dictionaryRepository.checkRemoteDictionary() }
+                    val task5 = async { dictionaryRepository.checkRemoteDictionary() }
                     //  async { repository.addFakeUsers()}
+                    task1.await()
+                    task2.await()
+                    task3.await()
+                    task4.await()
+                    task5.await()
+                    initialized = true
                 }
             }
         }
@@ -57,5 +63,9 @@ class BaseViewModel @Inject constructor(
         viewModelScope.launch {
             async { userRepository.clearDevices() }
         }
+    }
+
+    companion object {
+        private var initialized = false
     }
 }

@@ -56,6 +56,7 @@ class AppModule {
         daoUser: DaoUser,
         daoDevice: DaoDevice,
         daoDeletedId: DaoDeletedId,
+        daoDocument: DaoDocument,
         ctx: Context
     ): UserRepository = UsersRepositoryImpl(
         remoteDatabase = Firebase,
@@ -63,7 +64,8 @@ class AppModule {
         usersLocalDb = daoUser,
         devicesLocalDb = daoDevice,
         context = ctx,
-        deletedIdsLocalDb = daoDeletedId
+        deletedIdsLocalDb = daoDeletedId,
+        documentsLocalDb= daoDocument
     )
 
     @Provides

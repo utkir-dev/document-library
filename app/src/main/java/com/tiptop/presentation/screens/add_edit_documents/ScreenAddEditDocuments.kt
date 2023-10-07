@@ -30,7 +30,6 @@ class ScreenAddEditDocuments : BaseFragmentAddEditDocuments() {
     private val vm by viewModels<AddEditDocumentViewModelImpl>()
     private var adapter: AdapterAddEditDocument? = null
     private var searchText = ""
-    private var folders = ArrayList<String>()
 
     override fun onViewCreated(view: View, savedInstanceState: Bundle?) {
         super.onViewCreated(view, savedInstanceState)
@@ -60,7 +59,7 @@ class ScreenAddEditDocuments : BaseFragmentAddEditDocuments() {
             override fun onLongClick(document: DocumentForRv, position: Int, v: View) {
                 showDialogDocument(document.toDocumentLocal()) { view ->
                     when (view.id) {
-                        R.id.tv_edit_document -> editDocument(document.toDocumentLocal())
+                        R.id.tv_edit_document -> editDocument(document)
                         R.id.tv_replace_document -> replaceDocument(document.toDocumentLocal())
                         R.id.tv_delete_document -> deleteDocument(document.toDocumentLocal())
                     }
@@ -78,7 +77,6 @@ class ScreenAddEditDocuments : BaseFragmentAddEditDocuments() {
         binding.lTopRecycler.visibility = View.GONE
         vm.documentsForRv.observe(viewLifecycleOwner) {
             val documents = it.sortedWith(compareBy<DocumentForRv> { it.type }.thenBy { it.name })
-            folders = it.filter { it.type == 0 }.map { it.name } as ArrayList<String>
             adapter?.submitList(documents)
         }
     }
@@ -87,7 +85,7 @@ class ScreenAddEditDocuments : BaseFragmentAddEditDocuments() {
         val selectedFile: File = requireContext().getFileStreamPath(document.id)
         if (selectedFile.exists()) {
             if (document.type == TYPE_PDF) {
-                ScreenPdfView.currentId=document.id
+                ScreenPdfView.currentId = document.id
                 findNavController().navigate(
                     R.id.action_screenAddEditDocuments_to_screenDocument
                 )
@@ -122,9 +120,11 @@ class ScreenAddEditDocuments : BaseFragmentAddEditDocuments() {
                     R.id.l_create_folder -> {
                         createFolder()
                     }
+
                     R.id.l_upload_pdf -> {
                         createFile(TYPE_PDF)
                     }
+
                     R.id.l_upload_image -> {
                         createFile(TYPE_IMAGE)
                     }
@@ -157,13 +157,13 @@ class ScreenAddEditDocuments : BaseFragmentAddEditDocuments() {
 
     private fun createFolder() {
         showEditNameDialog("Papka yaratish") { text ->
-            if (folders.contains(text)) {
+            if (folderNames.contains(text.lowercase())) {
                 showSnackBar("Bu papka allaqachon kiritilgan !")
                 return@showEditNameDialog
             }
             if (text.isNotEmpty()) {
                 val date = System.currentTimeMillis()
-                val name= text.encryption(date)
+                val name = text.encryption(date)
                 val document = DocumentRemote(
                     id = UUID.randomUUID().toString(),
                     parentId = MOTHER_ID,

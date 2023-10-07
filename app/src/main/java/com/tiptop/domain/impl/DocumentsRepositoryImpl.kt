@@ -263,17 +263,43 @@ class DocumentsRepositoryImpl @Inject constructor(
         val remoteDeletedFolder =
             remoteDatabase.firestore.collection(Utils().getDeletedIdsFolder())
                 .document(document.id)
+        val tempDeletedDocument = document
         return try {
-            remoteDatabase.delete().await()
-            remoteDeletedFolder.set(DeletedIdRemote(document.id, System.currentTimeMillis()))
-                .await()
-            if (document.type != TYPE_FOLDER) {
-                remoteStorage.delete().await()
-            }
             documentsLocalDb.delete(document.id)
+            if (document.type > 0) {
+                deleteFile(document.id)
+            }
+            val task1 = remoteDatabase.delete()
+            val task2 =
+                remoteDeletedFolder.set(DeletedIdRemote(document.id, System.currentTimeMillis()))
+
+            var task3: Task<Void>? = null
+            if (document.type != TYPE_FOLDER) {
+                task3 = remoteStorage.delete()
+            }
+            task1.await()
+            task2.await()
+            task3?.await()
+
             ResponseResult.Success(true)
         } catch (e: Exception) {
+            documentsLocalDb.add(tempDeletedDocument)
             ResponseResult.Failure(e.message)
+        }
+    }
+
+    private fun deleteFile(id: String) {
+        val file: File =
+            context.getFileStreamPath(id)
+        val headFile: File =
+            context.getFileStreamPath(HEAD + id)
+        try {
+            file.delete()
+        } catch (_: Exception) {
+        }
+        try {
+            headFile.delete()
+        } catch (_: Exception) {
         }
     }
 
@@ -351,7 +377,6 @@ class DocumentsRepositoryImpl @Inject constructor(
     override fun getAllDocuments(): Flow<List<DocumentLocal>> {
         return documentsLocalDb.getAllDocuments().flowOn(Dispatchers.IO)
     }
-
     override fun getLoadedDocuments(): Flow<List<DocumentLocal>> {
         return documentsLocalDb.getLoadedDocuments().flowOn(Dispatchers.IO)
     }

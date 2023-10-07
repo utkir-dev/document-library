@@ -82,9 +82,4 @@ class AllDocumentsViewModelImpl @Inject constructor(
             repository.saveTempDocumentsToLocalDb(tempDocuments)
         }
     }
-
-    override fun onCleared() {
-        super.onCleared()
-        Log.d("viewmodelOnCleared","AllDocumentsViewmodel cleared")
-    }
 }

@@ -28,7 +28,6 @@ class ScreenAddEditDocumentsChild2 : BaseFragmentAddEditDocuments() {
     private val vm by viewModels<AddEditDocumentViewModelImpl>()
     private var adapter: AdapterAddEditDocument? = null
     private var searchText = ""
-    private var folders = ArrayList<String>()
     private var parentId: String = ""
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
@@ -65,7 +64,7 @@ class ScreenAddEditDocumentsChild2 : BaseFragmentAddEditDocuments() {
             override fun onLongClick(document: DocumentForRv, position: Int, v: View) {
                 showDialogDocument(document.toDocumentLocal()) { view ->
                     when (view.id) {
-                        R.id.tv_edit_document -> editDocument(document.toDocumentLocal())
+                        R.id.tv_edit_document -> editDocument(document)
                         R.id.tv_replace_document -> replaceDocument(document.toDocumentLocal())
                         R.id.tv_delete_document -> deleteDocument(document.toDocumentLocal())
                     }
@@ -83,7 +82,6 @@ class ScreenAddEditDocumentsChild2 : BaseFragmentAddEditDocuments() {
         binding.lTopRecycler.visibility = View.GONE
         vm.documentsForRv.observe(viewLifecycleOwner) {
             val documents = it.sortedWith(compareBy<DocumentForRv> { it.type }.thenBy { it.dateAdded })
-            folders = it.filter { it.type == 0 }.map { it.name } as ArrayList<String>
             adapter?.submitList(documents)
         }
     }

@@ -68,9 +68,10 @@ class PdfViewModelIml @Inject constructor(
                 repDictionary.getUserWords(documentId)
             ) { baseWords, userWords ->
                 try {
-                    val page=_currentPage.value?:1
+                    val page = _currentPage.value ?: 1
                     val minDiff: Int = userWords.minOf { abs(it.pageNumber - page) }
-                    val closeItem: ArabUzUser? = userWords.find { abs(it.pageNumber - page)==minDiff }
+                    val closeItem: ArabUzUser? =
+                        userWords.find { abs(it.pageNumber - page) == minDiff }
                     closeItem?.let {
                         _closestPage.postValue(userWords.indexOf(it))
                     }
@@ -167,8 +168,6 @@ class PdfViewModelIml @Inject constructor(
 
     fun updateTimer(time: Int? = null) {
         viewModelScope.launch {
-            Log.d("timer", "updateTimer time: ${time}")
-
             var isEnd = false
             _screenBlockState.postValue(false)
             countDownTimer?.cancel()
@@ -177,14 +176,12 @@ class PdfViewModelIml @Inject constructor(
             val target = (currentTime * 60_000).toLong()
             countDownTimer = object : CountDownTimer(target, 1_000) {
                 override fun onTick(p0: Long) {
-                    Log.d("timer", "timer: ${p0 / 1000}")
                     if (p0 < 1000) {
                         isEnd = true
                     }
                 }
 
                 override fun onFinish() {
-                    Log.d("timer", "timer finished")
                     if (isEnd) {
                         _screenBlockState.postValue(true)
                     }
@@ -225,7 +222,7 @@ class PdfViewModelIml @Inject constructor(
 
     override fun onCleared() {
         super.onCleared()
-        Log.d("viewmodelOnCleared","PdfViewmodel cleared")
+        Log.d("viewmodelOnCleared", "PdfViewmodel cleared")
         _documentBytes.postValue(null)
         cancelTimer()
     }

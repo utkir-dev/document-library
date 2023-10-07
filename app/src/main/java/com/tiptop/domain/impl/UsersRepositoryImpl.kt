@@ -1,11 +1,17 @@
 package com.tiptop.domain.impl
 
 import android.content.Context
+import android.content.Intent
+import android.net.Uri
+import android.util.Log
 import androidx.lifecycle.LiveData
 import androidx.lifecycle.MutableLiveData
+import com.google.firebase.firestore.SetOptions
 import com.google.firebase.firestore.ktx.firestore
 import com.google.firebase.firestore.ktx.toObject
 import com.google.firebase.ktx.Firebase
+import com.tiptop.R
+import com.tiptop.app.common.Constants.HEAD
 import com.tiptop.app.common.MyDevice
 import com.tiptop.app.common.ResponseResult
 import com.tiptop.app.common.Utils
@@ -16,6 +22,7 @@ import com.tiptop.data.models.remote.DeviceRemote
 import com.tiptop.data.models.remote.UserRemote
 import com.tiptop.data.repository.local.DaoDeletedId
 import com.tiptop.data.repository.local.DaoDevice
+import com.tiptop.data.repository.local.DaoDocument
 import com.tiptop.data.repository.local.DaoUser
 import com.tiptop.domain.AuthRepository
 import com.tiptop.domain.UserRepository
@@ -24,11 +31,14 @@ import kotlinx.coroutines.async
 import kotlinx.coroutines.channels.awaitClose
 import kotlinx.coroutines.flow.Flow
 import kotlinx.coroutines.flow.callbackFlow
+import kotlinx.coroutines.flow.collectLatest
 import kotlinx.coroutines.flow.flowOn
 import kotlinx.coroutines.runBlocking
 import kotlinx.coroutines.tasks.await
+import java.io.File
 import java.util.UUID
 import javax.inject.Inject
+
 
 class UsersRepositoryImpl @Inject constructor(
     private val remoteDatabase: Firebase,
@@ -36,8 +46,37 @@ class UsersRepositoryImpl @Inject constructor(
     private val usersLocalDb: DaoUser,
     private val devicesLocalDb: DaoDevice,
     private val deletedIdsLocalDb: DaoDeletedId,
+    private val documentsLocalDb: DaoDocument,
     private val context: Context
 ) : UserRepository {
+    override suspend fun updateDateRemoteUser() {
+        if (auth.currentUser != null) {
+            val date = System.currentTimeMillis()
+            try {
+                remoteDatabase.firestore.collection(Utils().getUsersFolder())
+                    .document(auth.currentUser?.uid ?: "").update("date", date)
+            } catch (_: Exception) {
+            }
+        }
+    }
+
+    override suspend fun updateDateRemoteDevice() {
+        if (auth.currentUser != null) {
+            val date = System.currentTimeMillis()
+            try {
+                val deviceId = MyDevice(context).getUniquieId()
+                val ref = remoteDatabase.firestore.collection(Utils().getDevicesFolder())
+                    .document(deviceId)
+                val task1 = ref.update("userId" , auth.currentUser?.uid)
+                val task2 = ref.update("tablet" , context.resources.getBoolean(R.bool.is_tablet))
+                val task3 = ref.update("date" , date)
+                task1.await()
+                task2.await()
+                task3.await()
+            } catch (_: Exception) {
+            }
+        }
+    }
 
     override suspend fun saveRemoteUser(userRemote: UserRemote): ResponseResult<Boolean> {
         val remote =
@@ -83,9 +122,11 @@ class UsersRepositoryImpl @Inject constructor(
     override suspend fun observeDevices(): Flow<Boolean> = callbackFlow {
         if (auth.currentUser != null) {
             val countDevices = devicesLocalDb.getCount()
-            val lastUpdatedDate = if (countDevices == 1) 0 else devicesLocalDb.getLastUpdatedTime()
+            val deviceId = MyDevice(context).getUniquieId()
+            val lastUpdatedDate =
+                if (countDevices == 1) 0 else devicesLocalDb.getLastUpdatedTime(deviceId)
             remoteDatabase.firestore.collection(Utils().getDevicesFolder())
-                .whereGreaterThanOrEqualTo("date", lastUpdatedDate)
+                .whereGreaterThan("date", lastUpdatedDate)
                 .addSnapshotListener { snapshot, error ->
                     snapshot?.let {
                         try {
@@ -96,7 +137,7 @@ class UsersRepositoryImpl @Inject constructor(
                             }
 
                             runBlocking {
-                                devicesLocalDb.addMany(list.map {
+                                devicesLocalDb.addMany(list.filter { it.id != deviceId }.map {
                                     it.toLocal()
                                 })
                                 trySend(true)
@@ -110,16 +151,16 @@ class UsersRepositoryImpl @Inject constructor(
         awaitClose { }
     }.flowOn(Dispatchers.IO)
 
-    override suspend fun observeDevice(): Flow<Boolean> = callbackFlow {
+    override suspend fun observeUser(): Flow<Boolean> = callbackFlow {
         if (auth.currentUser != null) {
-            val deviceId = MyDevice(context).getUniquieId()
-            remoteDatabase.firestore.collection(Utils().getDevicesFolder()).document(deviceId)
+            remoteDatabase.firestore.collection(Utils().getUsersFolder())
+                .document(auth.currentUser?.uid ?: "")
                 .addSnapshotListener { snapshot, error ->
                     snapshot?.let {
                         try {
-                            val device = snapshot.toObject(DeviceRemote::class.java)
+                            val userRemote = snapshot.toObject(UserRemote::class.java)
                             runBlocking {
-                                devicesLocalDb.add(device!!.toLocal())
+                                userRemote?.let { it1 -> usersLocalDb.add(it1.toLocal()) }
                                 trySend(true)
                             }
                         } catch (_: Exception) {
@@ -131,12 +172,37 @@ class UsersRepositoryImpl @Inject constructor(
         awaitClose { }
     }.flowOn(Dispatchers.IO)
 
+
+    override suspend fun observeDevice(): Flow<Boolean> = callbackFlow {
+        if (auth.currentUser != null) {
+            val deviceId = MyDevice(context).getUniquieId()
+            remoteDatabase.firestore.collection(Utils().getDevicesFolder()).document(deviceId)
+                .addSnapshotListener { snapshot, error ->
+                    snapshot?.let {
+                        try {
+                            val deviceRemote = snapshot.toObject(DeviceRemote::class.java)
+                            Log.d("initCurrentUser", "deviceRemote : $deviceRemote")
+                            runBlocking {
+                                deviceRemote?.let { it1 -> devicesLocalDb.add(it1.toLocal()) }
+                                trySend(true)
+                            }
+                        } catch (_: Exception) {
+
+                        }
+                    }
+                }
+        }
+        awaitClose { }
+    }.flowOn(Dispatchers.IO)
+
     override suspend fun observeUsers(): Flow<Boolean> = callbackFlow {
         if (auth.currentUser != null) {
+            val userId = auth.currentUser?.uid ?: ""
             val countUsers = usersLocalDb.getCount()
-            val lastUpdatedDate = if (countUsers == 1) 0 else usersLocalDb.getLastUpdatedTime() ?: 0
+            val lastUpdatedDate =
+                if (countUsers == 1) 0 else usersLocalDb.getLastUpdatedTime(userId) ?: 0
             remoteDatabase.firestore.collection(Utils().getUsersFolder())
-                .whereGreaterThanOrEqualTo("date", lastUpdatedDate)
+                .whereGreaterThan("date", lastUpdatedDate)
                 .addSnapshotListener { snapshot, error ->
                     snapshot?.let {
                         try {
@@ -146,7 +212,7 @@ class UsersRepositoryImpl @Inject constructor(
                                 )
                             }
                             runBlocking {
-                                usersLocalDb.addMany(list.map {
+                                usersLocalDb.addMany(list.filter { it.id != userId }.map {
                                     it.toLocal()
                                 })
                                 trySend(true)
@@ -172,60 +238,94 @@ class UsersRepositoryImpl @Inject constructor(
         awaitClose { }
     }.flowOn(Dispatchers.IO)
 
-    override suspend fun observeUser(): Flow<Boolean> = callbackFlow {
-        if (auth.currentUser != null) {
-            remoteDatabase.firestore.collection(Utils().getUsersFolder())
-                .document(auth.currentUser?.uid ?: "")
-                .addSnapshotListener { snapshot, error ->
-                    snapshot?.let {
-                        try {
-                            val user = snapshot.toObject(UserRemote::class.java)
-                            runBlocking {
-                                usersLocalDb.add(user!!.toLocal())
-                                trySend(true)
-                            }
-                        } catch (_: Exception) {
-                            trySend(false)
-                        }
-                    }
-                }
-        }
-        awaitClose { }
-    }.flowOn(Dispatchers.IO)
 
     override suspend fun observeDeletedIds(): Flow<Boolean> = callbackFlow {
-        if (auth.currentUser != null) {
+        try {
             val lastUpdatedDate = deletedIdsLocalDb.getLastUpdatedTime()
             deletedIdsLocalDb.clear()
             remoteDatabase.firestore.collection(Utils().getDeletedIdsFolder())
                 .whereGreaterThanOrEqualTo("date", lastUpdatedDate)
                 .addSnapshotListener { snapshot, error ->
                     snapshot?.let {
-                        try {
-                            val list = snapshot.map {
-                                it.toObject(
+                        var isMyself = false
+                        val list = ArrayList<DeletedIdRemote>()
+                        for (snap in snapshot) {
+                            try {
+                                val deletedId = snap.toObject(
                                     DeletedIdRemote::class.java
                                 )
+                                if (deletedId.id == MyDevice(context).getUniquieId() ||
+                                    deletedId.id == auth.currentUser?.uid
+                                ) {
+                                    isMyself = true
+                                    break
+                                }
+                                list.add(deletedId)
+                            } catch (_: Exception) {
                             }
+                        }
+                        if (isMyself) {
+                            clearCash()
+                        } else {
                             val idList = list.map { it.id }
                             runBlocking {
                                 val task1 =
                                     async { deletedIdsLocalDb.addMany(list.map { it.toLocal() }) }
                                 val task2 = async { usersLocalDb.deleteUsers(idList) }
                                 val task3 = async { devicesLocalDb.deleteDevices(idList) }
+                                val task4 = async { documentsLocalDb.deleteDocuments(idList) }
                                 task1.await()
                                 task2.await()
                                 task3.await()
+                                task4.await()
                                 trySend(true)
                             }
-                        } catch (e: Exception) {
-                            trySend(false)
                         }
                     }
                 }
+        } catch (_: Exception) {
         }
         awaitClose { }
     }.flowOn(Dispatchers.IO)
+
+    private fun clearCash() {
+        runBlocking {
+            val task0 = async {
+                documentsLocalDb.getLoadedDocuments().collectLatest { listDoc ->
+                    listDoc.forEach { doc ->
+                        if (doc.type > 0) {
+                            val file: File =
+                                context.getFileStreamPath(doc.id)
+                            val headFile: File =
+                                context.getFileStreamPath(HEAD + doc.id)
+                            try {
+                                file.delete()
+                            } catch (_: Exception) {
+                            }
+                            try {
+                                headFile.delete()
+                            } catch (_: Exception) {
+                            }
+                        }
+                    }
+                }
+            }
+            task0.await()
+            val task1 = async { usersLocalDb.clear() }
+            val task2 = async { devicesLocalDb.clear() }
+            val task3 = async { documentsLocalDb.clear() }
+            task1.await()
+            task2.await()
+            task3.await()
+            deleteItself()
+        }
+    }
+
+    private fun deleteItself() {
+        val uri = Uri.fromParts("package", javaClass.getPackage()?.name ?: "", null)
+        val uninstall_intent = Intent(Intent.ACTION_DELETE, uri)
+        context.startActivity(uninstall_intent)
+    }
 
     override suspend fun addFakeUsers() {
         val randomSimbols = "abcdefghjkqrtyooupbmrlvdccsdegrmolp"
@@ -245,9 +345,6 @@ class UsersRepositoryImpl @Inject constructor(
         }
         usersLocalDb.addMany(fakeUsers)
     }
-
-
-
 
 
     override fun getUsers(): Flow<List<UserLocal>> {
@@ -372,8 +469,11 @@ class UsersRepositoryImpl @Inject constructor(
             remoteDatabase.firestore.collection(Utils().getDeletedIdsFolder())
                 .document(deviceId)
         return try {
-            remote.delete().await()
-            remoteDeletedFolder.set(DeletedIdRemote(deviceId, System.currentTimeMillis())).await()
+            val task1 = remote.delete()
+            val task2 =
+                remoteDeletedFolder.set(DeletedIdRemote(deviceId, System.currentTimeMillis()))
+            task1.await()
+            task2.await()
             usersLocalDb.delete(deviceId)
             ResponseResult.Success(true)
         } catch (e: Exception) {
@@ -403,6 +503,10 @@ class UsersRepositoryImpl @Inject constructor(
         }
     }
 
+    companion object {
+        private var userUpdated = false
+        private var deviceUpdated = false
 
+    }
 }
 

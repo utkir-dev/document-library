@@ -29,7 +29,10 @@ open class AdapterLoadedDocuments(val listener: ClickListener) :
 
         @SuppressLint("SetTextI18n", "NotifyDataSetChanged")
         fun onBind(document: DocumentForRv, position: Int) {
-            var name = document.nameDecrypted()
+            var name = if (document.name.contains("."))
+                document.name.substringBeforeLast(".")
+            else document.name
+
             when (document.type) {
                 TYPE_FOLDER -> {
                     v.tvFileSize.visibility = View.GONE
@@ -57,7 +60,8 @@ open class AdapterLoadedDocuments(val listener: ClickListener) :
                     v.tvFileSize.text = document.size.validateFileSize()
                 }
             }
-            v.tvFolderName.text = name.substringBeforeLast(".")
+
+            v.tvFolderName.text = name
             v.tvFileSize.text = document.size.validateFileSize()
             v.ivFileState.visibility = View.GONE
 

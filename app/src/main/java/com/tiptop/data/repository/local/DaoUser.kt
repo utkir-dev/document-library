@@ -36,13 +36,13 @@ interface DaoUser {
     fun getCurrentUserFlowable(id: String): Flow<UserLocal>
 
     @Query("SELECT * FROM users WHERE id=:id limit 1")
-    suspend fun getCurrentUser(id: String): UserLocal
+    fun getCurrentUser(id: String): UserLocal
 
     @Query("SELECT * FROM users ORDER BY date DESC")
     fun getAll(): Flow<List<UserLocal>>
 
-    @Query("SELECT MAX(date) FROM users")
-    fun getLastUpdatedTime(): Long
+    @Query("SELECT MAX(date) FROM users   WHERE id!=:userId")
+    fun getLastUpdatedTime(userId:String): Long
 
     @Query("SELECT * FROM users WHERE deviceId =:deviceId ORDER BY date DESC")
     fun getUsersByDeviceId(deviceId: String): Flow<List<UserLocal>>

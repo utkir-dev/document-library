@@ -24,7 +24,7 @@ class AdapterPageNumbers(val list: List<String>, val listener: PageNumberClickLi
     }
 
     override fun onBindViewHolder(holder: Vh, position: Int) {
-        holder.onBind(list[position],position)
+        holder.onBind(list[position], position)
 
     }
 

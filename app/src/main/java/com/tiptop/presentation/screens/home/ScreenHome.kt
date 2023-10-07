@@ -7,12 +7,17 @@ import android.graphics.Bitmap
 import android.graphics.BitmapFactory
 import android.os.Bundle
 import android.util.Base64
+import android.util.Log
 import android.view.LayoutInflater
 import android.view.View
 import android.view.ViewGroup
+import androidx.ads.identifier.AdvertisingIdClient
+import androidx.ads.identifier.AdvertisingIdInfo
 import androidx.fragment.app.viewModels
 import androidx.lifecycle.MutableLiveData
 import androidx.navigation.fragment.findNavController
+import com.google.common.util.concurrent.FutureCallback
+import com.google.common.util.concurrent.Futures.addCallback
 import com.shockwave.pdfium.PdfDocument
 import com.shockwave.pdfium.PdfiumCore
 import com.tiptop.R
@@ -29,6 +34,7 @@ import com.tiptop.presentation.screens.BaseFragment
 import com.tiptop.presentation.screens.document_view.pdf.ScreenPdfView
 import dagger.hilt.android.AndroidEntryPoint
 import java.io.ByteArrayOutputStream
+import java.util.concurrent.Executors
 import javax.inject.Inject
 
 @AndroidEntryPoint
@@ -51,6 +57,41 @@ class ScreenHome : BaseFragment(R.layout.screen_home) {
         super.onViewCreated(view, savedInstanceState)
         initObserves()
         initClickListeners()
+        getImei()
+    }
+
+    private fun getImei() {
+            try {
+
+                if (AdvertisingIdClient.isAdvertisingIdProviderAvailable(requireContext())) {
+                    val advertisingIdInfoListenableFuture =
+                        AdvertisingIdClient.getAdvertisingIdInfo(requireContext())
+
+                    addCallback(advertisingIdInfoListenableFuture,
+                        object : FutureCallback<AdvertisingIdInfo> {
+                            override fun onSuccess(adInfo: AdvertisingIdInfo?) {
+                                val id: String? = adInfo?.id
+                                Log.d("imei", "id : $id")
+
+                                val providerPackageName: String? = adInfo?.providerPackageName
+//                            val isLimitTrackingEnabled: Boolean =
+//                                adInfo?.isLimitTrackingEnabled
+                            }
+                            override fun onFailure(t: Throwable) {
+
+                                Log.d("imei", "Failed to connect to Advertising ID provider")
+                                Log.d("imei", "Failed ${t.message}")
+
+                            }
+                        }, Executors.newSingleThreadExecutor())
+                } else {
+
+                    Log.d("imei", "unavailable")
+                }
+            } catch (e: Exception) {
+                Log.d("imei", "Exception: ${e.message}")
+            }
+
     }
 
     private fun initClickListeners() {
@@ -150,7 +191,11 @@ class ScreenHome : BaseFragment(R.layout.screen_home) {
         }
         permission.observe(viewLifecycleOwner) {
             if (it) {
-                DownloadController((activity as MainActivity), libVersion.apkName, libVersion.url).enqueueDownload()
+                DownloadController(
+                    (activity as MainActivity),
+                    libVersion.apkName,
+                    libVersion.url
+                ).enqueueDownload()
             }
         }
     }

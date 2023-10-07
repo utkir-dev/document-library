@@ -3,6 +3,8 @@ package com.tiptop.data.models.local
 import android.os.Bundle
 import com.gg.gapo.treeviewlib.model.NodeData
 import com.tiptop.app.common.decryption
+import com.tiptop.app.common.encryption
+import com.tiptop.data.models.remote.DocumentRemote
 
 
 data class DocumentForRv(
@@ -20,14 +22,25 @@ data class DocumentForRv(
     var lastSeenDate: Long = 0,
     var date: Long = 0,
     var dateAdded: Long = 0,
-    var count: Int=0,
-    var countNewDocuments: Int=0,
+    var count: Int = 0,
+    var countNewDocuments: Int = 0,
     var child: List<DocumentForRv> = ArrayList()
 ) : NodeData<DocumentForRv> {
+    fun toRemote() = DocumentRemote(
+        id = this.id,
+        parentId = this.parentId,
+        name = this.name.encryption(this.dateAdded),
+        headBytes = this.headBytes,
+        type = this.type,
+        size = this.size,
+        date = this.date,
+        dateAdded = this.dateAdded,
+    )
+
     fun toDocumentLocal() = DocumentLocal(
         id = this.id,
         parentId = this.parentId,
-        name = this.name,
+        name = this.name.encryption(this.dateAdded),
         searchText = this.searchText,
         headBytes = this.headBytes,
         loaded = this.loaded,
@@ -40,9 +53,11 @@ data class DocumentForRv(
         date = this.date,
         dateAdded = this.dateAdded
     )
+
     fun nameDecrypted(): String {
         return if (name.isEmpty()) "" else name.decryption(dateAdded)
     }
+
     override fun areContentsTheSame(item: NodeData<DocumentForRv>): Boolean {
         return this.equals(item)
     }

@@ -9,6 +9,8 @@ import com.tiptop.data.models.remote.UserRemote
 import kotlinx.coroutines.flow.Flow
 
 interface UserRepository {
+    suspend fun updateDateRemoteUser()
+    suspend fun updateDateRemoteDevice()
     suspend fun saveRemoteUser(userRemote: UserRemote): ResponseResult<Boolean>
     suspend fun saveRemoteUserPassword(password: String, id: String): ResponseResult<Boolean>
     suspend fun saveRemoteDevice(remoteDevice: DeviceRemote): ResponseResult<Boolean>
