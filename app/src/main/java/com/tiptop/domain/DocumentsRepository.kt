@@ -12,7 +12,6 @@ interface DocumentsRepository {
     suspend fun saveTempDocumentsToLocalDb(tempDocuments:List<DocumentLocal>)
     suspend fun uploadFile(bytes: ByteArray, document: DocumentRemote)
     suspend fun uploadHeadFile(bytes: ByteArray, document: DocumentRemote)
-
     suspend fun downloadFile(document: DocumentLocal)
     suspend fun downloadFileLive(document: DocumentLocal): Flow<Resource<DocumentLocal>>
     suspend fun deleteDocument(document: DocumentLocal): ResponseResult<Boolean>

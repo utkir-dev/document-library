@@ -75,7 +75,7 @@ class ScreenAddEditDocumentsChild1 : BaseFragmentAddEditDocuments() {
                     when (view.id) {
                         R.id.tv_edit_document -> editDocument(document)
                         R.id.tv_replace_document -> replaceDocument(document.toDocumentLocal())
-                        R.id.tv_delete_document -> deleteDocument(document.toDocumentLocal())
+                        R.id.tv_delete_document -> deleteDocument(document)
                     }
                 }
             }

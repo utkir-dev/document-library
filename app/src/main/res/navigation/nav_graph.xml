@@ -49,6 +49,9 @@
         <action
             android:id="@+id/action_screenHome_to_screenDocument"
             app:destination="@id/screenDocument" />
+        <action
+            android:id="@+id/action_screenHome_to_screenUserDictionary"
+            app:destination="@id/screenUserDictionary" />
     </fragment>
     <fragment
         android:id="@+id/screenAddEditDocuments"
@@ -119,6 +122,10 @@
         android:id="@+id/screenImageView"
         android:name="com.tiptop.presentation.screens.document_view.image.ScreenImageView"
         android:label="ScreenImageView" />
+    <fragment
+        android:id="@+id/screenUserDictionary"
+        android:name="com.tiptop.presentation.screens.home.my_dictionary.ScreenUserDictionary"
+        android:label="ScreenUserDictionary" />
 
 
 </navigation>

@@ -20,7 +20,7 @@ class LoadedDocumentsViewModelImpl @Inject constructor(
 ) : ViewModel(), LoadedDocumentsViewModel {
 
 
-    private val _isFolder = MutableLiveData(true)
+    private val _isFolder = MutableLiveData(false)
     override val isFolder: LiveData<Boolean> = _isFolder
 
     private val _documents = MutableLiveData<List<DocumentForRv>>()

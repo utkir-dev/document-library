@@ -9,4 +9,5 @@ interface HomeViewModel {
     val countAllDocuments: LiveData<Int>
     val countNewDocuments: LiveData<Int>
     val hijriy: LiveData<String>
+    val countUserDictionary: LiveData<Int>
 }

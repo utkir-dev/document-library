@@ -32,14 +32,11 @@ open class AdapterLoadedDocuments(val listener: ClickListener) :
             var name = if (document.name.contains("."))
                 document.name.substringBeforeLast(".")
             else document.name
-
             when (document.type) {
                 TYPE_FOLDER -> {
                     v.tvFileSize.visibility = View.GONE
                     v.ivFolder.setImageResource(R.drawable.ic_folder)
-                    if ((document.count ?: 0) > 0) {
-                        name = "$name(${document.count})"
-                    }
+                    name = "$name(${document.count})"
                 }
 
                 TYPE_PDF -> {

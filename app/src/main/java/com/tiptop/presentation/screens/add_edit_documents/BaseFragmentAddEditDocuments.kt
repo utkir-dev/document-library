@@ -49,7 +49,6 @@ open class BaseFragmentAddEditDocuments : BaseFragment(R.layout.screen_add_edit_
     private val vm by viewModels<AddEditDocumentViewModelImpl>()
     private var pickedFile: Uri? = null
     private var documentNames = emptyList<String>()
-    private var parentIds = emptyList<String>()
     var folderNames = emptyList<String>()
 
 
@@ -72,9 +71,7 @@ open class BaseFragmentAddEditDocuments : BaseFragment(R.layout.screen_add_edit_
         vm.folderNames.observe(viewLifecycleOwner) {
             folderNames = it
         }
-        vm.parentIds.observe(viewLifecycleOwner) {
-            parentIds = it
-        }
+
     }
 
     override fun onResume() {
@@ -281,18 +278,18 @@ open class BaseFragmentAddEditDocuments : BaseFragment(R.layout.screen_add_edit_
         }
     }
 
-    fun deleteDocument(document: DocumentLocal) {
+    fun deleteDocument(document: DocumentForRv) {
         if (document.type == TYPE_FOLDER) {
-            if (parentIds.any { it.contains(document.id) }) {
+            if (document.count>0) {
                 showSnackBar("Ushbu papkada fayllar bor. Avval ularni o'chiring")
             } else {
                 showConfirmDialog(
-                    title = document.nameDecrypted(),
+                    title = document.name,
                     message = "Ushbu papkani o'chirishga ishonchingiz komilmi?"
                 ) {
                     if (it) {
                         if (isInternetAvailable(requireContext())) {
-                            vm.deleteDocument(document)
+                            vm.deleteDocument(document.toDocumentLocal())
                         } else {
                             showSnackBarNoConnection()
                         }
@@ -302,12 +299,12 @@ open class BaseFragmentAddEditDocuments : BaseFragment(R.layout.screen_add_edit_
 
         } else {
             showConfirmDialog(
-                title = document.nameDecrypted().substringBeforeLast("."),
+                title = document.name,
                 message = "Ushbu faylni o'chirishga ishonchingiz komilmi?"
             ) {
                 if (it) {
                     if (isInternetAvailable(requireContext())) {
-                        vm.deleteDocument(document)
+                        vm.deleteDocument(document.toDocumentLocal())
                     } else {
                         showSnackBarNoConnection()
                     }

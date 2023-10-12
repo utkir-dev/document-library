@@ -10,6 +10,7 @@ import com.tiptop.app.common.Constants
 import com.tiptop.app.common.Encryptor
 import com.tiptop.app.common.Utils
 import com.tiptop.data.models.local.DocumentLocal
+import com.tiptop.domain.DictionaryRepository
 import com.tiptop.domain.DocumentsRepository
 import dagger.hilt.android.lifecycle.HiltViewModel
 import kotlinx.coroutines.Dispatchers
@@ -27,7 +28,8 @@ import javax.inject.Inject
 
 @HiltViewModel
 class HomeViewModelImpl @Inject constructor(
-    private val repository: DocumentsRepository
+    private val repository: DocumentsRepository,
+    private val dictRepository: DictionaryRepository
 ) : ViewModel(), HomeViewModel {
 
     private val _lastSeenDocument = MutableLiveData<DocumentLocal?>()
@@ -47,6 +49,10 @@ class HomeViewModelImpl @Inject constructor(
 
     private val _hijriy = MutableLiveData("")
     override val hijriy: LiveData<String> = _hijriy
+
+    private val _countUserDictionary = MutableLiveData(0)
+    override val countUserDictionary: LiveData<Int> = _countUserDictionary
+
 
     init {
         viewModelScope.launch(Dispatchers.IO) {
@@ -72,6 +78,11 @@ class HomeViewModelImpl @Inject constructor(
             }
             async {
                 showHijri()
+            }
+            async {
+                dictRepository.getUseDictionaryCount().collectLatest {
+                    _countUserDictionary.postValue(it)
+                }
             }
         }
     }
@@ -131,7 +142,7 @@ class HomeViewModelImpl @Inject constructor(
 
     override fun onCleared() {
         super.onCleared()
-        Log.d("viewmodelOnCleared","HomeViewmodel cleared")
+        Log.d("viewmodelOnCleared", "HomeViewmodel cleared")
 
     }
 }

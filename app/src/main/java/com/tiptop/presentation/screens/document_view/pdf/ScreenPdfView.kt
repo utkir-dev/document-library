@@ -263,7 +263,7 @@ class ScreenPdfView : BaseFragment(R.layout.screen_document_view) {
                     binding.lDictionary.etSearchWord.clearFocus()
                     binding.lDictionary.etSearchWord.hideKeyboard()
                     showWordDialog(word) { modifiedWord ->
-                        binding.lDictionary.etSearchWord.setQuery("",true)
+                        binding.lDictionary.etSearchWord.setQuery("", true)
                         vm.updateBaseWord(modifiedWord, currentPage, currentDocument?.id ?: "")
                     }
                 }
@@ -275,7 +275,9 @@ class ScreenPdfView : BaseFragment(R.layout.screen_document_view) {
                     }
                 }
             })
+
         binding.lDictionary.rvDict.adapter = adpaterWords
+
         vm.words.observe(viewLifecycleOwner) {
             adpaterWords.submitList(it)
         }
@@ -308,6 +310,7 @@ class ScreenPdfView : BaseFragment(R.layout.screen_document_view) {
                 LinearLayoutManager.VERTICAL
             )
         )
+
         binding.lDictionary.btnClose.setOnClickListener {
             closeDictionary()
         }
@@ -544,48 +547,6 @@ class ScreenPdfView : BaseFragment(R.layout.screen_document_view) {
         vm.cancelTimer()
     }
 
-    private fun showWordDialog(word: Dictionary, function: (Dictionary) -> Unit) {
-        val b = DialogWordBinding.inflate(layoutInflater)
-        val dialog = AlertDialog.Builder(requireContext(), R.style.MyDialogStyle).apply {
-            setView(b.root)
-                .setCancelable(true)
-                .create()
-        }
-        val allert = dialog.show()
-        if (word is ArabUzBase) {
-            b.tvSearchedWord.text = word.c0arab
-            b.tvRus.text = word.c3rus
-            b.tvUz.text = word.c2uzbek
-            if (word.saved) {
-                b.ivSavedWord.setImageResource(R.drawable.star1)
-            } else {
-                b.ivSavedWord.setImageResource(R.drawable.ic_star_unselected)
-            }
-            b.ivSavedWord.setOnClickListener {
-                function(word.copy(saved = !word.saved))
-                allert.cancel()
-            }
-        } else if (word is ArabUzUser) {
-            b.tvSearchedWord.text = word.c0arab
-            b.tvRus.text = word.c3rus
-            b.tvUz.text = word.c2uzbek
-            b.ivSavedWord.setImageResource(R.drawable.ic_delete)
-            b.ivSavedWord.setOnClickListener {
-                function(word)
-                allert.cancel()
-            }
-        } else if (word is UzArabBase) {
-            b.tvSearchedWord.text = word.c0uzbek
-            b.tvUzTitle.text = "arabchasi"
-            b.tvUz.text = word.c1arab
-            b.tvRusTitle.visibility = View.GONE
-            b.tvRus.visibility = View.GONE
-        }
-
-        b.btnOk.setOnClickListener {
-            allert.cancel()
-        }
-    }
 
     override fun onDestroy() {
         super.onDestroy()

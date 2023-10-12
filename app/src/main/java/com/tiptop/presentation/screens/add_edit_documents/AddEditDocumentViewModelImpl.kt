@@ -5,6 +5,7 @@ import androidx.lifecycle.LiveData
 import androidx.lifecycle.MutableLiveData
 import androidx.lifecycle.ViewModel
 import androidx.lifecycle.viewModelScope
+import com.tiptop.app.common.Constants
 import com.tiptop.app.common.Constants.TYPE_FOLDER
 import com.tiptop.app.common.Resource
 import com.tiptop.app.common.ResponseResult
@@ -32,9 +33,6 @@ class AddEditDocumentViewModelImpl @Inject constructor(
     private val _folderNames = MutableLiveData<List<String>>()
     val folderNames: LiveData<List<String>> = _folderNames
 
-    private val _parentIds = MutableLiveData<List<String>>()
-    val parentIds: LiveData<List<String>> = _parentIds
-
     private val _documentNames = MutableLiveData<List<String>>()
     val documentNames: LiveData<List<String>> = _documentNames
 
@@ -55,7 +53,6 @@ class AddEditDocumentViewModelImpl @Inject constructor(
                     .map { it.nameDecrypted().lowercase() })
                 _documentNames.postValue(it.filter { it.type != TYPE_FOLDER }
                     .map { it.nameDecrypted().substringBeforeLast(".").lowercase() })
-                _parentIds.postValue(it.map { it.parentId })
             }
         }
     }
@@ -80,13 +77,32 @@ class AddEditDocumentViewModelImpl @Inject constructor(
         viewModelScope.launch(Dispatchers.IO) {
             repository.getDocumentsByParentId(parentId).collectLatest {
                 val list = it.map { it.toRvModel() }
-                //documents.postValue(it)
                 _documentsForRv.postValue(list)
                 async {
                     list.forEach {
                         val count = repository.getChildsCountByParentId(it.parentId + it.id)
                         it.count = count
                     }
+//----------------------------------------------------------------------------
+
+//                    list.forEach { parent ->
+//                        val listChild1 = repository.getChildDocuments(parent.parentId + parent.id).map { it.toRvModel() }
+//
+//                        listChild1.forEach { child1 ->
+//                            val listChild2 =
+//                                repository.getChildDocuments(child1.parentId + child1.id).map { it.toRvModel() }
+//
+//                            child1.count = listChild2.filter { it.type > 0 }.size
+//                            child1.countNewDocuments =
+//                                listChild2.filter { (System.currentTimeMillis() - it.dateAdded < Constants.NEW_DOCUMENTS_VISIBILITY_PERIOD) && it.type > 0 }.size
+//                            child1.child = listChild2
+//                        }
+//
+//                        parent.count = listChild1.filter { it.type > 0 }.size+listChild1.sumOf { it.count }
+//                        parent.countNewDocuments =listChild1.sumOf { it.countNewDocuments } +
+//                                listChild1.filter {(System.currentTimeMillis() - it.dateAdded < Constants.NEW_DOCUMENTS_VISIBILITY_PERIOD) && it.type > 0 }.size
+//                        parent.child = listChild1
+//                    }
                 }.await()
                 _documentsForRv.postValue(list)
             }
@@ -101,9 +117,7 @@ class AddEditDocumentViewModelImpl @Inject constructor(
     }
 
     override fun saveDocument(
-        document: DocumentRemote,
-        headByteArray: ByteArray?,
-        bodyByteArray: ByteArray?
+        document: DocumentRemote, headByteArray: ByteArray?, bodyByteArray: ByteArray?
     ) {
         _resultUpdate.postValue(Resource.loading(null))
         viewModelScope.launch {
@@ -146,11 +160,5 @@ class AddEditDocumentViewModelImpl @Inject constructor(
                 _resultDelete.postValue(Resource.error(false, "Xatolik"))
             }
         }
-    }
-
-    override fun onCleared() {
-        super.onCleared()
-        Log.d("viewmodelOnCleared", "AddEditDocumentViewmodel cleared")
-
     }
 }

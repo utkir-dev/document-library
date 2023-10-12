@@ -2,22 +2,18 @@ package com.tiptop.presentation.screens.home
 
 import android.Manifest
 import android.annotation.SuppressLint
+import android.app.AlertDialog
 import android.content.SharedPreferences
 import android.graphics.Bitmap
 import android.graphics.BitmapFactory
 import android.os.Bundle
 import android.util.Base64
-import android.util.Log
 import android.view.LayoutInflater
 import android.view.View
 import android.view.ViewGroup
-import androidx.ads.identifier.AdvertisingIdClient
-import androidx.ads.identifier.AdvertisingIdInfo
 import androidx.fragment.app.viewModels
 import androidx.lifecycle.MutableLiveData
 import androidx.navigation.fragment.findNavController
-import com.google.common.util.concurrent.FutureCallback
-import com.google.common.util.concurrent.Futures.addCallback
 import com.shockwave.pdfium.PdfDocument
 import com.shockwave.pdfium.PdfiumCore
 import com.tiptop.R
@@ -25,16 +21,18 @@ import com.tiptop.app.common.Constants.LIB_VERSION
 import com.tiptop.app.common.Constants.TYPE_PDF
 import com.tiptop.app.common.DownloadController
 import com.tiptop.app.common.Utils
+import com.tiptop.app.common.expand
 import com.tiptop.app.common.isInternetAvailable
 import com.tiptop.data.models.local.DocumentLocal
 import com.tiptop.data.models.local.LibVersion
+import com.tiptop.databinding.DialogConfirmBinding
+import com.tiptop.databinding.DialogDictInfoBinding
 import com.tiptop.databinding.ScreenHomeBinding
 import com.tiptop.presentation.MainActivity
 import com.tiptop.presentation.screens.BaseFragment
 import com.tiptop.presentation.screens.document_view.pdf.ScreenPdfView
 import dagger.hilt.android.AndroidEntryPoint
 import java.io.ByteArrayOutputStream
-import java.util.concurrent.Executors
 import javax.inject.Inject
 
 @AndroidEntryPoint
@@ -44,6 +42,7 @@ class ScreenHome : BaseFragment(R.layout.screen_home) {
     lateinit var shared: SharedPreferences
     private lateinit var binding: ScreenHomeBinding
     private val vm by viewModels<HomeViewModelImpl>()
+    private var countWords = 0
 
     override fun onCreateView(
         inflater: LayoutInflater, container: ViewGroup?,
@@ -57,41 +56,6 @@ class ScreenHome : BaseFragment(R.layout.screen_home) {
         super.onViewCreated(view, savedInstanceState)
         initObserves()
         initClickListeners()
-        getImei()
-    }
-
-    private fun getImei() {
-            try {
-
-                if (AdvertisingIdClient.isAdvertisingIdProviderAvailable(requireContext())) {
-                    val advertisingIdInfoListenableFuture =
-                        AdvertisingIdClient.getAdvertisingIdInfo(requireContext())
-
-                    addCallback(advertisingIdInfoListenableFuture,
-                        object : FutureCallback<AdvertisingIdInfo> {
-                            override fun onSuccess(adInfo: AdvertisingIdInfo?) {
-                                val id: String? = adInfo?.id
-                                Log.d("imei", "id : $id")
-
-                                val providerPackageName: String? = adInfo?.providerPackageName
-//                            val isLimitTrackingEnabled: Boolean =
-//                                adInfo?.isLimitTrackingEnabled
-                            }
-                            override fun onFailure(t: Throwable) {
-
-                                Log.d("imei", "Failed to connect to Advertising ID provider")
-                                Log.d("imei", "Failed ${t.message}")
-
-                            }
-                        }, Executors.newSingleThreadExecutor())
-                } else {
-
-                    Log.d("imei", "unavailable")
-                }
-            } catch (e: Exception) {
-                Log.d("imei", "Exception: ${e.message}")
-            }
-
     }
 
     private fun initClickListeners() {
@@ -102,9 +66,32 @@ class ScreenHome : BaseFragment(R.layout.screen_home) {
         binding.cardAllDocuments.setOnClickListener {
             findNavController().navigate(R.id.action_screenHome_to_screenAllDocuments)
         }
+        binding.cardDictionary.setOnClickListener {
+            if (countWords > 0) {
+                findNavController().navigate(R.id.action_screenHome_to_screenUserDictionary)
+            } else {
+                showDictDialog()
+            }
+        }
+
         binding.ivToggle.setOnClickListener {
             (activity as MainActivity).openDrawer()
         }
+    }
+
+    private fun showDictDialog() {
+        val view = DialogDictInfoBinding.inflate(layoutInflater)
+        val dialog = AlertDialog.Builder(requireContext(), R.style.MyDialogStyle).apply {
+            setView(view.root)
+                .setCancelable(true)
+                .create()
+        }
+        val allert = dialog.show()
+        view.tvHowToAddWord.setOnClickListener {
+            view.tvHowToAddWord.visibility = View.GONE
+            expand(view.lHowToAdd)
+        }
+        view.btnOkDict.setOnClickListener { allert.cancel() }
     }
 
     @SuppressLint("SetTextI18n")
@@ -142,6 +129,10 @@ class ScreenHome : BaseFragment(R.layout.screen_home) {
             }
         }
 
+        vm.countUserDictionary.observe(viewLifecycleOwner) { count ->
+            countWords = count
+            binding.tvMyDictionary.text = "Lug'atim ($count)"
+        }
         vm.hijriy.observe(viewLifecycleOwner) { today ->
             if (today.isNotEmpty()) {
                 binding.tvDateHijri.text = today

@@ -65,7 +65,7 @@ class AppModule {
         devicesLocalDb = daoDevice,
         context = ctx,
         deletedIdsLocalDb = daoDeletedId,
-        documentsLocalDb= daoDocument
+        documentsLocalDb = daoDocument
     )
 
     @Provides
@@ -77,7 +77,7 @@ class AppModule {
         daoUzarUser: DaoUzarUser,
         daoAruzUser: DaoAruzUser,
         ctx: Context,
-        sharedPref:SharedPreferences,
+        sharedPref: SharedPreferences,
         coroutineScope: CoroutineScope
     ): DictionaryRepository = DictionaryRepositoryImpl(
         auth = auth,
@@ -88,7 +88,7 @@ class AppModule {
         uzarUserDb = daoUzarUser,
         aruzUserDb = daoAruzUser,
         context = ctx,
-        shared=sharedPref,
+        shared = sharedPref,
         coroutine = coroutineScope
     )
 
@@ -98,15 +98,15 @@ class AppModule {
         auth: AuthRepository,
         daoDocument: DaoDocument,
         ctx: Context,
-        sharedPref: SharedPreferences,
+        aruzUserDb: DaoAruzUser,
         coroutineScope: CoroutineScope
     ): DocumentsRepository = DocumentsRepositoryImpl(
         auth = auth,
         remoteDatabase = Firebase,
         remoteStorage = FirebaseStorage.getInstance(),
         documentsLocalDb = daoDocument,
+        aruzUserDb = aruzUserDb,
         context = ctx,
-        shared=sharedPref,
         coroutine = coroutineScope
     )
 

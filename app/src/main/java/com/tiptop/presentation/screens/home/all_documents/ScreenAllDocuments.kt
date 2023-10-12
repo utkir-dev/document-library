@@ -64,7 +64,7 @@ class ScreenAllDocuments : BaseFragment(R.layout.screen_documents),
                 .withLayoutRes(R.layout.item_document)
                 .setListener(this)
                 .setData(it.filter { it.parentId == MOTHER_ID }
-                    .sortedWith(compareBy<DocumentForRv> { it.type }.thenByDescending { it.name }))
+                    .sortedWith(compareBy<DocumentForRv> { it.type }.thenBy { it.name }))
                 .itemMargin(16.dp) //optional: margin by node's level. default = 24dp
                 //.showAllNodes(false) //optional: show all nodes or just show parent node. default = false
                 //.addAdapters(config = Config.DEFAULT, adapters = arrayOf(adapter))

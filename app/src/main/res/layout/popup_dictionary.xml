@@ -1,14 +1,13 @@
 <?xml version="1.0" encoding="utf-8"?>
-<androidx.cardview.widget.CardView
-    xmlns:android="http://schemas.android.com/apk/res/android"
+<androidx.cardview.widget.CardView xmlns:android="http://schemas.android.com/apk/res/android"
     xmlns:app="http://schemas.android.com/apk/res-auto"
     xmlns:tools="http://schemas.android.com/tools"
     android:id="@+id/root_dictionary"
     android:layout_width="wrap_content"
     android:layout_height="wrap_content"
     android:layout_marginHorizontal="@dimen/dp20"
-    android:visibility="visible"
     android:animateLayoutChanges="true"
+    android:visibility="visible"
     app:cardBackgroundColor="@android:color/transparent"
     app:cardCornerRadius="@dimen/dp10"
     app:cardElevation="10dp">
@@ -19,9 +18,9 @@
         android:layout_height="match_parent"
         android:layout_gravity="end"
         android:background="@color/white_back"
-        android:minHeight="500dp"
-        android:minWidth="360dp"
         android:focusableInTouchMode="true"
+        android:minWidth="360dp"
+        android:minHeight="500dp"
         android:orientation="vertical"
         android:paddingHorizontal="@dimen/dp6"
         android:visibility="visible">
@@ -29,9 +28,9 @@
         <LinearLayout
             android:layout_width="wrap_content"
             android:layout_height="wrap_content"
+            android:layout_gravity="center_horizontal"
             android:background="@color/white_back"
             android:gravity="center_vertical"
-            android:layout_gravity="center_horizontal"
             android:maxWidth="500dp"
             android:orientation="horizontal"
             android:paddingTop="@dimen/dp5">

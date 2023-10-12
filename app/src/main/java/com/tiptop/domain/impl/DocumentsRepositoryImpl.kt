@@ -29,6 +29,7 @@ import com.tiptop.data.models.local.DocumentLocal
 import com.tiptop.data.models.local.LibVersion
 import com.tiptop.data.models.remote.DeletedIdRemote
 import com.tiptop.data.models.remote.DocumentRemote
+import com.tiptop.data.repository.local.DaoAruzUser
 import com.tiptop.data.repository.local.DaoDocument
 import com.tiptop.domain.DocumentsRepository
 import com.tiptop.domain.AuthRepository
@@ -55,8 +56,8 @@ class DocumentsRepositoryImpl @Inject constructor(
     private val remoteDatabase: Firebase,
     private val remoteStorage: FirebaseStorage,
     private val documentsLocalDb: DaoDocument,
+    private val aruzUserDb: DaoAruzUser,
     private val context: Context,
-    private val shared: SharedPreferences,
     @AppScope private val coroutine: CoroutineScope
 ) : DocumentsRepository {
     override suspend fun saveRemoteDocument(documentRemote: DocumentRemote): ResponseResult<Boolean> {
@@ -280,7 +281,7 @@ class DocumentsRepositoryImpl @Inject constructor(
             task1.await()
             task2.await()
             task3?.await()
-
+            aruzUserDb.clearAruzUser(document.id)
             ResponseResult.Success(true)
         } catch (e: Exception) {
             documentsLocalDb.add(tempDeletedDocument)

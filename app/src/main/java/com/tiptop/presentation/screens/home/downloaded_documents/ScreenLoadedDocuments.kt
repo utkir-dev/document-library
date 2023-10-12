@@ -1,28 +1,17 @@
 package com.tiptop.presentation.screens.home.downloaded_documents
 
-import android.annotation.SuppressLint
 import android.os.Bundle
 import android.view.LayoutInflater
 import android.view.View
 import android.view.ViewGroup
-import android.widget.ImageView
-import android.widget.LinearLayout
-import android.widget.ProgressBar
-import android.widget.TextView
 import androidx.core.os.bundleOf
 import androidx.fragment.app.viewModels
 import androidx.lifecycle.Observer
 import androidx.navigation.fragment.findNavController
-import androidx.recyclerview.widget.DividerItemDecoration
-import androidx.recyclerview.widget.LinearLayoutManager
 import androidx.recyclerview.widget.RecyclerView
-import com.gg.gapo.treeviewlib.GapoTreeView
-import com.gg.gapo.treeviewlib.model.NodeViewData
 import com.tiptop.R
 import com.tiptop.app.common.Constants
 import com.tiptop.app.common.Constants.MOTHER_ID
-import com.tiptop.app.common.dp
-import com.tiptop.app.common.validateFileSize
 import com.tiptop.data.models.local.DocumentForRv
 import com.tiptop.data.models.local.DocumentLocal
 import com.tiptop.databinding.ScreenDocumentsBinding
@@ -54,7 +43,7 @@ class ScreenLoadedDocuments : BaseFragment(R.layout.screen_documents) {
     override fun onViewCreated(view: View, savedInstanceState: Bundle?) {
         super.onViewCreated(view, savedInstanceState)
         initClickListeners()
-        showDocumentsWithFolders()
+        showDocumentsWithoutFolders()
         vm.isFolder.observe(viewLifecycleOwner) {
             if (it) {
                 binding.ivFolder.setImageResource(R.drawable.ic_file)

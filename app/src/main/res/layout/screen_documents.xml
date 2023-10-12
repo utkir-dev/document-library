@@ -53,7 +53,6 @@
 
         <ImageView
             android:id="@+id/iv_folder"
-            android:visibility="gone"
             android:layout_width="wrap_content"
             android:layout_height="match_parent"
             android:layout_toStartOf="@id/iv_screen_orientation"
@@ -61,7 +60,8 @@
             android:focusable="true"
             android:foreground="?android:attr/selectableItemBackground"
             android:paddingHorizontal="@dimen/dp15"
-            android:src="@drawable/ic_file"
+            android:src="@drawable/ic_folder"
+            android:visibility="gone"
             app:layout_constraintEnd_toStartOf="@id/iv_screen_orientation"
             app:tint="@color/white" />
 
@@ -101,10 +101,10 @@
                 android:id="@+id/rv_folders"
                 android:layout_width="match_parent"
                 android:layout_height="wrap_content"
-                android:orientation="vertical"
                 android:layoutAnimation="@anim/layout_animation"
-                app:layout_behavior="@string/appbar_scrolling_view_behavior"
+                android:orientation="vertical"
                 app:layoutManager="androidx.recyclerview.widget.LinearLayoutManager"
+                app:layout_behavior="@string/appbar_scrolling_view_behavior"
                 tools:listitem="@layout/item_document" />
 
             <View

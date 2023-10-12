@@ -63,10 +63,7 @@ class PdfViewModelIml @Inject constructor(
     val closestPage: LiveData<Int> = _closestPage
     override fun getWords(documentId: String) {
         viewModelScope.async(Dispatchers.IO) {
-            combine(
-                repDictionary.getBaseWords(),
-                repDictionary.getUserWords(documentId)
-            ) { baseWords, userWords ->
+            repDictionary.getUserWords(documentId).collectLatest { userWords ->
                 try {
                     val page = _currentPage.value ?: 1
                     val minDiff: Int = userWords.minOf { abs(it.pageNumber - page) }
@@ -80,10 +77,8 @@ class PdfViewModelIml @Inject constructor(
 
                 if (userWords.isNotEmpty()) {
                     _words.postValue(userWords)
-                } else {
-                    _words.postValue(baseWords)
                 }
-            }.collect()
+            }
         }
     }
 

@@ -25,9 +25,15 @@ import com.karumi.dexter.listener.PermissionRequest
 import com.karumi.dexter.listener.multi.MultiplePermissionsListener
 import com.tiptop.R
 import com.tiptop.app.common.SharedPrefSimple
+import com.tiptop.data.models.local.ArabUzBase
+import com.tiptop.data.models.local.ArabUzUser
+import com.tiptop.data.models.local.ArabUzUserForDictionaryScreen
+import com.tiptop.data.models.local.UzArabBase
 import com.tiptop.databinding.DialogAllertBinding
 import com.tiptop.databinding.DialogConfirmBinding
+import com.tiptop.databinding.DialogWordBinding
 import com.tiptop.databinding.PopupDeviceBinding
+import com.tiptop.presentation.screens.document_view.pdf.Dictionary
 
 
 abstract class BaseFragment(layoutId: Int) : Fragment(layoutId) {
@@ -53,6 +59,53 @@ abstract class BaseFragment(layoutId: Int) : Fragment(layoutId) {
     fun showSnackBarNoConnection() {
         val rootView: View = requireActivity().window.decorView.rootView
         Snackbar.make(rootView, "Interntet yo'q", Snackbar.LENGTH_LONG).show()
+    }
+    fun showWordDialog(word: Dictionary, function: (Dictionary) -> Unit) {
+        val b = DialogWordBinding.inflate(layoutInflater)
+        val dialog = AlertDialog.Builder(requireContext(), R.style.MyDialogStyle).apply {
+            setView(b.root)
+                .setCancelable(true)
+                .create()
+        }
+        val allert = dialog.show()
+        if (word is ArabUzBase) {
+            b.tvSearchedWord.text = word.c0arab
+            b.tvRus.text = word.c3rus
+            b.tvUz.text = word.c2uzbek
+            if (word.saved) {
+                b.ivSavedWord.setImageResource(R.drawable.star1)
+            } else {
+                b.ivSavedWord.setImageResource(R.drawable.ic_star_unselected)
+            }
+            b.ivSavedWord.setOnClickListener {
+                function(word.copy(saved = !word.saved))
+                allert.cancel()
+            }
+        } else if (word is ArabUzUser) {
+            b.tvSearchedWord.text = word.c0arab
+            b.tvRus.text = word.c3rus
+            b.tvUz.text = word.c2uzbek
+            b.ivSavedWord.setImageResource(R.drawable.ic_delete)
+            b.ivSavedWord.setOnClickListener {
+                function(word)
+                allert.cancel()
+            }
+        }else if (word is ArabUzUserForDictionaryScreen) {
+            b.tvSearchedWord.text = word.c0arab
+            b.tvRus.text = word.c3rus
+            b.tvUz.text = word.c2uzbek
+            b.ivSavedWord.visibility = View.GONE
+        } else if (word is UzArabBase) {
+            b.tvSearchedWord.text = word.c0uzbek
+            b.tvUzTitle.text = "arabchasi"
+            b.tvUz.text = word.c1arab
+            b.tvRusTitle.visibility = View.GONE
+            b.tvRus.visibility = View.GONE
+        }
+
+        b.btnOk.setOnClickListener {
+            allert.cancel()
+        }
     }
 
     @SuppressLint("InflateParams")

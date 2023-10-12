@@ -4,6 +4,10 @@ import android.content.Context
 import android.content.SharedPreferences
 import android.util.Log
 import androidx.core.net.toUri
+import androidx.paging.Pager
+import androidx.paging.PagingConfig
+import androidx.paging.PagingData
+import androidx.paging.cachedIn
 import com.google.firebase.firestore.ktx.firestore
 import com.google.firebase.ktx.Firebase
 import com.google.firebase.storage.FirebaseStorage
@@ -31,10 +35,12 @@ import com.tiptop.data.repository.local.DaoUzarUser
 import com.tiptop.domain.AuthRepository
 import com.tiptop.domain.DictionaryRepository
 import com.tiptop.presentation.screens.document_view.pdf.Dictionary
+import com.tiptop.presentation.screens.home.my_dictionary.DictPagingSource
 import kotlinx.coroutines.CoroutineScope
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.async
 import kotlinx.coroutines.flow.Flow
+import kotlinx.coroutines.flow.flow
 import kotlinx.coroutines.flow.flowOn
 import kotlinx.coroutines.launch
 import javax.inject.Inject
@@ -54,12 +60,26 @@ class DictionaryRepositoryImpl @Inject constructor(
     private val shared: SharedPreferences,
     @AppScope private val coroutine: CoroutineScope
 ) : DictionaryRepository {
+    override fun getUserAllDictionary(): Flow<PagingData<Dictionary>> {
+        return Pager(
+            PagingConfig(
+                pageSize = 20,
+                enablePlaceholders = false,
+                initialLoadSize = 20
+            ),
+        ) {
+            DictPagingSource(aruzUserDb)
+        }.flow
+    }
+
+    override fun getUseDictionaryCount() = aruzUserDb.getAruzUserCount().flowOn(Dispatchers.IO)
+
     override fun getBaseWords(): Flow<List<ArabUzBase>> {
         return aruzBaseDb.getAruzList().flowOn(Dispatchers.IO)
     }
 
     override fun getBaseWordById(id: Int): ArabUzBase {
-        return  aruzBaseDb.getAruzById(id)
+        return aruzBaseDb.getAruzById(id)
     }
 
     override fun getSearchedBaseWords(searchText: String): Flow<List<ArabUzBase>> {
@@ -84,12 +104,8 @@ class DictionaryRepositoryImpl @Inject constructor(
 
     override fun checkRemoteDictionary() {
         if (auth.currentUser != null) {
-            Log.d("aruz", "checkRemoteDictionary")
             remoteDatabase.firestore.collection(DICTIONARY_VERSION).document(DICTIONARY_VERSION)
                 .addSnapshotListener { value, error ->
-                    Log.d("aruz", "value :$value")
-                    Log.d("aruz", "error :${error?.message}")
-
                     value?.let {
                         try {
                             val countAruz = aruzBaseDb.getAruzCount()

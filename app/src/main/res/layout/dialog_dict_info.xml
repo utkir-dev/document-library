@@ -1,0 +1,123 @@
+<?xml version="1.0" encoding="utf-8"?>
+<androidx.cardview.widget.CardView xmlns:android="http://schemas.android.com/apk/res/android"
+    xmlns:app="http://schemas.android.com/apk/res-auto"
+    android:layout_width="match_parent"
+    android:layout_height="wrap_content"
+    android:layout_gravity="center"
+    android:layout_margin="@dimen/dp10"
+    android:background="@android:color/transparent"
+    android:backgroundTintMode="@android:color/transparent"
+    app:cardCornerRadius="@dimen/dp10"
+    app:cardElevation="@dimen/dp10">
+
+    <LinearLayout
+        android:layout_width="match_parent"
+        android:layout_height="match_parent"
+        android:orientation="vertical"
+        android:paddingVertical="@dimen/dp10">
+
+        <TextView
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:layout_margin="@dimen/dp10"
+            android:gravity="center_horizontal"
+            android:text="Lug'atingizga so'z qo'shilmagan"
+            android:textColor="@color/black"
+            android:textSize="@dimen/font18"
+            android:textStyle="bold" />
+
+        <TextView
+            android:id="@+id/tv_how_to_add_word"
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:gravity="center_horizontal"
+            android:text="@string/how_to_underline"
+            android:textColor="@color/blue" />
+
+        <androidx.core.widget.NestedScrollView
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content">
+
+            <LinearLayout
+                android:id="@+id/l_how_to_add"
+                android:layout_width="match_parent"
+                android:layout_height="wrap_content"
+                android:gravity="center_horizontal"
+                android:orientation="vertical"
+                android:visibility="gone">
+
+                <TextView
+                    android:layout_width="match_parent"
+                    android:layout_height="wrap_content"
+                    android:gravity="center_horizontal"
+                    android:text="Kitob ochib ushbu ikonkani bosing"
+                    android:textColor="@color/blue"
+                    android:textSize="@dimen/font17" />
+
+                <androidx.cardview.widget.CardView
+                    android:layout_width="350dp"
+                    android:layout_height="350dp"
+                    android:layout_margin="@dimen/dp10"
+                    app:cardCornerRadius="@dimen/dp10"
+                    app:cardElevation="@dimen/dp5">
+
+                    <ImageView
+                        android:layout_width="match_parent"
+                        android:layout_height="match_parent"
+                        android:src="@drawable/dict1" />
+                </androidx.cardview.widget.CardView>
+
+                <TextView
+                    android:layout_width="match_parent"
+                    android:layout_height="wrap_content"
+                    android:gravity="center_horizontal"
+                    android:text="Qidirilayotgan so'zni topib\n ustiga bosiladi "
+                    android:textColor="@color/blue"
+                    android:textSize="@dimen/font17" />
+
+                <androidx.cardview.widget.CardView
+                    android:layout_width="350dp"
+                    android:layout_height="350dp"
+                    android:layout_margin="@dimen/dp10"
+                    app:cardCornerRadius="@dimen/dp10"
+                    app:cardElevation="@dimen/dp5">
+
+                    <ImageView
+                        android:layout_width="match_parent"
+                        android:layout_height="match_parent"
+                        android:src="@drawable/dict2" />
+                </androidx.cardview.widget.CardView>
+
+                <TextView
+                    android:layout_width="match_parent"
+                    android:layout_height="wrap_content"
+                    android:gravity="center_horizontal"
+                    android:text="Keyin yulduzchani bosilsa\n so'z lug'atingizga qo'shilib qoladi"
+                    android:textColor="@color/blue"
+                    android:textSize="@dimen/font17" />
+
+                <androidx.cardview.widget.CardView
+                    android:layout_width="350dp"
+                    android:layout_height="350dp"
+                    android:layout_margin="@dimen/dp10"
+                    app:cardCornerRadius="@dimen/dp10"
+                    app:cardElevation="@dimen/dp5">
+
+                    <ImageView
+                        android:layout_width="match_parent"
+                        android:layout_height="match_parent"
+                        android:src="@drawable/dict3" />
+                </androidx.cardview.widget.CardView>
+
+                <Button
+                    android:id="@+id/btn_ok_dict"
+                    android:layout_width="wrap_content"
+                    android:layout_height="wrap_content"
+                    android:text="Ok" />
+            </LinearLayout>
+        </androidx.core.widget.NestedScrollView>
+
+    </LinearLayout>
+</androidx.cardview.widget.CardView>
+
+
