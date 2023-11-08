@@ -125,7 +125,11 @@
     <fragment
         android:id="@+id/screenUserDictionary"
         android:name="com.tiptop.presentation.screens.home.my_dictionary.ScreenUserDictionary"
-        android:label="ScreenUserDictionary" />
+        android:label="ScreenUserDictionary" >
+        <action
+            android:id="@+id/action_screenUserDictionary_to_screenDocument"
+            app:destination="@id/screenDocument" />
+    </fragment>
 
 
 </navigation>

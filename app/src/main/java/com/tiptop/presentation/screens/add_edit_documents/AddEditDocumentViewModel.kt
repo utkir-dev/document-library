@@ -5,7 +5,6 @@ import androidx.lifecycle.MutableLiveData
 import com.tiptop.app.common.Resource
 import com.tiptop.data.models.local.DocumentForRv
 import com.tiptop.data.models.local.DocumentLocal
-import com.tiptop.data.models.remote.DocumentRemote
 
 interface AddEditDocumentViewModel {
     val resultUpdate: LiveData<Resource<Boolean>>
@@ -13,10 +12,12 @@ interface AddEditDocumentViewModel {
     val documentsForRv: LiveData<List<DocumentForRv>>
     val childDocument1: LiveData<DocumentLocal>
     val childDocument2: LiveData<DocumentLocal>
+    val resultUpload: MutableLiveData<DocumentLocal>
+
     fun getDocumentsByParentId(parentId: String)
     fun searchDocument(seachText: String)
     fun saveDocument(
-        document: DocumentRemote,
+        document: DocumentLocal,
         headByteArray: ByteArray?=null,
         bodyByteArray: ByteArray?=null
     )

@@ -19,7 +19,7 @@ class DictViewModelImpl @Inject constructor(
     private val repository: DictionaryRepository
 ) : ViewModel() {
     val dictionaryUser = repository.getUserAllDictionary().cachedIn(viewModelScope)
-    fun updateBaseWord(word: Dictionary) {
+    fun deleteWord(word: Dictionary) {
         viewModelScope.launch(Dispatchers.IO) {
             if (word is ArabUzUserForDictionaryScreen) {
                 async { repository.deleteUserWord(word.docid) }

@@ -53,7 +53,6 @@ class AllDocumentsViewModelImpl @Inject constructor(
                 }.await()
                 documents.postValue(list)
             }
-
         }
     }
 
@@ -72,7 +71,7 @@ class AllDocumentsViewModelImpl @Inject constructor(
                         if (resource.data is DocumentLocal) {
                             _resultDownload.postValue(resource.data)
                         }
-                    }
+                }
             }
         }
     }

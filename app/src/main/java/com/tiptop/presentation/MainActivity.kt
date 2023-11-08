@@ -5,6 +5,8 @@ import android.app.AlertDialog
 import android.content.ComponentName
 import android.content.Intent
 import android.content.pm.PackageManager
+import android.net.ConnectivityManager
+import android.net.Network
 import android.os.Build
 import android.os.Bundle
 import android.telephony.TelephonyManager
@@ -13,6 +15,7 @@ import android.view.View
 import android.view.WindowManager
 import android.widget.ImageView
 import android.widget.TextView
+import android.widget.Toast
 import android.window.OnBackInvokedDispatcher
 import androidx.activity.OnBackPressedCallback
 import androidx.activity.viewModels
@@ -33,6 +36,7 @@ import com.tiptop.R
 import com.tiptop.app.common.Constants
 import com.tiptop.app.common.Constants.KEY_IS_LAUNCHER_ICON_INSTALLED
 import com.tiptop.app.common.DarkMode
+import com.tiptop.app.common.NetworkMonitor
 import com.tiptop.app.common.SharedPrefSimple
 import com.tiptop.app.common.Variables.CURRENT_DEVICE_ID
 import com.tiptop.app.common.Variables.CURRENT_USER_ID
@@ -51,6 +55,8 @@ class MainActivity : AppCompatActivity() {
     private var ivNightMode: ImageView? = null
     private var tvUserHeader: TextView? = null
     private var tvAdminTitle: TextView? = null
+    private var networkMonitor: NetworkMonitor? = null
+
     private var controller: NavController? = null
     val vm by viewModels<BaseViewModel>()
     private var shared: SharedPrefSimple? = null
@@ -88,12 +94,28 @@ class MainActivity : AppCompatActivity() {
         shared?.saveLong(Constants.KEY_MASK_TIME, System.currentTimeMillis())
     }
 
+    override fun onDestroy() {
+        super.onDestroy()
+        networkMonitor?.unregisterNetworkCallback(networkCallback)
+    }
+    private val networkCallback = object : ConnectivityManager.NetworkCallback() {
+
+        override fun onAvailable(network: Network) {
+           vm.initObservers()
+           vm.observeDeletedIds()
+        }
+
+        override fun onLost(network: Network) {
+
+        }
+    }
+
     private fun setMask() {
         val timeOut = shared?.getLong(Constants.KEY_MASK_TIME) ?: 0L
         val isScreenBlocked = shared?.getBoolean(Constants.KEY_SCREEN_BLOCK) ?: true
         if (!isScreenBlocked) {
             if (IS_ENTERED && TEMPORARY_OUT && System.currentTimeMillis() - timeOut < 60_000) {
-
+                TEMPORARY_OUT = false
             } else if (IS_ENTERED && System.currentTimeMillis() - timeOut < 2500) {
 
             } else {
@@ -124,21 +146,20 @@ class MainActivity : AppCompatActivity() {
     }
 
     private fun initFuns() {
+        networkMonitor = NetworkMonitor(this)
+        networkMonitor?.registerNetworkCallback(networkCallback)
         drawer = binding.drawerLayout
         controller = findNavController(R.id.nav_host)
         //  binding.navView.setNavigationItemSelectedListener(this)
         initNavigationDrawerListener()
         initBackPressed()
         initHeader()
-        initListeners()
         initCurrentUser()
-
-        //fakeEntreance()
+         //fakeEntreance()
     }
 
     @SuppressLint("SetTextI18n")
     fun initCurrentUser() {
-        vm.initObservers()
         vm.currentUser.asLiveData().observe(this) { currentUser ->
             vm.currentDevice.asLiveData().observe(this) { currentDevice ->
                 if (currentUser != null) {
@@ -277,11 +298,7 @@ class MainActivity : AppCompatActivity() {
         })
     }
 
-    private fun initListeners() {
-        ivNightMode?.setOnClickListener {
 
-        }
-    }
 
     private fun initNavigationDrawerListener() {
         binding.navView.setNavigationItemSelectedListener { menuItem ->

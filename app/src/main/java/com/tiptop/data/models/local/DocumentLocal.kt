@@ -50,7 +50,20 @@ data class DocumentLocal(
         date = this.date,
         dateAdded = this.dateAdded
     )
+
     fun nameDecrypted(): String {
-        return if (name.isEmpty()) "" else  name.decryption(dateAdded)
+        return if (name.isEmpty()) "" else name.decryption(dateAdded)
+    }
+
+    fun isSameOfRemote(remote: DocumentRemote): Boolean {
+        return this.id == remote.id &&
+                this.parentId == remote.parentId &&
+                this.name == remote.name &&
+                this.headBytes == remote.headBytes &&
+                this.type == remote.type &&
+                this.size == remote.size &&
+                this.date == remote.date &&
+                this.dateAdded == remote.dateAdded
+
     }
 }

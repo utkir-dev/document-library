@@ -4,16 +4,21 @@ import android.Manifest
 import android.annotation.SuppressLint
 import android.app.Activity
 import android.app.AlertDialog
+import android.content.ActivityNotFoundException
 import android.content.Intent
 import android.net.Uri
+import android.os.Build
 import android.os.Bundle
+import android.text.Html
+import android.util.Log
 import android.view.LayoutInflater
 import android.view.View
 import android.view.ViewGroup
+import androidx.activity.result.ActivityResultCallback
+import androidx.activity.result.ActivityResultLauncher
 import androidx.activity.result.contract.ActivityResultContracts
 import androidx.documentfile.provider.DocumentFile
 import androidx.fragment.app.viewModels
-import androidx.lifecycle.LiveData
 import androidx.lifecycle.MutableLiveData
 import androidx.navigation.fragment.findNavController
 import com.tiptop.R
@@ -22,7 +27,6 @@ import com.tiptop.app.common.Constants.TYPE_FOLDER
 import com.tiptop.app.common.Constants.TYPE_IMAGE
 import com.tiptop.app.common.Constants.TYPE_PDF
 import com.tiptop.app.common.Encryptor
-import com.tiptop.app.common.Resource
 import com.tiptop.app.common.Utils
 import com.tiptop.app.common.encryption
 import com.tiptop.app.common.hideKeyBoard
@@ -39,7 +43,6 @@ import com.tiptop.presentation.MainActivity.Companion.TEMPORARY_OUT
 import com.tiptop.presentation.screens.BaseFragment
 import dagger.hilt.android.AndroidEntryPoint
 import java.io.File
-
 import java.util.UUID
 
 
@@ -47,10 +50,9 @@ import java.util.UUID
 open class BaseFragmentAddEditDocuments : BaseFragment(R.layout.screen_add_edit_documents) {
     lateinit var binding: ScreenAddEditDocumentsBinding
     private val vm by viewModels<AddEditDocumentViewModelImpl>()
-    private var pickedFile: Uri? = null
+
     private var documentNames = emptyList<String>()
     var folderNames = emptyList<String>()
-
 
     override fun onCreateView(
         inflater: LayoutInflater, container: ViewGroup?,
@@ -187,29 +189,44 @@ open class BaseFragmentAddEditDocuments : BaseFragment(R.layout.screen_add_edit_
     fun createFile(typeFile: Int) {
         TYPE = typeFile
         val permission = MutableLiveData(false)
-        requestPermissions(
-            Manifest.permission.WRITE_EXTERNAL_STORAGE,
-            Manifest.permission.READ_EXTERNAL_STORAGE
-        ) {
-            permission.postValue(it)
-        }
-        permission.observe(viewLifecycleOwner) {
-            if (it) {
-                TEMPORARY_OUT = true
-                // Intent.ACTION_OPEN_DOCUMENT
-                // Intent.ACTION_GET_CONTENT
-                //addCategory(Intent.CATEGORY_OPENABLE)
-                if (TYPE == TYPE_PDF) {
-                    val intent = Intent(Intent.ACTION_GET_CONTENT)
-                    intent.type = "application/pdf"
-                    resultLauncher.launch(intent)
-                } else if (TYPE == TYPE_IMAGE) {
-                    val intent =// Intent(Intent.ACTION_GET_CONTENT)
-                        Intent(Intent.ACTION_PICK)
-                    intent.type = "image/*"
-                    resultLauncher.launch(intent)
+        val apiVersion = Build.VERSION.SDK_INT
+        if (apiVersion < Build.VERSION_CODES.Q) {
+            requestPermissions(
+                Manifest.permission.WRITE_EXTERNAL_STORAGE,
+                Manifest.permission.READ_EXTERNAL_STORAGE
+            ) {
+                permission.postValue(it)
+            }
+            permission.observe(viewLifecycleOwner) {
+                if (it) {
+                    openFileChooser()
                 }
             }
+        } else {
+            openFileChooser()
+        }
+    }
+
+    private fun selectPDF() {
+        val intent = Intent(Intent.ACTION_GET_CONTENT)
+        intent.type = "application/pdf"
+        resultLauncher.launch(Intent.createChooser(intent, "Choose file"))
+    }
+
+    private fun selectImage() {
+        val intent = Intent(Intent.ACTION_PICK)
+        intent.addCategory(Intent.CATEGORY_OPENABLE)
+        intent.type = "image/*"
+        resultLauncher.launch(Intent.createChooser(intent, "Choose image"))
+    }
+
+    private fun openFileChooser() {
+        TEMPORARY_OUT = true
+        if (TYPE == TYPE_PDF) {
+            selectPDF()
+
+        } else if (TYPE == TYPE_IMAGE) {
+            selectImage()
         }
     }
 
@@ -232,7 +249,7 @@ open class BaseFragmentAddEditDocuments : BaseFragment(R.layout.screen_add_edit_
                     )
                     if (isInternetAvailable(requireContext())) {
                         requireActivity().hideKeyBoard()
-                        vm.saveDocument(documentEdited.toRemote())
+                        vm.saveDocument(documentEdited.toDocumentLocal())
                     } else {
                         showSnackBarNoConnection()
                     }
@@ -257,7 +274,7 @@ open class BaseFragmentAddEditDocuments : BaseFragment(R.layout.screen_add_edit_
                     )
                     if (isInternetAvailable(requireContext())) {
                         requireActivity().hideKeyBoard()
-                        vm.saveDocument(documentEdited.toRemote())
+                        vm.saveDocument(documentEdited.toDocumentLocal())
                     } else {
                         showSnackBarNoConnection()
                     }
@@ -280,7 +297,7 @@ open class BaseFragmentAddEditDocuments : BaseFragment(R.layout.screen_add_edit_
 
     fun deleteDocument(document: DocumentForRv) {
         if (document.type == TYPE_FOLDER) {
-            if (document.count>0) {
+            if (document.count > 0) {
                 showSnackBar("Ushbu papkada fayllar bor. Avval ularni o'chiring")
             } else {
                 showConfirmDialog(
@@ -310,19 +327,18 @@ open class BaseFragmentAddEditDocuments : BaseFragment(R.layout.screen_add_edit_
                     }
                 }
             }
-
         }
 
 
     }
 
 
-    private var resultLauncher =
-        this.registerForActivityResult(ActivityResultContracts.StartActivityForResult()) { result ->
+    private val resultLauncher =
+        registerForActivityResult(ActivityResultContracts.StartActivityForResult()) { result ->
             if (result.resultCode == Activity.RESULT_OK) {
                 val data: Intent? = result.data
                 pickedFile = data?.data
-                if (pickedFile != null) {
+                pickedFile?.let {
                     createRemoteFile()
                 }
             }
@@ -344,7 +360,7 @@ open class BaseFragmentAddEditDocuments : BaseFragment(R.layout.screen_add_edit_
             file.setReadable(true)
             val bytes = requireContext().contentResolver.openInputStream(pickedUri)?.readBytes()
                 ?: byteArrayOf()
-
+            pickedFile = null
             val fileSize = bytes.size
             val document = DocumentRemote(
                 id = UUID.randomUUID().toString(),
@@ -363,7 +379,7 @@ open class BaseFragmentAddEditDocuments : BaseFragment(R.layout.screen_add_edit_
                     bytes.copyOfRange(0, headBytesCount)
                 ) { encryptedHeadBytes ->
                     vm.saveDocument(
-                        document = document,
+                        document = document.toLocal(),
                         headByteArray = encryptedHeadBytes,
                         bodyByteArray = bytes.copyOfRange(headBytesCount, fileSize)
                     )
@@ -375,7 +391,7 @@ open class BaseFragmentAddEditDocuments : BaseFragment(R.layout.screen_add_edit_
                     bytes
                 ) { encryptedBytes ->
                     vm.saveDocument(
-                        document = document,
+                        document = document.toLocal(),
                         headByteArray = null,
                         bodyByteArray = encryptedBytes
                     )
@@ -385,6 +401,7 @@ open class BaseFragmentAddEditDocuments : BaseFragment(R.layout.screen_add_edit_
     }
 
     companion object {
+        private var pickedFile: Uri? = null
         var CURRENT_FOLDER_ID = MOTHER_ID
         var REPLACING_DOCUMENT: DocumentLocal? = null
         private var TYPE: Int = TYPE_PDF

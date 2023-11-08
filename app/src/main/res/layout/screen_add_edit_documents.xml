@@ -10,7 +10,7 @@
         android:id="@+id/app_bar_folder"
         android:layout_width="match_parent"
         android:layout_height="?actionBarSize"
-        android:background="@color/purple_700"
+        android:background="@color/blue"
         android:gravity="center_vertical"
         android:orientation="horizontal"
         app:layout_constraintEnd_toEndOf="parent"
@@ -47,6 +47,7 @@
             android:background="@color/white_back"
             android:gravity="center_vertical"
             android:hint="Qidirsh.."
+            android:textColorHint="@color/grey"
             android:paddingHorizontal="@dimen/dp5"
             android:translationZ="@dimen/dp10"
             android:visibility="gone" />

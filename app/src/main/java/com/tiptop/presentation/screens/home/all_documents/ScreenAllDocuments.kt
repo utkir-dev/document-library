@@ -2,6 +2,7 @@ package com.tiptop.presentation.screens.home.all_documents
 
 import android.annotation.SuppressLint
 import android.os.Bundle
+import android.util.Log
 import android.view.LayoutInflater
 import android.view.View
 import android.view.ViewGroup
@@ -169,9 +170,9 @@ class ScreenAllDocuments : BaseFragment(R.layout.screen_documents),
                     }
                 }
             }
-
         }
         if (data.type == TYPE_FOLDER) {
+            newDocs.visibility = View.VISIBLE
             folderName.setTextColor(resources.getColor(R.color.black, null))
             val count = if ((data.count) > 0) "(${data.count})" else ""
             folderName.text = "${name}$count"
@@ -187,6 +188,7 @@ class ScreenAllDocuments : BaseFragment(R.layout.screen_documents),
                 ivFolder.setImageResource(R.drawable.ic_folder)
             }
         } else {
+            newDocs.visibility = View.GONE
             if (System.currentTimeMillis() - Constants.NEW_DOCUMENTS_VISIBILITY_PERIOD < data.dateAdded) {
                 folderName.setTextColor(resources.getColor(R.color.green, null))
             } else {
@@ -235,11 +237,13 @@ class ScreenAllDocuments : BaseFragment(R.layout.screen_documents),
         }
 
 
+
         //toggle node
         holder.setOnClickListener {
             if (item.isExpanded) {
                 treeView?.collapseNode(item.nodeId)
             } else {
+
                 treeView?.expandNode(item.nodeId)
             }
         }
@@ -251,7 +255,6 @@ class ScreenAllDocuments : BaseFragment(R.layout.screen_documents),
         isSelected: Boolean
     ) {
         if (!isSelected) return // prevent unselect node
-
         treeView?.clearNodesSelected()
         treeView?.setSelectedNode(listOf(node), isSelected)
         treeView?.requestUpdateTree()
@@ -262,5 +265,9 @@ class ScreenAllDocuments : BaseFragment(R.layout.screen_documents),
         if (listTempDocuments.isNotEmpty()) {
             vm.saveTempDocumentsToLocalDb(listTempDocuments)
         }
+    }
+
+    override fun onDestroy() {
+        super.onDestroy()
     }
 }

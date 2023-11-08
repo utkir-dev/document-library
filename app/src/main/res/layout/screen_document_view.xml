@@ -4,6 +4,7 @@
     xmlns:tools="http://schemas.android.com/tools"
     android:layout_width="match_parent"
     android:layout_height="match_parent"
+    android:background="@color/white_back"
     android:keepScreenOn="true">
 
     <com.github.barteksc.pdfviewer.PDFView
@@ -93,6 +94,7 @@
             android:id="@+id/card_bushro"
             android:layout_width="@dimen/dp35"
             android:layout_height="@dimen/dp35"
+            app:cardBackgroundColor="@color/white"
             android:layout_marginHorizontal="@dimen/dp8"
             android:clickable="true"
             android:focusable="true"
@@ -194,6 +196,17 @@
             android:layout_weight="1" />
 
         <ImageView
+            android:id="@+id/iv_color_palette"
+            android:layout_width="@dimen/dp30"
+            android:layout_height="@dimen/dp30"
+            android:visibility="visible"
+            android:clickable="true"
+            android:focusable="true"
+            android:foreground="?android:attr/selectableItemBackground"
+            android:src="@drawable/color_palette"
+            android:layout_marginHorizontal="@dimen/dp8" />
+
+        <ImageView
             android:id="@+id/iv_timer"
             android:layout_width="wrap_content"
             android:layout_height="match_parent"
@@ -240,6 +253,5 @@
         android:id="@+id/my_canvas"
         layout="@layout/custom_canvas"
         android:layout_width="match_parent"
-        android:layout_height="match_parent"
-        />
+        android:layout_height="match_parent" />
 </androidx.constraintlayout.widget.ConstraintLayout>

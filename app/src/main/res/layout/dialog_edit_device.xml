@@ -4,7 +4,7 @@
     android:layout_width="wrap_content"
     android:layout_height="wrap_content"
     android:layout_gravity="center"
-    android:background="@android:color/transparent"
+    app:cardBackgroundColor="@color/white"
     android:backgroundTintMode="@android:color/transparent"
     android:layout_margin="@dimen/dp20"
     app:cardCornerRadius="@dimen/dp20"
@@ -23,6 +23,7 @@
             android:layout_height="wrap_content"
             android:layout_gravity="center_horizontal"
             android:text="Samsumg S9+"
+            android:textColor="@color/black"
             android:textSize="@dimen/font18"
             android:textStyle="bold" />
 
@@ -33,6 +34,7 @@
             android:layout_height="wrap_content"
             android:layout_gravity="center_horizontal"
             android:layout_marginBottom="@dimen/dp10"
+            android:textColor="@color/black"
             android:text="Device id: sd45r442456" />
 
         <View
@@ -77,6 +79,7 @@
             android:layout_marginTop="@dimen/dp10"
             android:paddingHorizontal="@dimen/spacing_normal"
             android:text="Tasdiqlash"
+            android:backgroundTint="@color/blue"
             android:textColor="@color/white"
             android:textSize="@dimen/font16"
             android:textStyle="bold" />

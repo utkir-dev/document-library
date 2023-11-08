@@ -244,7 +244,7 @@ class UsersRepositoryImpl @Inject constructor(
             val lastUpdatedDate = deletedIdsLocalDb.getLastUpdatedTime()
             deletedIdsLocalDb.clear()
             remoteDatabase.firestore.collection(Utils().getDeletedIdsFolder())
-                .whereGreaterThanOrEqualTo("date", lastUpdatedDate)
+                .whereGreaterThan("date", lastUpdatedDate)
                 .addSnapshotListener { snapshot, error ->
                     snapshot?.let {
                         var isMyself = false

@@ -29,10 +29,11 @@ import java.util.UUID
 class ScreenAddEditDocuments : BaseFragmentAddEditDocuments() {
     private val vm by viewModels<AddEditDocumentViewModelImpl>()
     private var adapter: AdapterAddEditDocument? = null
-    private var searchText = ""
-
     override fun onViewCreated(view: View, savedInstanceState: Bundle?) {
         super.onViewCreated(view, savedInstanceState)
+        vm.resultUpload.observe(viewLifecycleOwner) { document ->
+            adapter?.updateItem(document.toRvModel())
+        }
         vm.getDocumentsByParentId(MOTHER_ID)
         initClickListeners()
         adapter = AdapterAddEditDocument(object : AdapterAddEditDocument.ClickListener {
@@ -139,7 +140,7 @@ class ScreenAddEditDocuments : BaseFragmentAddEditDocuments() {
                 it.parentId = MOTHER_ID
                 it.date = System.currentTimeMillis()
                 if (isInternetAvailable(requireContext())) {
-                    vm.saveDocument(it.toRemote())
+                    vm.saveDocument(it)
                 } else {
                     showSnackBarNoConnection()
                 }
@@ -175,7 +176,7 @@ class ScreenAddEditDocuments : BaseFragmentAddEditDocuments() {
                 )
                 if (isInternetAvailable(requireContext())) {
                     requireActivity().hideKeyBoard()
-                    vm.saveDocument(document)
+                    vm.saveDocument(document.toLocal())
                 } else {
                     showSnackBarNoConnection()
                 }

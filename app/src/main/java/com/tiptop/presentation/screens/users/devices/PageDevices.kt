@@ -144,22 +144,28 @@ class PageDevices : BaseFragment(R.layout.page_accounts_devices) {
             }
         }
         vm?.users?.observe(viewLifecycleOwner) { users ->
-            if (users?.isNotEmpty() == true) {
+            try {
                 if (!isDeviceInfoShown) {
                     isDeviceInfoShown = true
-                    val createdUsersByDevice = users.map { it.email }
-                    val userName =
-                        if (createdUsersByDevice.size > 1) createdUsersByDevice.huminize() + " lar" else createdUsersByDevice[0] + " "
+                    var userName = ""
+                    if (users?.isNotEmpty() == true) {
+                        val createdUsersByDevice = users.map { it.email }
+                        if (createdUsersByDevice.isNotEmpty()) {
+                            userName =
+                                if (createdUsersByDevice.size > 1) createdUsersByDevice.huminize() + " lar" else createdUsersByDevice[0] + " "
+                            userName = "${userName}ni yaratgan. "
+                        }
+                    }
                     val isAdmin =
                         if (device?.admin == true) "Admin" else ""
                     val isBlocked =
                         if (device?.blocked == true) "Taqiqlangan" else ""
-
                     val message =
-                        "Bu qurilma ${device?.dateAdded?.huminize()} da yaratilgan. ${userName}ni yaratgan. Oxirgi kirgan sana ${device?.date?.huminize()}. $isAdmin$isBlocked"
+                        "Bu qurilma ${device?.dateAdded?.huminize()} da yaratilgan. ${userName}Oxirgi kirgan sana ${device?.date?.huminize()}. $isAdmin$isBlocked"
                     showAllertDialog(title = device?.name ?: "", message = message) {
                     }
                 }
+            } catch (_: Exception) {
             }
         }
     }

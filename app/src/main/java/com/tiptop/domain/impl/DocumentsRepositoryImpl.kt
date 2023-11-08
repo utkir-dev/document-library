@@ -2,23 +2,18 @@ package com.tiptop.domain.impl
 
 import android.annotation.SuppressLint
 import android.content.Context
-import android.content.SharedPreferences
 import android.net.Uri
-import android.util.Log
 import androidx.core.net.toUri
 import com.google.android.gms.tasks.Task
 import com.google.firebase.firestore.ktx.firestore
 import com.google.firebase.ktx.Firebase
 import com.google.firebase.storage.FirebaseStorage
 import com.google.firebase.storage.StorageMetadata
-import com.google.gson.Gson
-import com.tiptop.app.common.Constants
 import com.tiptop.app.common.Constants.HEAD
 import com.tiptop.app.common.Constants.NEW_DOCUMENTS_VISIBILITY_PERIOD
 import com.tiptop.app.common.Constants.NEW_VERSION
 import com.tiptop.app.common.Constants.TYPE_FOLDER
 import com.tiptop.app.common.Constants.TYPE_PDF
-import com.tiptop.app.common.DownloadController
 import com.tiptop.app.common.Resource
 import com.tiptop.app.common.ResponseResult
 import com.tiptop.app.common.Utils
@@ -34,7 +29,6 @@ import com.tiptop.data.repository.local.DaoDocument
 import com.tiptop.domain.DocumentsRepository
 import com.tiptop.domain.AuthRepository
 import kotlinx.coroutines.CoroutineScope
-import kotlinx.coroutines.Deferred
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.async
 import kotlinx.coroutines.channels.awaitClose
@@ -60,17 +54,6 @@ class DocumentsRepositoryImpl @Inject constructor(
     private val context: Context,
     @AppScope private val coroutine: CoroutineScope
 ) : DocumentsRepository {
-    override suspend fun saveRemoteDocument(documentRemote: DocumentRemote): ResponseResult<Boolean> {
-        val remote =
-            remoteDatabase.firestore.collection(Utils().getDocumentsFolder())
-                .document(documentRemote.id)
-        return try {
-            remote.set(documentRemote).await()
-            ResponseResult.Success(true)
-        } catch (e: Exception) {
-            ResponseResult.Failure(e.message)
-        }
-    }
 
     override suspend fun saveTempDocumentsToLocalDb(tempDocuments: List<DocumentLocal>) {
         documentsLocalDb.addMany(tempDocuments)
@@ -79,7 +62,7 @@ class DocumentsRepositoryImpl @Inject constructor(
     override suspend fun uploadFile(
         bytes: ByteArray,
         document: DocumentRemote
-    ) {
+    ): Flow<Resource<DocumentLocal>> = callbackFlow {
         val documentLocal = document.toLocal()
         val reference =
             remoteStorage.getReference("${Utils().getDocumentsFolder()}/" + document.id)
@@ -90,28 +73,43 @@ class DocumentsRepositoryImpl @Inject constructor(
                         documentLocal.loading = false
                         documentLocal.loadingBytes = 0
                         documentsLocalDb.update(documentLocal)
-                        ResponseResult.Success(true)
+                    }
+                }
+                coroutine.launch(Dispatchers.IO) {
+                    async {
+                        documentLocal.loading = false
+                        documentLocal.loadingBytes = 0
+                        trySend(Resource.success(documentLocal))
                     }
                 }
             }
             .addOnFailureListener {
-                ResponseResult.Failure("Xatolik")
+                coroutine.async(Dispatchers.IO) {
+                    trySend(Resource.error(null, "Xatolik"))
+                }
             }
             .addOnCanceledListener {
-                ResponseResult.Failure("Yuklash bekor bo'ldi")
+                coroutine.async(Dispatchers.IO) {
+                    trySend(Resource.error(null, "Yuklash bekor bo'ldi"))
+                }
             }
             .addOnPausedListener {
-                ResponseResult.Failure("Yuklash to'xtab qoldi")
+                coroutine.async(Dispatchers.IO) {
+                    trySend(Resource.error(null, "Yuklash to'xtab qoldi"))
+                }
             }
             .addOnProgressListener {
                 documentLocal.loading = true
                 documentLocal.loadingBytes = it.bytesTransferred
                 documentLocal.size = it.totalByteCount
                 coroutine.launch(Dispatchers.IO) {
-                    async { documentsLocalDb.update(documentLocal) }
+                    async {
+                        trySend(Resource.loading(documentLocal))
+                    }
                 }
             }
-    }
+        awaitClose { }
+    }.flowOn(Dispatchers.IO)
 
     override suspend fun uploadHeadFile(
         bytes: ByteArray,
@@ -255,6 +253,19 @@ class DocumentsRepositoryImpl @Inject constructor(
             awaitClose { }
         }.flowOn(Dispatchers.IO)
 
+    override suspend fun saveRemoteDocument(documentRemote: DocumentLocal): ResponseResult<Boolean> {
+        val remote =
+            remoteDatabase.firestore.collection(Utils().getDocumentsFolder())
+                .document(documentRemote.id)
+        return try {
+            documentsLocalDb.add(documentRemote)
+            remote.set(documentRemote.toRemote()).await()
+            ResponseResult.Success(true)
+        } catch (e: Exception) {
+            ResponseResult.Failure(e.message)
+        }
+    }
+
     override suspend fun deleteDocument(document: DocumentLocal): ResponseResult<Boolean> {
         val remoteDatabase =
             remoteDatabase.firestore.collection(Utils().getDocumentsFolder())
@@ -284,7 +295,7 @@ class DocumentsRepositoryImpl @Inject constructor(
             aruzUserDb.clearAruzUser(document.id)
             ResponseResult.Success(true)
         } catch (e: Exception) {
-            documentsLocalDb.add(tempDeletedDocument)
+            //documentsLocalDb.add(tempDeletedDocument)
             ResponseResult.Failure(e.message)
         }
     }
@@ -321,21 +332,21 @@ class DocumentsRepositoryImpl @Inject constructor(
                             }
                             coroutine.launch(Dispatchers.IO) {
                                 async {
-                                    list.forEach {
-                                        val doc = documentsLocalDb.getDocumentById(it.id)
-                                        if (doc == null) {
-                                            documentsLocalDb.add(it.toLocal())
-                                        } else {
+                                    list.forEach { remoteDoc ->
+                                        val localDoc =
+                                            documentsLocalDb.getDocumentById(remoteDoc.id)
+                                        if (localDoc == null) {
+                                            documentsLocalDb.add(remoteDoc.toLocal())
+                                        } else if (!localDoc.isSameOfRemote(remoteDoc)) {
                                             documentsLocalDb.add(
-                                                doc.copy(
-                                                    parentId = it.parentId,
-                                                    name = it.name,
-                                                    date = it.date,
+                                                localDoc.copy(
+                                                    parentId = remoteDoc.parentId,
+                                                    name = remoteDoc.name,
+                                                    date = remoteDoc.date,
                                                 )
                                             )
                                         }
                                     }
-
                                 }.await()
                                 trySend(true)
                             }
@@ -378,6 +389,7 @@ class DocumentsRepositoryImpl @Inject constructor(
     override fun getAllDocuments(): Flow<List<DocumentLocal>> {
         return documentsLocalDb.getAllDocuments().flowOn(Dispatchers.IO)
     }
+
     override fun getLoadedDocuments(): Flow<List<DocumentLocal>> {
         return documentsLocalDb.getLoadedDocuments().flowOn(Dispatchers.IO)
     }

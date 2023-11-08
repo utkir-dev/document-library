@@ -331,23 +331,26 @@ class PageAccounts : BaseFragment(R.layout.page_accounts_devices) {
 
     private fun getInfoUser(user: UserLocal) {
         vm.userAndDevices.observe(viewLifecycleOwner) { mapUserAndDevices ->
-            if (mapUserAndDevices?.isNotEmpty() == true) {
-                if (!isUserInfoShown) {
-                    isUserInfoShown = true
-                    val device = mapUserAndDevices.values.map { it.find { it.userId == user.id } }
-                        .find { it?.userId == user.id }
-                    val deviceName =
-                        if (device == null) "o'chirib yuborilgan" else "nomi ${device.name}"
-                    val isPermitted =
-                        if (user.permitted) "Kirishga ruxsat berilgan" else "Kirishga ruxsat yuq"
-                    val telegram =
-                        if (user.telegramUser.isEmpty()) "Telegram nomi kiritilmagan" else "Telegram nomi ${user.telegramDecrypted()}"
-                    val message =
-                        "Bu email ${user.dateAdded.huminize()} da yaratilgan. Yaratgan qurilma $deviceName. $isPermitted. $telegram. Oxirgi kirgan sana ${user.date.huminize()}"
-                    showAllertDialog(title = user.email, message = message) {
+            try {
+                if (mapUserAndDevices?.isNotEmpty() == true) {
+                    if (!isUserInfoShown) {
+                        isUserInfoShown = true
+                        val device =
+                            mapUserAndDevices.values.map { it.find { it.userId == user.id } }
+                                .find { it?.userId == user.id }
+                        val deviceName =
+                            if (device == null) "o'chirib yuborilgan" else "nomi ${device.name}"
+                        val isPermitted =
+                            if (user.permitted) "Kirishga ruxsat berilgan" else "Kirishga ruxsat yuq"
+                        val telegram =
+                            if (user.telegramUser.isEmpty()) "Telegram nomi kiritilmagan" else "Telegram nomi ${user.telegramDecrypted()}"
+                        val message =
+                            "Bu email ${user.dateAdded.huminize()} da yaratilgan. Yaratgan qurilma $deviceName. $isPermitted. $telegram. Oxirgi kirgan sana ${user.date.huminize()}"
+                        showAllertDialog(title = user.email, message = message) {
+                        }
                     }
                 }
-            }
+            } catch (_: Exception) { }
         }
     }
 
@@ -450,23 +453,35 @@ class PageAccounts : BaseFragment(R.layout.page_accounts_devices) {
     }
 
     private fun getInfoDevice(device: DeviceLocal) {
+        Log.d("UserInfo", "getInfoDevice device : $device")
+
         vm.userAndDevices.observe(viewLifecycleOwner) { mapUserAndDevices ->
-            if (mapUserAndDevices?.isNotEmpty() == true) {
-                if (!isDeviceInfoShown) {
-                    isDeviceInfoShown = true
-                    val createdUsersByDevice =
-                        mapUserAndDevices.keys.filter { it.deviceId == device.id }.map { it.email }
-                    val userName =
-                        if (createdUsersByDevice.size > 1) createdUsersByDevice.huminize() + " lar" else createdUsersByDevice[0] + " "
-                    val isAdmin =
-                        if (device.admin) "Admin" else ""
-                    val isBlocked =
-                        if (device.blocked) "Taqiqlangan" else ""
-                    val message =
-                        "Bu qurilma ${device.dateAdded.huminize()} da yaratilgan. ${userName}ni yaratgan. Oxirgi kirgan sana ${device.date.huminize()}. $isAdmin$isBlocked"
-                    showAllertDialog(title = device.name, message = message) {}
+            Log.d(
+                "UserInfo",
+                "observe mapUserAndDevices?.isNotEmpty : ${mapUserAndDevices?.isNotEmpty()}"
+            )
+            try {
+                if (mapUserAndDevices?.isNotEmpty() == true) {
+                    if (!isDeviceInfoShown) {
+                        isDeviceInfoShown = true
+                        val createdUsersByDevice =
+                            mapUserAndDevices.keys.filter { it.deviceId == device.id }
+                                .map { it.email }
+                        var userName =""
+                        if (createdUsersByDevice.isNotEmpty()){
+                            userName = if (createdUsersByDevice.size > 1) createdUsersByDevice.huminize() + " lar" else createdUsersByDevice[0] + " "
+                            userName="${userName}ni yaratgan. "
+                        }
+                        val isAdmin =
+                            if (device.admin) "Admin" else ""
+                        val isBlocked =
+                            if (device.blocked) "Taqiqlangan" else ""
+                        val message =
+                            "Bu qurilma ${device.dateAdded.huminize()} da yaratilgan. ${userName}Oxirgi kirgan sana ${device.date.huminize()}. $isAdmin$isBlocked"
+                        showAllertDialog(title = device.name, message = message) {}
+                    }
                 }
-            }
+            } catch (_: Exception) { }
         }
     }
 

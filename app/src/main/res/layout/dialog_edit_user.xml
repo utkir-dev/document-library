@@ -14,6 +14,7 @@
         android:layout_width="match_parent"
         android:layout_height="wrap_content"
         android:minWidth="200dp"
+        android:background="@color/white_back"
         android:orientation="vertical"
         android:padding="@dimen/dp10">
 
@@ -24,31 +25,42 @@
             android:layout_gravity="center_horizontal"
             android:text="email@mail.com"
             android:textSize="@dimen/font18"
+            android:layout_marginBottom="@dimen/dp4"
+            android:textColor="@color/black"
             android:textStyle="bold" />
-
-        <com.google.android.material.textfield.TextInputLayout
+        <androidx.cardview.widget.CardView
             android:layout_width="match_parent"
             android:layout_height="wrap_content"
-            android:background="@color/white"
-            app:boxBackgroundMode="none">
-
-            <com.google.android.material.textfield.TextInputEditText
-                android:id="@+id/et_telegram_user"
+            app:cardBackgroundColor="@color/white"
+            app:cardCornerRadius="@dimen/dp10"
+            >
+            <com.google.android.material.textfield.TextInputLayout
                 android:layout_width="match_parent"
                 android:layout_height="wrap_content"
-                android:background="@android:color/transparent"
-                android:hint=" telegram-user"
-                android:imeOptions="actionDone"
-                android:inputType="text"
-                android:maxLines="1" />
+                app:boxBackgroundMode="none">
 
-        </com.google.android.material.textfield.TextInputLayout>
+                <com.google.android.material.textfield.TextInputEditText
+                    android:id="@+id/et_telegram_user"
+                    android:layout_width="match_parent"
+                    android:layout_height="wrap_content"
+                    android:hint=" telegram-user"
+                    android:textColor="@color/black"
+                    android:textColorHint="@color/grey"
+                    android:imeOptions="actionDone"
+                    android:inputType="text"
+                    android:maxLines="1" />
+
+            </com.google.android.material.textfield.TextInputLayout>
+
+        </androidx.cardview.widget.CardView>
+
 
         <CheckBox
             android:id="@+id/chb_permission"
             android:layout_width="match_parent"
             android:layout_height="wrap_content"
             android:text="Kirishga ruxsat"
+            android:background="@color/white_back"
             android:textColor="@color/black"
             android:textSize="@dimen/font_normal" />
 
@@ -60,6 +72,7 @@
             android:layout_marginTop="@dimen/dp10"
             android:paddingHorizontal="@dimen/spacing_normal"
             android:text="Tasdiqlash"
+            android:backgroundTint="@color/blue"
             android:textColor="@color/white"
             android:textSize="@dimen/font16"
             android:textStyle="bold" />

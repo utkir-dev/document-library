@@ -5,13 +5,16 @@ import android.os.Bundle
 import android.view.LayoutInflater
 import android.view.View
 import android.view.ViewGroup
+import androidx.activity.addCallback
 import androidx.fragment.app.DialogFragment
+import androidx.navigation.fragment.findNavController
 import com.tiptop.R
 import com.tiptop.app.common.Constants.KEY_SCREEN_BLOCK
 import com.tiptop.app.common.SharedPrefSimple
 import com.tiptop.app.common.Utils
 import com.tiptop.app.common.encryption
 import com.tiptop.databinding.ScreenPincodeBinding
+import com.tiptop.presentation.MainActivity
 import com.tiptop.presentation.MainActivity.Companion.IS_ENTERED
 import com.tiptop.presentation.MainActivity.Companion.TEMPORARY_OUT
 import dagger.hilt.android.AndroidEntryPoint
@@ -28,6 +31,8 @@ class BlockScreenDialogFragment() : DialogFragment() {
     private var imageClickSymbols = ""
     private var pass = ""
     private var b: ScreenPincodeBinding? = null
+
+
     override fun onCreateView(
         inflater: LayoutInflater,
         container: ViewGroup?,

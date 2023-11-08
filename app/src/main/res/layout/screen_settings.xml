@@ -11,33 +11,63 @@
         android:layout_height="wrap_content"
         android:orientation="vertical">
 
-        <TextView
-            android:id="@+id/title"
-            android:layout_width="wrap_content"
-            android:layout_height="wrap_content"
-            android:layout_gravity="center_horizontal"
-            android:layout_marginVertical="@dimen/dp10"
-            android:backgroundTint="@color/green"
-            android:gravity="center_horizontal"
-            android:text="Ekran blok kodini o'zgartirish"
-            android:textColor="@color/black"
-            android:textSize="@dimen/font18" />
+        <LinearLayout
+            android:layout_width="match_parent"
+            android:layout_height="?actionBarSize"
+            android:gravity="center_vertical"
+            android:background="@color/blue"
+            android:orientation="horizontal">
+            <androidx.cardview.widget.CardView
+                android:id="@+id/card_back_settings"
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:layout_marginVertical="@dimen/dp10"
+                android:layout_marginStart="@dimen/dp15"
+                android:layout_marginEnd="@dimen/dp8"
+                android:clickable="true"
+                android:elevation="10dp"
+                android:focusable="true"
+                app:cardBackgroundColor="@color/white"
+                android:foreground="?android:attr/selectableItemBackground"
+                android:padding="10dp"
+                app:cardCornerRadius="20dp"
+                app:layout_constraintStart_toStartOf="parent"
+                app:layout_constraintTop_toTopOf="parent">
+
+                <ImageView
+                    android:layout_width="match_parent"
+                    android:layout_height="match_parent"
+                    android:layout_margin="@dimen/dp6"
+                    android:src="@drawable/ic_arrow_back"
+                    app:tint="@color/grey_dark" />
+            </androidx.cardview.widget.CardView>
+
+            <TextView
+                android:id="@+id/title"
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:gravity="center_horizontal"
+                android:text="Ekran blok kodlari"
+                android:textColor="@color/white"
+                android:textSize="@dimen/font18" />
+        </LinearLayout>
+
 
         <androidx.cardview.widget.CardView
             android:id="@+id/card1"
             android:layout_width="match_parent"
             android:layout_height="wrap_content"
-            android:layout_marginVertical="@dimen/dp5"
             android:layout_marginHorizontal="@dimen/dp15"
+            android:layout_marginVertical="@dimen/dp5"
             android:elevation="@dimen/dp5"
             android:padding="@dimen/dp5"
+            app:cardBackgroundColor="@color/white"
             app:cardCornerRadius="@dimen/dp15">
 
             <com.google.android.material.textfield.TextInputLayout
                 android:layout_width="match_parent"
                 android:layout_height="wrap_content"
                 android:layout_margin="@dimen/dp2"
-                android:background="@color/white"
                 app:boxBackgroundMode="none"
                 app:passwordToggleEnabled="true">
 
@@ -50,7 +80,9 @@
                     android:imeOptions="actionNext"
                     android:inputType="numberPassword"
                     android:maxLines="1"
-                    android:nextFocusDown="@id/et_password" />
+                    android:nextFocusDown="@id/et_password"
+                    android:textColor="@color/black"
+                    android:textColorHint="@color/grey" />
 
             </com.google.android.material.textfield.TextInputLayout>
 
@@ -60,18 +92,17 @@
             android:id="@+id/card2"
             android:layout_width="match_parent"
             android:layout_height="wrap_content"
-            android:layout_marginVertical="@dimen/dp5"
             android:layout_marginHorizontal="@dimen/dp15"
+            android:layout_marginVertical="@dimen/dp5"
             android:elevation="@dimen/dp5"
             android:padding="@dimen/dp5"
-            app:cardCornerRadius="@dimen/dp15"
-            >
+            app:cardBackgroundColor="@color/white"
+            app:cardCornerRadius="@dimen/dp15">
 
             <com.google.android.material.textfield.TextInputLayout
                 android:layout_width="match_parent"
                 android:layout_height="wrap_content"
                 android:layout_margin="@dimen/dp2"
-                android:background="@color/white"
                 app:boxBackgroundMode="none"
                 app:passwordToggleEnabled="true">
 
@@ -83,7 +114,9 @@
                     android:hint="Yangi kod kiriting"
                     android:imeOptions="actionNext"
                     android:inputType="numberPassword"
-                    android:maxLines="1" />
+                    android:maxLines="1"
+                    android:textColor="@color/black"
+                    android:textColorHint="@color/grey" />
 
             </com.google.android.material.textfield.TextInputLayout>
 
@@ -93,17 +126,17 @@
             android:id="@+id/card3"
             android:layout_width="match_parent"
             android:layout_height="wrap_content"
-            android:layout_marginVertical="@dimen/dp5"
             android:layout_marginHorizontal="@dimen/dp15"
+            android:layout_marginVertical="@dimen/dp5"
             android:elevation="@dimen/dp5"
             android:padding="@dimen/dp5"
+            app:cardBackgroundColor="@color/white"
             app:cardCornerRadius="@dimen/dp15">
 
             <com.google.android.material.textfield.TextInputLayout
                 android:layout_width="match_parent"
                 android:layout_height="wrap_content"
                 android:layout_margin="@dimen/dp2"
-                android:background="@color/white"
                 app:boxBackgroundMode="none"
                 app:passwordToggleEnabled="true">
 
@@ -115,7 +148,9 @@
                     android:hint="Yangi kodni takrorlang"
                     android:imeOptions="actionDone"
                     android:inputType="numberPassword"
-                    android:maxLines="1" />
+                    android:maxLines="1"
+                    android:textColor="@color/black"
+                    android:textColorHint="@color/grey" />
 
             </com.google.android.material.textfield.TextInputLayout>
 
@@ -132,20 +167,21 @@
             android:paddingVertical="@dimen/dp10"
             android:text="Tasdiqlash"
             android:textAllCaps="false"
+            android:textColor="@color/white"
             android:textSize="@dimen/font18" />
 
         <View
             android:layout_width="match_parent"
             android:layout_height="@dimen/spacing_dot"
-            android:background="@android:color/darker_gray" />
+            android:background="@color/grey" />
 
         <TextView
             android:layout_width="wrap_content"
             android:layout_height="wrap_content"
-            android:layout_marginVertical="@dimen/dp10"
             android:layout_gravity="center_horizontal"
+            android:layout_marginVertical="@dimen/dp10"
             android:text="Maskaga chertishlar soni :"
-            android:textColor="@android:color/black"
+            android:textColor="@color/black"
             android:textSize="@dimen/font18" />
 
         <LinearLayout
@@ -169,7 +205,7 @@
                 android:layout_marginHorizontal="@dimen/spacing_small"
                 android:inputType="number"
                 android:paddingHorizontal="@dimen/font_small"
-                android:textColor="@color/color_red"
+                android:textColor="@color/black"
                 android:textStyle="bold" />
 
         </LinearLayout>
@@ -194,15 +230,15 @@
                 android:layout_marginHorizontal="@dimen/spacing_small"
                 android:inputType="number"
                 android:paddingHorizontal="@dimen/font_small"
-                android:textColor="@color/color_red"
+                android:textColor="@color/black"
                 android:textStyle="bold" />
 
         </LinearLayout>
 
         <LinearLayout
-            android:gravity="center_vertical"
             android:layout_width="match_parent"
             android:layout_height="wrap_content"
+            android:gravity="center_vertical"
             android:orientation="horizontal">
 
             <ImageView
@@ -220,7 +256,7 @@
                 android:layout_marginHorizontal="@dimen/spacing_small"
                 android:inputType="number"
                 android:paddingHorizontal="@dimen/font_small"
-                android:textColor="@color/color_red"
+                android:textColor="@color/black"
                 android:textStyle="bold" />
 
         </LinearLayout>
@@ -231,7 +267,7 @@
             android:layout_marginStart="@dimen/dp15"
             android:layout_marginTop="@dimen/dp10"
             android:text="* Shuncha marta chertishdan so'ng kod oynasi ochiladi"
-            android:textColor="@android:color/black"
+            android:textColor="@color/black"
             android:textSize="@dimen/font_small" />
 
         <Button
@@ -245,8 +281,8 @@
             android:paddingVertical="@dimen/dp10"
             android:text="Tasdiqlash"
             android:textAllCaps="false"
+            android:textColor="@color/white"
             android:textSize="@dimen/font18" />
-
 
     </LinearLayout>
 </ScrollView>

@@ -37,6 +37,7 @@
             android:layout_margin="@dimen/dp10"
             android:elevation="@dimen/dp10"
             android:padding="@dimen/dp10"
+            app:cardBackgroundColor="@color/white"
             android:visibility="visible"
             app:cardCornerRadius="@dimen/dp10">
 
@@ -47,6 +48,10 @@
                 android:layout_marginHorizontal="@dimen/dp10"
                 android:background="@android:color/transparent"
                 android:hint="Document name"
+                android:minLines="2"
+                android:lines="2"
+                android:textColor="@color/black"
+                android:textColorHint="@color/grey"
                 android:imeOptions="actionDone"
                 android:inputType="text"
                 android:paddingVertical="@dimen/dp10" />
@@ -66,6 +71,7 @@
                 android:paddingHorizontal="@dimen/dp24"
                 android:paddingVertical="@dimen/dp10"
                 android:text="Bekor"
+                android:textColor="@color/white"
                 android:textAllCaps="false"
                 android:layout_marginEnd="@dimen/dp20"
                 android:textSize="@dimen/font18" />
@@ -74,6 +80,7 @@
                 android:layout_width="wrap_content"
                 android:layout_height="wrap_content"
                 android:layout_marginVertical="@dimen/activity_vertical_margin"
+                android:textColor="@color/white"
                 android:backgroundTint="@color/green"
                 android:paddingHorizontal="@dimen/dp24"
                 android:paddingVertical="@dimen/dp10"

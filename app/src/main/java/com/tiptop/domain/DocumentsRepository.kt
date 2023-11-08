@@ -8,9 +8,9 @@ import com.tiptop.data.models.remote.DocumentRemote
 import kotlinx.coroutines.flow.Flow
 
 interface DocumentsRepository {
-    suspend fun saveRemoteDocument(documentRemote: DocumentRemote): ResponseResult<Boolean>
+    suspend fun saveRemoteDocument(documentRemote: DocumentLocal): ResponseResult<Boolean>
     suspend fun saveTempDocumentsToLocalDb(tempDocuments:List<DocumentLocal>)
-    suspend fun uploadFile(bytes: ByteArray, document: DocumentRemote)
+    suspend fun uploadFile(bytes: ByteArray, document: DocumentRemote): Flow<Resource<DocumentLocal>>
     suspend fun uploadHeadFile(bytes: ByteArray, document: DocumentRemote)
     suspend fun downloadFile(document: DocumentLocal)
     suspend fun downloadFileLive(document: DocumentLocal): Flow<Resource<DocumentLocal>>

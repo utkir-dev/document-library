@@ -35,7 +35,6 @@ class BaseViewModel @Inject constructor(
 
     fun initObservers() {
         viewModelScope.launch {
-            async { userRepository.observeDeletedIds().collect() }
             userRepository.observeAuthState().collect {
                 if (it && !initialized) {
                     val task1 = async { userRepository.observeUser().collect() }
@@ -59,6 +58,14 @@ class BaseViewModel @Inject constructor(
         }
     }
 
+    fun observeDeletedIds() {
+        viewModelScope.async {
+            if (!initializedDeletedIds)
+                async { userRepository.observeDeletedIds().collect() }.await()
+            initializedDeletedIds = true
+        }
+    }
+
     fun clearDevices() {
         viewModelScope.launch {
             async { userRepository.clearDevices() }
@@ -67,5 +74,6 @@ class BaseViewModel @Inject constructor(
 
     companion object {
         private var initialized = false
+        private var initializedDeletedIds = false
     }
 }

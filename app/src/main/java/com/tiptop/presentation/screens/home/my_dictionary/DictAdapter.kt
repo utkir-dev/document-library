@@ -7,30 +7,19 @@ import android.view.ViewGroup
 import androidx.paging.PagingDataAdapter
 import androidx.recyclerview.widget.DiffUtil
 import androidx.recyclerview.widget.RecyclerView
+import com.tiptop.R
 import com.tiptop.app.common.decryption
 import com.tiptop.data.models.local.ArabUzBase
-import com.tiptop.data.models.local.ArabUzUser
 import com.tiptop.data.models.local.ArabUzUserForDictionaryScreen
 import com.tiptop.databinding.ItemDictBinding
 import com.tiptop.presentation.screens.document_view.pdf.Dictionary
 
 class DictAdapter(private var listener: PageNumberClickListener) :
     PagingDataAdapter<Dictionary, DictAdapter.ViewHolder>(DIFF_CALLBACK) {
-    companion object {
-        val DIFF_CALLBACK = object : DiffUtil.ItemCallback<Dictionary>() {
-            override fun areItemsTheSame(oldItem: Dictionary, newItem: Dictionary): Boolean =
-                oldItem.docid == newItem.docid
 
-            override fun areContentsTheSame(oldItem: Dictionary, newItem: Dictionary): Boolean {
-                var response = false
-                if (oldItem is ArabUzBase && newItem is ArabUzBase) {
-                    response = oldItem == newItem
-                } else if (oldItem is ArabUzUserForDictionaryScreen && newItem is ArabUzUserForDictionaryScreen) {
-                    response = oldItem == newItem
-                }
-                return response
-            }
-        }
+    fun updateItem(position: Int) {
+        notifyItemRemoved(position)
+        notifyItemRangeChanged(position, itemCount - 1)
     }
 
     inner class ViewHolder(val binding: ItemDictBinding) : RecyclerView.ViewHolder(binding.root)
@@ -50,13 +39,41 @@ class DictAdapter(private var listener: PageNumberClickListener) :
             tvDictWord.setOnClickListener {
                 listener.onClick(word)
             }
+            ivSavedWord.visibility = View.VISIBLE
+            ivSavedWord.setImageResource(R.drawable.ic_delete)
+            ivSavedWord.setOnClickListener {
+                listener.onDeleteClick(word, position)
+            }
             tvPageNumber.visibility = View.VISIBLE
             tvPageNumber.text =
                 "${word?.pageNumber ?: 1}-bet.${word.documentName.decryption(word.dateAdded)}"
+            tvPageNumber.setOnClickListener {
+                listener.onPageClick(word)
+            }
         }
     }
 
     interface PageNumberClickListener {
         fun onClick(word: Dictionary)
+        fun onPageClick(word: ArabUzUserForDictionaryScreen)
+        fun onDeleteClick(word: Dictionary, position: Int)
     }
+
+    companion object {
+        val DIFF_CALLBACK = object : DiffUtil.ItemCallback<Dictionary>() {
+            override fun areItemsTheSame(oldItem: Dictionary, newItem: Dictionary): Boolean =
+                oldItem.docid == newItem.docid
+
+            override fun areContentsTheSame(oldItem: Dictionary, newItem: Dictionary): Boolean {
+                var response = false
+                if (oldItem is ArabUzBase && newItem is ArabUzBase) {
+                    response = oldItem == newItem
+                } else if (oldItem is ArabUzUserForDictionaryScreen && newItem is ArabUzUserForDictionaryScreen) {
+                    response = oldItem == newItem
+                }
+                return response
+            }
+        }
+    }
+
 }

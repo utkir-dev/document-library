@@ -6,14 +6,15 @@
     android:id="@+id/progress_root"
     android:layout_margin="@dimen/dp10"
     android:layout_gravity="center"
-    android:background="@android:color/transparent"
     app:cardCornerRadius="@dimen/dp10"
+    app:cardBackgroundColor="@color/white"
     app:cardElevation="@dimen/dp10">
 
     <LinearLayout
         android:layout_width="wrap_content"
         android:layout_height="wrap_content"
         android:layout_centerInParent="true"
+        android:background="@color/white"
         android:gravity="center_vertical"
         android:orientation="horizontal"
         android:padding="@dimen/dp10">

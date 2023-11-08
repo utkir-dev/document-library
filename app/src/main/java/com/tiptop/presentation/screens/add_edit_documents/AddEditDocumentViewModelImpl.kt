@@ -1,11 +1,9 @@
 package com.tiptop.presentation.screens.add_edit_documents
 
-import android.util.Log
 import androidx.lifecycle.LiveData
 import androidx.lifecycle.MutableLiveData
 import androidx.lifecycle.ViewModel
 import androidx.lifecycle.viewModelScope
-import com.tiptop.app.common.Constants
 import com.tiptop.app.common.Constants.TYPE_FOLDER
 import com.tiptop.app.common.Resource
 import com.tiptop.app.common.ResponseResult
@@ -45,6 +43,8 @@ class AddEditDocumentViewModelImpl @Inject constructor(
     private val _documentsForRv = MutableLiveData<List<DocumentForRv>>()
     override val documentsForRv: LiveData<List<DocumentForRv>> = _documentsForRv
 
+    private val _resultUpload = MutableLiveData(DocumentLocal())
+    override val resultUpload: MutableLiveData<DocumentLocal> = _resultUpload
 
     init {
         viewModelScope.async(Dispatchers.IO) {
@@ -117,15 +117,15 @@ class AddEditDocumentViewModelImpl @Inject constructor(
     }
 
     override fun saveDocument(
-        document: DocumentRemote, headByteArray: ByteArray?, bodyByteArray: ByteArray?
+        document: DocumentLocal, headByteArray: ByteArray?, bodyByteArray: ByteArray?
     ) {
         _resultUpdate.postValue(Resource.loading(null))
         viewModelScope.launch {
             val result = repository.saveRemoteDocument(document)
             if (result is ResponseResult.Success) {
                 _resultUpdate.postValue(Resource.success(true))
-                async { headByteArray?.let { uploadHeadFile(it, document) } }
-                async { bodyByteArray?.let { uploadFile(it, document) } }
+                async { headByteArray?.let { uploadHeadFile(it, document.toRemote()) } }
+                async { bodyByteArray?.let { uploadFile(it, document.toRemote()) } }
             } else {
                 _resultUpdate.postValue(Resource.error(false, "Xatolik"))
             }
@@ -140,7 +140,13 @@ class AddEditDocumentViewModelImpl @Inject constructor(
 
     private fun uploadFile(byteArray: ByteArray, document: DocumentRemote) {
         viewModelScope.launch(Dispatchers.IO) {
-            async { repository.uploadFile(byteArray, document) }
+            async {
+                repository.uploadFile(byteArray, document).collectLatest { resource ->
+                    if (resource.data is DocumentLocal) {
+                        _resultUpload.postValue(resource.data)
+                    }
+                }
+            }
         }
     }
 

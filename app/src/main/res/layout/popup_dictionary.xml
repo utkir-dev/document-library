@@ -8,7 +8,7 @@
     android:layout_marginHorizontal="@dimen/dp20"
     android:animateLayoutChanges="true"
     android:visibility="visible"
-    app:cardBackgroundColor="@android:color/transparent"
+    app:cardBackgroundColor="@color/white_back"
     app:cardCornerRadius="@dimen/dp10"
     app:cardElevation="10dp">
 
@@ -17,7 +17,6 @@
         android:layout_width="wrap_content"
         android:layout_height="match_parent"
         android:layout_gravity="end"
-        android:background="@color/white_back"
         android:focusableInTouchMode="true"
         android:minWidth="360dp"
         android:minHeight="500dp"
@@ -29,7 +28,6 @@
             android:layout_width="wrap_content"
             android:layout_height="wrap_content"
             android:layout_gravity="center_horizontal"
-            android:background="@color/white_back"
             android:gravity="center_vertical"
             android:maxWidth="500dp"
             android:orientation="horizontal"
@@ -99,6 +97,8 @@
             android:iconifiedByDefault="false"
             android:queryHint="Qidirish.."
             android:visibility="visible"
+            android:textColor="@color/black"
+            android:textColorHint="@color/grey"
             app:layout_constraintEnd_toEndOf="parent"
             app:layout_constraintStart_toStartOf="parent"
             app:layout_constraintTop_toTopOf="parent" />
@@ -119,6 +119,7 @@
             android:layout_gravity="center_horizontal"
             android:layout_marginHorizontal="@dimen/dp10"
             android:backgroundTint="@color/blue"
+            android:textColor="@color/white"
             android:paddingVertical="@dimen/dp8"
             android:text="Berkitish"
             android:textSize="@dimen/font18" />

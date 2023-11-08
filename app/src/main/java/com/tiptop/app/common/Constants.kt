@@ -3,6 +3,7 @@ package com.tiptop.app.common
 object Constants {
     const val KEY_DAY_NIGHT_MODE = "key_day_night_mode"
     const val KEY_LANGUAGE_MODE = "key_language_mode"
+    const val KEY_BACKGROUND_COLOR = "key_background_color"
     const val LIB_VERSION = "lib-2.0"
     const val NEW_VERSION = "new_version"
     const val DICTIONARY_VERSION = "dictionary_version"

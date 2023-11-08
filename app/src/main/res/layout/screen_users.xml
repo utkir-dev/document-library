@@ -4,7 +4,7 @@
     xmlns:tools="http://schemas.android.com/tools"
     android:layout_width="match_parent"
     android:layout_height="match_parent"
-    android:background="@color/background">
+    android:background="@color/white_back">
 
     <RelativeLayout
         android:id="@+id/app_bar_users"
@@ -36,6 +36,8 @@
             android:background="@color/white_back"
             android:gravity="center_vertical"
             android:hint="qidirish.."
+            android:textColor="@color/black"
+            android:textColorHint="@color/grey"
             android:paddingHorizontal="@dimen/dp5"
             android:translationZ="@dimen/dp10"
             android:visibility="gone" />
@@ -74,8 +76,8 @@
         app:tabIconTint="@color/grey"
         app:tabGravity="start"
         app:tabMode="scrollable"
-        app:tabIndicatorColor="@color/purple_700"
-        app:tabSelectedTextColor="@color/purple_700"
+        app:tabIndicatorColor="@color/blue"
+        app:tabSelectedTextColor="@color/blue"
         app:tabTextColor="@color/grey"
         android:backgroundTint="@android:color/transparent"
         app:layout_constraintTop_toBottomOf="@id/app_bar_users" />

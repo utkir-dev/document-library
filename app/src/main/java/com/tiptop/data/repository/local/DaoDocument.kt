@@ -5,6 +5,7 @@ import androidx.room.Insert
 import androidx.room.OnConflictStrategy
 import androidx.room.Query
 import androidx.room.Update
+import com.tiptop.data.models.local.DocumentForRv
 import com.tiptop.data.models.local.DocumentLocal
 import kotlinx.coroutines.flow.Flow
 
@@ -77,6 +78,24 @@ interface DaoDocument {
 
     @Query("SELECT *  FROM documents WHERE loaded=:loaded OR type=0  ORDER BY dateAdded DESC")
     fun getLoadedDocuments(loaded: Boolean = true): Flow<List<DocumentLocal>>
+
+//    @Query(
+//        "SELECT * , " +
+//                "(select email from users  where tasks.userId=users.id limit 1) as count, " +
+//                "(select name from users  where tasks.userId=users.id limit 1) as userName, " +
+//                "(select name from books  where tasks.bookId=books.id limit 1) as bookName, " +
+//                "(select dateAdded from books  where tasks.bookId=books.id limit 1) as bookDate, " +
+//                "(select title from lessons  where tasks.lessonId=lessons.id limit 1) as lessonTitle " +
+//                "from documents " +
+//                // "WHERE tasks.userId=users.id AND tasks.bookId=books.id AND tasks.lessonId=lessons.id " +
+//                "ORDER BY date DESC "
+//    )
+ //   fun getAllDocumentsRv(): Flow<List<DocumentLocal>>
+
+  //  var count: Int = 0,
+  //  var countNewDocuments: Int = 0,
+  //  var child: List<DocumentForRv> = ArrayList()
+
 
 //    @Query("SELECT " +
 //            "parent.id as id, " +

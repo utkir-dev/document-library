@@ -8,6 +8,7 @@ import android.view.View
 import android.view.ViewGroup
 import android.widget.AdapterView
 import android.widget.ArrayAdapter
+import androidx.navigation.fragment.findNavController
 import com.tiptop.R
 import com.tiptop.app.common.Utils
 import com.tiptop.app.common.encryption
@@ -49,6 +50,9 @@ class ScreenSettings : BaseFragment(R.layout.screen_settings) {
         savedInstanceState: Bundle?
     ): View {
         _binding = ScreenSettingsBinding.inflate(inflater, container, false)
+        b.cardBackSettings.setOnClickListener {
+            findNavController().popBackStack()
+        }
         b.btnConfirm.setOnClickListener {
             b.btnConfirm.hideKeyboard()
             val passCurrent = b.etKodeCurrent.text.toString().trim()
@@ -73,6 +77,7 @@ class ScreenSettings : BaseFragment(R.layout.screen_settings) {
                 showSnackBar("Kod yangilandi")
             }
         }
+
 // spinner1
 
         val orderMask = shared.getInt(Utils().getOrderMaskKey(), 0) ?: 0

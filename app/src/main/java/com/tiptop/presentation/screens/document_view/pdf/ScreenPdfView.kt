@@ -2,6 +2,7 @@ package com.tiptop.presentation.screens.document_view.pdf
 
 import android.annotation.SuppressLint
 import android.app.AlertDialog
+import android.content.pm.ActivityInfo
 import android.os.Bundle
 import android.transition.Slide
 import android.transition.TransitionManager
@@ -24,6 +25,7 @@ import com.github.barteksc.pdfviewer.scroll.DefaultScrollHandle
 import com.github.barteksc.pdfviewer.util.FitPolicy
 import com.tiptop.R
 import com.tiptop.app.common.CanvasData
+import com.tiptop.app.common.Constants.KEY_BACKGROUND_COLOR
 import com.tiptop.app.common.Constants.KEY_LAST_PAGE
 import com.tiptop.app.common.Constants.KEY_SCREEN_TIMER
 import com.tiptop.app.common.DebouncingQueryTextListener
@@ -34,6 +36,7 @@ import com.tiptop.app.common.isInternetAvailable
 import com.tiptop.app.common.share
 import com.tiptop.data.models.local.ArabUzBase
 import com.tiptop.data.models.local.ArabUzUser
+import com.tiptop.data.models.local.ArabUzUserForDictionaryScreen
 import com.tiptop.data.models.local.DocumentLocal
 import com.tiptop.data.models.local.UzArabBase
 import com.tiptop.databinding.DialogAllertBinding
@@ -61,7 +64,16 @@ class ScreenPdfView : BaseFragment(R.layout.screen_document_view) {
     private var _binding: ScreenDocumentViewBinding? = null
     private var pref: SharedPrefSimple? = null
     private val binding get() = _binding!!
-
+    private val colorList = listOf(
+        R.color.color_page7,
+        R.color.color_page6,
+        R.color.color_page8,
+        R.color.color_page2,
+        R.color.color_page3,
+        R.color.color_page4,
+        R.color.color_page5,
+        R.color.color_page1
+    )
 
     override fun onCreateView(
         inflater: LayoutInflater,
@@ -80,6 +92,7 @@ class ScreenPdfView : BaseFragment(R.layout.screen_document_view) {
         initClickListeners()
 
         requireActivity().onBackPressedDispatcher.addCallback(viewLifecycleOwner) {
+
             var isBackAvialable = true
             if (popup?.isShowing == true) {
                 popup?.dismiss()
@@ -105,6 +118,11 @@ class ScreenPdfView : BaseFragment(R.layout.screen_document_view) {
         timer = if (timer == 0) 15 else timer
         vm.updateTimer(timer)
         vm.getLastSeenDocuments()
+//        if (activity?.requestedOrientation == ActivityInfo.SCREEN_ORIENTATION_LANDSCAPE) {
+//            binding.ivColorPalette.visibility = View.VISIBLE
+//        } else {
+//            binding.ivColorPalette.visibility = View.GONE
+//        }
     }
 
 
@@ -166,7 +184,10 @@ class ScreenPdfView : BaseFragment(R.layout.screen_document_view) {
             vm.changeFullScreen()
         }
         binding.ivLastBooks.setOnClickListener {
-            showLastSeenDocuments(binding.ivLastBooks)
+            val list = lastSeenDocuments.filter { it.id != currentId }
+            if (list.isNotEmpty()) {
+                showLastSeenDocuments(list, binding.ivLastBooks)
+            }
         }
         binding.cardBushro.setOnClickListener {
             showBushro()
@@ -209,21 +230,46 @@ class ScreenPdfView : BaseFragment(R.layout.screen_document_view) {
         binding.ivTimer.setOnClickListener {
             showTimer()
         }
+        binding.ivColorPalette.setOnClickListener {
+            changeBackground()
+        }
+    }
+
+    private fun changeBackground() {
+        if (colorList.size - 1 > colorIndex) {
+            ++colorIndex
+        } else {
+            colorIndex = 0
+        }
+        pref?.saveInt(KEY_BACKGROUND_COLOR, colorIndex)
+        binding.pdfView.loadPages()
     }
 
     private fun setDocument() {
-        if (currentId.isNotEmpty()) {
+        if (word != null) {
+            vm.setDocument(word?.documentId ?: "")
+        } else if (currentId.isNotEmpty()) {
             vm.setDocument(currentId)
         }
     }
 
     private fun showPdf() {
+        colorIndex = pref?.getInt(KEY_BACKGROUND_COLOR) ?: 0
+        val defaultPage =
+            if (word != null) {
+                word!!.pageNumber - 1
+            } else {
+                pref?.getInt(KEY_LAST_PAGE + currentId) ?: 0
+            }
         binding.pdfView
             .fromBytes(currentBytes ?: byteArrayOf())
-            .defaultPage(pref?.getInt(KEY_LAST_PAGE + currentId) ?: 0)
+            .defaultPage(defaultPage)
             .enableSwipe(true)
             .swipeHorizontal(false)
             .enableDoubletap(true)
+            .onDraw { canvas, _, _, _ ->
+                canvas.drawColor(resources.getColor(colorList.get(colorIndex), null))
+            }
             .enableAntialiasing(true)
             .enableAnnotationRendering(false)
             .spacing(0)
@@ -366,7 +412,7 @@ class ScreenPdfView : BaseFragment(R.layout.screen_document_view) {
         }
     }
 
-    private fun showLastSeenDocuments(v: View) {
+    private fun showLastSeenDocuments(list: List<DocumentLocal>, v: View) {
         val viewPop = PopupLastSeenDocumentsBinding.inflate(layoutInflater)
         val slideIn = Slide()
         popup = PopupWindow(
@@ -384,7 +430,7 @@ class ScreenPdfView : BaseFragment(R.layout.screen_document_view) {
         }
         viewPop.rvLastBooks.adapter =
             AdapterLastSeenDocuments(
-                lastSeenDocuments.filter { it.id != currentId },
+                list,
                 object : AdapterLastSeenDocuments.PageNumberClickListener {
                     @SuppressLint("CommitTransaction", "DetachAndAttachSameFragment")
                     override fun onClick(document: DocumentLocal) {
@@ -534,7 +580,10 @@ class ScreenPdfView : BaseFragment(R.layout.screen_document_view) {
     }
 
     private fun closeCurrentDocument() {
-        pref?.saveInt(KEY_LAST_PAGE + currentId, currentPage)
+        currentBytes = null
+        if (word==null){
+            pref?.saveInt(KEY_LAST_PAGE + currentId, currentPage)
+        }
         vm.updateDocument()
     }
 
@@ -547,15 +596,17 @@ class ScreenPdfView : BaseFragment(R.layout.screen_document_view) {
         vm.cancelTimer()
     }
 
-
     override fun onDestroy() {
         super.onDestroy()
+        word=null
         currentBytes = null
         _binding = null
     }
 
     companion object {
+        var word: ArabUzUserForDictionaryScreen? = null
         var currentId: String = ""
+        private var colorIndex: Int = 0
         private var currentBytes: ByteArray? = null
     }
 
@@ -612,4 +663,5 @@ class ScreenPdfView : BaseFragment(R.layout.screen_document_view) {
 
         }
     }
+
 }

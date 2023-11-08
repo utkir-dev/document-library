@@ -31,6 +31,7 @@
                     android:clickable="true"
                     android:elevation="10dp"
                     android:focusable="true"
+                    app:cardBackgroundColor="@color/white"
                     android:foreground="?android:attr/selectableItemBackground"
                     android:padding="10dp"
                     app:cardCornerRadius="20dp"
@@ -65,6 +66,7 @@
                 android:layout_marginHorizontal="20dp"
                 android:layout_marginVertical="8dp"
                 android:elevation="5dp"
+                app:cardBackgroundColor="@color/white"
                 android:paddingHorizontal="10dp"
                 android:paddingVertical="@dimen/dp3"
                 app:cardCornerRadius="20dp">
@@ -81,6 +83,8 @@
                         android:layout_height="wrap_content"
                         android:background="@android:color/transparent"
                         android:hint=" e-mail"
+                        android:textColor="@color/black"
+                        android:textColorHint="@color/grey"
                         android:imeOptions="actionNext"
                         android:inputType="textEmailAddress"
                         android:maxLines="1" />
@@ -95,6 +99,7 @@
                 android:layout_marginHorizontal="20dp"
                 android:layout_marginVertical="8dp"
                 android:elevation="5dp"
+                app:cardBackgroundColor="@color/white"
                 android:paddingHorizontal="10dp"
                 android:paddingVertical="@dimen/dp3"
                 app:cardCornerRadius="20dp">
@@ -111,6 +116,8 @@
                         android:layout_height="wrap_content"
                         android:background="@android:color/transparent"
                         android:hint=" telegram user"
+                        android:textColor="@color/black"
+                        android:textColorHint="@color/grey"
                         android:imeOptions="actionNext"
                         android:inputType="text"
                         android:maxLines="1" />
@@ -127,6 +134,7 @@
                 android:layout_marginHorizontal="20dp"
                 android:layout_marginVertical="8dp"
                 android:elevation="5dp"
+                app:cardBackgroundColor="@color/white"
                 android:paddingHorizontal="10dp"
                 android:paddingVertical="@dimen/dp3"
                 android:visibility="gone"
@@ -144,6 +152,8 @@
                         android:layout_height="wrap_content"
                         android:background="@android:color/transparent"
                         android:hint="Phone number"
+                        android:textColor="@color/black"
+                        android:textColorHint="@color/grey"
                         android:imeOptions="actionNext"
                         android:inputType="phone"
                         android:maxLines="1" />
@@ -160,6 +170,7 @@
                 android:layout_marginVertical="8dp"
                 android:elevation="10dp"
                 android:padding="10dp"
+                app:cardBackgroundColor="@color/white"
                 app:cardCornerRadius="20dp">
 
                 <com.google.android.material.textfield.TextInputLayout
@@ -176,6 +187,8 @@
                         android:layout_height="wrap_content"
                         android:background="@android:color/transparent"
                         android:hint=" parol"
+                        android:textColor="@color/black"
+                        android:textColorHint="@color/grey"
                         android:imeOptions="actionNext"
                         android:inputType="textPassword"
                         android:maxLines="1" />
@@ -191,6 +204,7 @@
                 android:layout_marginVertical="8dp"
                 android:elevation="10dp"
                 android:padding="10dp"
+                app:cardBackgroundColor="@color/white"
                 app:cardCornerRadius="20dp">
 
                 <com.google.android.material.textfield.TextInputLayout
@@ -207,6 +221,8 @@
                         android:layout_height="wrap_content"
                         android:background="@android:color/transparent"
                         android:hint=" parol takror"
+                        android:textColor="@color/black"
+                        android:textColorHint="@color/grey"
                         android:imeOptions="actionDone"
                         android:inputType="textPassword"
                         android:maxLines="1" />

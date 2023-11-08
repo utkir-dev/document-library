@@ -24,17 +24,25 @@ import java.nio.charset.StandardCharsets
 open class AdapterAddEditDocument(val listener: ClickListener) :
     ListAdapter<DocumentForRv, AdapterAddEditDocument.Vh>(MyDiffUtil()) {
     private var selectedItemPosition = -1
+    fun updateItem(doc: DocumentForRv) {
+        currentList.find { it.id == doc.id }?.let {
+            val index :Int= currentList.indexOf(it)
+            currentList[index].loadingBytes = doc.loadingBytes
+            currentList[index].loading = doc.loading
+            notifyItemChanged(index)
+        }
+    }
 
     inner class Vh(val v: ItemDocumentBinding) : RecyclerView.ViewHolder(v.root) {
 
         @SuppressLint("SetTextI18n", "NotifyDataSetChanged")
         fun onBind(document: DocumentForRv, position: Int) {
-            var name =document.name
+            var name = document.name
             when (document.type) {
                 TYPE_FOLDER -> {
                     v.tvFileSize.visibility = View.GONE
                     v.ivFolder.setImageResource(R.drawable.ic_folder)
-                    if ((document.count?:0) > 0) {
+                    if ((document.count ?: 0) > 0) {
                         name = "$name(${document.count})"
                     }
                 }
@@ -77,17 +85,12 @@ open class AdapterAddEditDocument(val listener: ClickListener) :
                 v.ivFileState.visibility = View.VISIBLE
                 if (document.loaded) {
                     v.ivFileState.setImageResource(R.drawable.ic_checked)
-                    Log.d("downloadFile","AdapterDocument if loaded: ${document.loaded}")
-
                 } else {
-                    Log.d("downloadFile","AdapterDocument else loaded: ${document.loaded}")
-
                     v.ivFileState.setImageResource(R.drawable.ic_file_download)
                     v.ivFileState.setOnClickListener {
                         listener.onClick(document, position, v.ivFileState)
                     }
                 }
-
             }
             v.lItemTop.setOnClickListener {
                 selectedItemPosition = position
@@ -125,5 +128,4 @@ open class AdapterAddEditDocument(val listener: ClickListener) :
             return oldItem.equals(newItem)
         }
     }
-
 }

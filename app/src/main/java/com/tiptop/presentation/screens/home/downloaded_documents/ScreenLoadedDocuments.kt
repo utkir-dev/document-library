@@ -113,7 +113,8 @@ class ScreenLoadedDocuments : BaseFragment(R.layout.screen_documents) {
 
                     // child-1 recycler view
                     rvChild1.adapter = adapterChild1
-                    adapterChild1.submitList(list.filter { it.parentId == MOTHER_ID + document.id }
+                    adapterChild1.submitList(list
+                        .filter { it.parentId == MOTHER_ID + document.id }
                         .sortedWith(compareBy<DocumentForRv> { it.type }.thenBy { it.name }))
                 }
             })

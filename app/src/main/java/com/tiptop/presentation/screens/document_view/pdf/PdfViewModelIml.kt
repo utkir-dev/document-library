@@ -217,7 +217,6 @@ class PdfViewModelIml @Inject constructor(
 
     override fun onCleared() {
         super.onCleared()
-        Log.d("viewmodelOnCleared", "PdfViewmodel cleared")
         _documentBytes.postValue(null)
         cancelTimer()
     }

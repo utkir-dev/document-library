@@ -10,7 +10,6 @@ import androidx.navigation.fragment.findNavController
 import androidx.recyclerview.widget.DividerItemDecoration
 import androidx.recyclerview.widget.LinearLayoutManager
 import com.tiptop.R
-import com.tiptop.app.common.Constants
 import com.tiptop.app.common.Constants.MOTHER_ID
 import com.tiptop.app.common.Constants.TYPE_IMAGE
 import com.tiptop.app.common.Constants.TYPE_PDF
@@ -27,7 +26,6 @@ import java.io.File
 class ScreenAddEditDocumentsChild2 : BaseFragmentAddEditDocuments() {
     private val vm by viewModels<AddEditDocumentViewModelImpl>()
     private var adapter: AdapterAddEditDocument? = null
-    private var searchText = ""
     private var parentId: String = ""
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
@@ -45,6 +43,9 @@ class ScreenAddEditDocumentsChild2 : BaseFragmentAddEditDocuments() {
 
     override fun onViewCreated(view: View, savedInstanceState: Bundle?) {
         super.onViewCreated(view, savedInstanceState)
+        vm.resultUpload.observe(viewLifecycleOwner) { document ->
+            adapter?.updateItem(document.toRvModel())
+        }
         initClickListeners()
         adapter = AdapterAddEditDocument(object : AdapterAddEditDocument.ClickListener {
             override fun onClick(document: DocumentForRv, position: Int, v: View) {
@@ -155,7 +156,7 @@ class ScreenAddEditDocumentsChild2 : BaseFragmentAddEditDocuments() {
                 it.parentId = parentId
                 it.date = System.currentTimeMillis()
                 if (isInternetAvailable(requireContext())) {
-                    vm.saveDocument(it.toRemote())
+                    vm.saveDocument(it)
                 } else {
                     showSnackBarNoConnection()
                 }

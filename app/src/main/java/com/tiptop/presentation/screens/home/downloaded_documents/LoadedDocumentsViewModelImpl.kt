@@ -5,6 +5,7 @@ import androidx.lifecycle.LiveData
 import androidx.lifecycle.MutableLiveData
 import androidx.lifecycle.ViewModel
 import androidx.lifecycle.viewModelScope
+import com.tiptop.app.common.Constants
 import com.tiptop.data.models.local.DocumentForRv
 import com.tiptop.domain.DocumentsRepository
 import dagger.hilt.android.lifecycle.HiltViewModel
@@ -46,6 +47,24 @@ class LoadedDocumentsViewModelImpl @Inject constructor(
                         val count = repository.getLoadedChildsCountByParentId(it.parentId + it.id)
                         it.count = count
                     }
+//                    list.forEach { parent ->
+//                        val listChild1 = repository.getChildDocuments(parent.parentId + parent.id).map { it.toRvModel() }
+//
+//                        listChild1.forEach { child1 ->
+//                            val listChild2 =
+//                                repository.getChildDocuments(child1.parentId + child1.id).map { it.toRvModel() }
+//
+//                            child1.count = listChild2.filter { it.type > 0 }.size
+//                            child1.countNewDocuments =
+//                                listChild2.filter { (System.currentTimeMillis() - it.dateAdded < Constants.NEW_DOCUMENTS_VISIBILITY_PERIOD) && it.type > 0 }.size
+//                            child1.child = listChild2
+//                        }
+//
+//                        parent.count = listChild1.filter { it.type > 0 }.size+listChild1.sumOf { it.count }
+//                        parent.countNewDocuments =listChild1.sumOf { it.countNewDocuments } +
+//                                listChild1.filter {(System.currentTimeMillis() - it.dateAdded < Constants.NEW_DOCUMENTS_VISIBILITY_PERIOD) && it.type > 0 }.size
+//                        parent.child = listChild1
+//                    }
                 }.await()
                 _documents.postValue(list)
             }
